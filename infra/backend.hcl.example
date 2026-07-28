@@ -1,0 +1,4 @@
+# Copy to backend.hcl and run: terraform init -backend-config=backend.hcl
+# The bucket must exist before the first init and must have versioning enabled.
+bucket = "lokus-ebco-2026-tfstate"
+prefix = "lokus/dev"

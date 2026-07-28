@@ -1,0 +1,21 @@
+node_modules/
+dist/
+coverage/
+.vite/
+
+# Local secrets and environment files. Only *.example is committed.
+.env
+.env.local
+.env.*.local
+
+# Terraform: state and any file holding real values.
+# .terraform.lock.hcl is committed on purpose — it pins provider versions.
+.terraform/
+*.tfstate
+*.tfstate.*
+terraform.tfvars
+backend.hcl
+crash.log
+
+.DS_Store
+Thumbs.db

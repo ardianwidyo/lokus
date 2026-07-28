@@ -1,0 +1,13 @@
+# Copy to terraform.tfvars and fill in. No secret values belong in this file —
+# Secret Manager containers are created empty and populated with
+# `gcloud secrets versions add`.
+
+project_id  = "lokus-ebco-2026"
+region      = "asia-southeast2"
+environment = "dev"
+
+# CI overrides this on every deploy.
+api_image = "asia-southeast2-docker.pkg.dev/lokus-ebco-2026/lokus-dev/api:latest"
+
+api_min_instances = 0
+api_max_instances = 4
