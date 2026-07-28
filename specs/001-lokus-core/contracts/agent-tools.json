@@ -1,0 +1,107 @@
+{
+  "$comment": "Tool schemas for the LOKUS agents. Every tool returns {data, sources[], latencyMs}; a tool that cannot cite a source returns sources: [] and the supervisor must refuse to build a claim on it.",
+  "version": "1.0.0",
+  "agents": {
+    "supervisor": {
+      "model": "gemini-reasoning",
+      "description": "Routes a user question to the specialised agents, merges their findings into one grounded answer, enforces guardrails, and persists the execution trace.",
+      "tools": ["route", "merge", "guardrail.check"],
+      "route": {
+        "input": {
+          "question": "string",
+          "tenantId": "string",
+          "context": { "outletId": "string?", "range": "7h|30h|kuartal" }
+        },
+        "output": {
+          "intent": "diagnosis_cabang|ringkas_review|pertanyaan_kebijakan|cari_lokasi|bandingkan_lokasi|lain",
+          "agents": ["reputation|location|knowledge"]
+        }
+      },
+      "guardrail.check": {
+        "input": { "draftText": "string", "citations": "array" },
+        "output": {
+          "checks": [
+            { "name": "unsourced_claim", "passed": "boolean" },
+            { "name": "personal_data", "passed": "boolean" },
+            { "name": "tone_compliance", "passed": "boolean" },
+            { "name": "compensation_promise", "passed": "boolean" }
+          ],
+          "passed": "boolean"
+        }
+      }
+    },
+
+    "reputation": {
+      "model": "gemini-flash",
+      "description": "Reads Google Business Profile reviews, clusters complaint themes, tracks rating trends, and drafts SOP-grounded replies.",
+      "tools": {
+        "gbp.listReviews": {
+          "input": { "tenantId": "string", "outletId": "string?", "since": "date", "limit": "int" },
+          "output": { "reviews": [{ "id": "string", "outletId": "string", "rating": "int", "text": "string", "author": "string", "publishedAt": "datetime", "replyState": "none|draft|approved|sent" }] }
+        },
+        "gbp.reply": {
+          "input": { "tenantId": "string", "reviewId": "string", "text": "string", "approvedBy": "string" },
+          "output": { "sent": "boolean", "sentAt": "datetime" },
+          "constraint": "Rejects the call when review.rating <= 2 and approvedBy is empty."
+        },
+        "bq.themeCluster": {
+          "input": { "tenantId": "string", "outletId": "string?", "weeks": "int" },
+          "output": { "themes": [{ "theme": "string", "count": "int", "delta": "float", "systemic": "boolean", "byOutlet": "object" }] }
+        },
+        "bq.ratingTrend": {
+          "input": { "tenantId": "string", "outletId": "string", "weeks": "int" },
+          "output": { "points": [{ "week": "date", "rating": "float" }], "changePoints": [{ "date": "date", "note": "string" }] }
+        },
+        "draftReply": {
+          "input": { "review": "object", "brandVoiceDocId": "string", "sopDocIds": ["string"] },
+          "output": { "text": "string", "citations": [{ "docId": "string", "page": "int", "score": "float", "quote": "string" }] }
+        }
+      }
+    },
+
+    "location": {
+      "model": "gemini-reasoning",
+      "description": "Scores outlet locations and ranks candidate sites from Places data and BigQuery GIS.",
+      "tools": {
+        "places.nearbyCompetitors": {
+          "input": { "geo": { "lat": "float", "lng": "float" }, "radiusM": "int", "categories": ["string"] },
+          "output": { "pois": [{ "placeId": "string", "name": "string", "category": "string", "distanceM": "int", "openedAt": "date?" }], "newSinceDays": "int" },
+          "cache": "7 days per grid cell"
+        },
+        "bq.locationScore": {
+          "input": { "tenantId": "string", "outletId": "string?", "geo": "object?" },
+          "output": { "total": "int", "factors": { "traffic": "int", "mix": "int", "competitors": "int", "access": "int" }, "weights": "object" }
+        },
+        "bq.cannibalisation": {
+          "input": { "tenantId": "string", "geo": "object" },
+          "output": { "nearestOwnKm": "float", "flagged": "boolean", "threshold": 1.2 }
+        }
+      }
+    },
+
+    "knowledge": {
+      "model": "gemini-reasoning",
+      "description": "Answers policy questions from indexed SOP and catalog documents with page-level citations, and reports knowledge gaps.",
+      "tools": {
+        "kb.ingest": {
+          "input": { "tenantId": "string", "gcsUri": "string", "title": "string", "restricted": "boolean" },
+          "output": { "documentId": "string", "pages": "int", "chunks": "int", "indexState": "queued|processing|indexed|excluded" },
+          "config": { "chunkTokens": 800, "overlapTokens": 120, "embeddingModel": "text-embedding-004" }
+        },
+        "rag.search": {
+          "input": { "tenantId": "string", "query": "string", "topK": "int" },
+          "output": { "chunks": [{ "docId": "string", "page": "int", "score": "float", "text": "string" }], "rejectedCount": "int" }
+        },
+        "rag.cite": {
+          "input": { "answerText": "string", "chunks": "array" },
+          "output": { "text": "string", "citations": [{ "marker": "string", "docId": "string", "page": "int", "score": "float", "quote": "string" }], "confidence": "float" },
+          "constraint": "If confidence < 0.70, output text must be 'tidak ada di dokumen' and a knowledge_gap record is written."
+        },
+        "kb.gapReport": {
+          "input": { "tenantId": "string", "days": "int" },
+          "output": { "gaps": [{ "question": "string", "occurrences": "int", "proposedClause": "string" }], "coverage": "float" }
+        }
+      }
+    }
+  }
+}

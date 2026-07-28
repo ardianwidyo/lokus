@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/industry-15a06925-6b92-4677-b55f-d0d7baa27743/styles.css">
+<script src="_ds/industry-15a06925-6b92-4677-b55f-d0d7baa27743/_ds_bundle.js"></script>
+<style>body{margin:0;background:var(--color-bg)}a{color:var(--color-accent-700)}a:hover{color:var(--color-accent-900)}</style>
+</helmet>
+
+<x-import component-from-global-scope="deck-stage" from="./deck-stage.js" width="1920" height="1080" hint-size="100%,100%">
+
+  <section data-label="Cover" data-screen-label="01" data-speaker-notes="Halo, kami tim [NAMA]. Kami bangun LOKUS: konsol AI untuk bisnis bercabang. Lima menit, tiga hal: masalahnya, demo langsung, dan kesiapan produksinya." style="background:var(--color-bg);color:var(--color-text);padding:96px;display:flex;flex-direction:column;justify-content:space-between;font-family:var(--font-body)">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:20px">
+        <div style="width:64px;height:64px;border:1px solid var(--color-divider);display:grid;place-items:center;color:var(--color-neutral-500);font-size:14px">LOGO</div>
+        <div style="font-size:26px;letter-spacing:.18em;text-transform:uppercase;color:var(--color-neutral-600)">EBCO AI Hackathon 2026</div>
+      </div>
+      <div style="font-size:26px;color:var(--color-neutral-600)">Kategori A + B · Final Demo Day</div>
+    </div>
+    <div>
+      <div style="font-family:var(--font-heading);font-weight:600;font-size:260px;line-height:.86;letter-spacing:-.02em">LOKUS</div>
+      <div style="font-family:var(--font-heading);font-weight:600;font-size:64px;line-height:1.1;color:var(--color-accent-700);margin-top:16px">Local Operations Intelligence</div>
+      <p style="font-size:38px;line-height:1.4;max-width:46ch;margin:36px 0 0;color:var(--color-neutral-800)">Menyatukan suara pelanggan, kecerdasan lokasi, dan SOP perusahaan menjadi tindakan harian untuk bisnis bercabang.</p>
+    </div>
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;border-top:1px solid var(--color-divider);padding-top:28px">
+      <div style="font-size:28px;color:var(--color-neutral-700)">Tim [NAMA TIM] · [ANGGOTA 1] · [ANGGOTA 2] · [ANGGOTA 3] · [ANGGOTA 4]</div>
+      <div style="font-size:28px;color:var(--color-neutral-600)">14 Agustus 2026</div>
+    </div>
+  </section>
+
+  <section data-label="Masalah" data-screen-label="02" data-speaker-notes="Klien EBCO yang punya banyak cabang duduk di atas tiga sinyal paling murah yang mereka miliki — dan tidak satu pun terpakai." style="background:var(--color-bg);color:var(--color-text);padding:96px;display:flex;flex-direction:column;gap:56px;font-family:var(--font-body)">
+    <div>
+      <div style="font-size:26px;letter-spacing:.16em;text-transform:uppercase;color:var(--color-accent-700)">Masalah</div>
+      <h2 style="font-family:var(--font-heading);font-weight:600;font-size:104px;line-height:1.05;margin:18px 0 0;max-width:30ch">Bisnis bercabang duduk di atas tiga sinyal yang tidak terpakai.</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:40px;flex:1">
+      <div class="blueprint" style="padding:40px;display:flex;flex-direction:column;gap:20px">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div style="font-family:var(--font-heading);font-weight:600;font-size:110px;line-height:.9;color:var(--color-accent-700)">9<span style="font-size:44px"> hari</span></div>
+        <div style="font-family:var(--font-heading);font-weight:600;font-size:40px;line-height:1.15">Review Google menumpuk</div>
+        <p style="margin:0;font-size:28px;line-height:1.5;color:var(--color-neutral-800)">Median waktu balasan pertama. Sebagian besar tidak pernah dibalas sama sekali.</p>
+      </div>
+      <div class="blueprint" style="padding:40px;display:flex;flex-direction:column;gap:20px">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div style="font-family:var(--font-heading);font-weight:600;font-size:110px;line-height:.9;color:var(--color-accent-700)">0</div>
+        <div style="font-family:var(--font-heading);font-weight:600;font-size:40px;line-height:1.15">Data lokasi dalam keputusan</div>
+        <p style="margin:0;font-size:28px;line-height:1.5;color:var(--color-neutral-800)">Buka, tutup, dan pindah cabang diputuskan dengan intuisi, bukan kepadatan pesaing atau catchment.</p>
+      </div>
+      <div class="blueprint" style="padding:40px;display:flex;flex-direction:column;gap:20px">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div style="font-family:var(--font-heading);font-weight:600;font-size:110px;line-height:.9;color:var(--color-accent-700)">48</div>
+        <div style="font-family:var(--font-heading);font-weight:600;font-size:40px;line-height:1.15">SOP tersebar di PDF</div>
+        <p style="margin:0;font-size:28px;line-height:1.5;color:var(--color-neutral-800)">Staf cabang bertanya di grup WhatsApp, lalu berimprovisasi. Layanan jadi tidak konsisten.</p>
+      </div>
+    </div>
+    <div style="font-size:26px;color:var(--color-neutral-600)">Sumber: wawancara internal + audit profil Google pada satu jaringan 42 cabang, Juli 2026.</div>
+  </section>
+
+  <section data-label="Biaya diam" data-screen-label="03" data-speaker-notes="Ini bukan masalah estetika. Rating turun 0,1 poin berdampak langsung ke kunjungan. Diam itu ada harganya." style="background:var(--color-accent-900);color:var(--color-bg);padding:96px;display:flex;flex-direction:column;justify-content:center;gap:48px;font-family:var(--font-body)">
+    <div style="font-size:26px;letter-spacing:.16em;text-transform:uppercase;color:var(--color-accent-300)">Biaya dari diam</div>
+    <h2 style="font-family:var(--font-heading);font-weight:600;font-size:120px;line-height:1.02;margin:0;max-width:34ch">Setiap keluhan yang tidak dijawab adalah pelanggan yang tidak kembali — dan cabang yang tidak tahu kenapa.</h2>
+    <div style="display:flex;gap:96px;border-top:1px solid color-mix(in srgb, var(--color-bg) 28%, transparent);padding-top:40px">
+      <div><div style="font-size:24px;letter-spacing:.14em;text-transform:uppercase;color:var(--color-accent-300)">Rating turun</div><div style="font-family:var(--font-heading);font-weight:600;font-size:86px;line-height:1">−0,4</div><div style="font-size:26px;color:color-mix(in srgb, var(--color-bg) 75%, transparent)">satu cabang, satu bulan</div></div>
+      <div><div style="font-size:24px;letter-spacing:.14em;text-transform:uppercase;color:var(--color-accent-300)">Keluhan berulang</div><div style="font-family:var(--font-heading);font-weight:600;font-size:86px;line-height:1">3×</div><div style="font-size:26px;color:color-mix(in srgb, var(--color-bg) 75%, transparent)">tema yang sama, tak tertangani</div></div>
+      <div><div style="font-size:24px;letter-spacing:.14em;text-transform:uppercase;color:var(--color-accent-300)">Terlambat tahu</div><div style="font-family:var(--font-heading);font-weight:600;font-size:86px;line-height:1">7–10</div><div style="font-size:26px;color:color-mix(in srgb, var(--color-bg) 75%, transparent)">hari sebelum rating jatuh</div></div>
+    </div>
+  </section>
+
+  <section data-label="Solusi" data-screen-label="04" data-speaker-notes="Solusinya bukan dashboard lagi. Setiap pagi jam 6, LOKUS menyerahkan paling banyak tiga keputusan — dengan usulan tindakan dan sumbernya." style="background:var(--color-bg);color:var(--color-text);padding:96px;display:flex;gap:64px;font-family:var(--font-body)">
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:36px">
+      <div style="font-size:26px;letter-spacing:.16em;text-transform:uppercase;color:var(--color-accent-700)">Solusi</div>
+      <h2 style="font-family:var(--font-heading);font-weight:600;font-size:96px;line-height:1.03;margin:0">Bukan dashboard lagi. Tiga keputusan, setiap pagi.</h2>
+      <p style="margin:0;font-size:34px;line-height:1.5;color:var(--color-neutral-800);max-width:34ch">Tiap malam tiga agen membaca review, data lokasi, dan SOP. Pukul 06.00 area manager menerima Briefing Pagi: apa yang rusak, di cabang mana, dan tindakan apa yang diusulkan — lengkap dengan sumbernya.</p>
+      <div style="display:flex;gap:14px;flex-wrap:wrap">
+        <span class="tag tag-accent" style="font-size:24px;padding:8px 18px">Otonom, terjadwal</span>
+        <span class="tag tag-accent" style="font-size:24px;padding:8px 18px">Selalu bersitasi</span>
+        <span class="tag tag-accent" style="font-size:24px;padding:8px 18px">Manusia yang menyetujui</span>
+      </div>
+    </div>
+    <div class="blueprint" style="width:820px;padding:36px;display:flex;flex-direction:column;gap:22px;background:var(--color-accent-100)">
+      <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+      <div style="font-size:24px;letter-spacing:.14em;text-transform:uppercase;color:var(--color-accent-700)">Briefing pagi · 28 Juli 2026 · 06.00</div>
+      <div class="blueprint" style="padding:26px;display:flex;flex-direction:column;gap:12px;background:var(--color-bg)">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div style="font-family:var(--font-heading);font-weight:600;font-size:34px">Antrean kasir Bekasi Timur memburuk</div>
+        <div style="font-size:26px;line-height:1.45;color:var(--color-neutral-800)">11 dari 18 review pekan ini · rating −0,4 · SOP v4 hal. 12 dilanggar</div>
+        <div style="font-size:26px;line-height:1.45;color:var(--color-accent-800)">Usulan: buka kasir kedua 17.00–20.00 selama 2 pekan</div>
+      </div>
+      <div class="blueprint" style="padding:26px;display:flex;flex-direction:column;gap:12px;background:var(--color-bg)">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div style="font-family:var(--font-heading);font-weight:600;font-size:34px">Pesaing baru 400 m dari Depok</div>
+        <div style="font-size:26px;line-height:1.45;color:var(--color-neutral-800)">Skor lokasi 78 → 69 · jam sibuk bertumpuk</div>
+        <div style="font-size:26px;line-height:1.45;color:var(--color-accent-800)">Usulan: geser promo jam sibuk, tinjau jam operasional</div>
+      </div>
+      <div class="blueprint" style="padding:26px;display:flex;flex-direction:column;gap:12px;background:var(--color-bg)">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div style="font-family:var(--font-heading);font-weight:600;font-size:34px">SOP tidak menyebut batas waktu antrean</div>
+        <div style="font-size:26px;line-height:1.45;color:var(--color-neutral-800)">37 pertanyaan staf tak terjawab bulan ini</div>
+        <div style="font-size:26px;line-height:1.45;color:var(--color-accent-800)">Usulan: tambah klausa 10 menit — draft siap</div>
+      </div>
+    </div>
+  </section>
+
+  <section data-label="Tiga agen" data-screen-label="05" data-speaker-notes="Tiga agen, masing-masing memakai satu tema terpilih hackathon ini. Bukan tiga produk — satu produk dengan tiga sumber sinyal yang saling menguatkan." style="background:var(--color-bg);color:var(--color-text);padding:96px;display:flex;flex-direction:column;gap:52px;font-family:var(--font-body)">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:40px">
+      <div>
+        <div style="font-size:26px;letter-spacing:.16em;text-transform:uppercase;color:var(--color-accent-700)">Cara kerjanya</div>
+        <h2 style="font-family:var(--font-heading);font-weight:600;font-size:104px;line-height:1.03;margin:18px 0 0">Tiga agen. Satu supervisor. Tiga tema terpilih.</h2>
+      </div>
+      <div class="blueprint" style="padding:22px 30px;flex:none"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i><div style="font-size:24px;color:var(--color-neutral-700)">Poin tambahan diklaim</div><div style="font-family:var(--font-heading);font-weight:600;font-size:56px;line-height:1;color:var(--color-accent-700)">+16</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:36px;flex:1">
+      <div class="blueprint" style="padding:38px;display:flex;flex-direction:column;gap:20px">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div style="display:flex;align-items:baseline;justify-content:space-between"><span style="font-family:var(--font-heading);font-weight:600;font-size:64px;line-height:1;color:var(--color-accent-400)">01</span><span class="tag tag-accent" style="font-size:24px;padding:7px 16px">GBP Insights</span></div>
+        <div style="font-family:var(--font-heading);font-weight:600;font-size:46px;line-height:1.1">Agen Reputasi</div>
+        <p style="margin:0;font-size:28px;line-height:1.5;color:var(--color-neutral-800)">Membaca seluruh review cabang, mengelompokkan keluhan jadi tema, menilai sentimen, lalu menyusun draft balasan yang patuh SOP. Keluhan berat jadi tiket.</p>
+        <div style="margin-top:auto;font-size:24px;color:var(--color-neutral-600);line-height:1.45">Business Profile API · Gemini Flash · BigQuery</div>
+      </div>
+      <div class="blueprint" style="padding:38px;display:flex;flex-direction:column;gap:20px">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div style="display:flex;align-items:baseline;justify-content:space-between"><span style="font-family:var(--font-heading);font-weight:600;font-size:64px;line-height:1;color:var(--color-accent-400)">02</span><span class="tag tag-accent" style="font-size:24px;padding:7px 16px">Location Intelligence</span></div>
+        <div style="font-family:var(--font-heading);font-weight:600;font-size:46px;line-height:1.1">Agen Lokasi</div>
+        <p style="margin:0;font-size:28px;line-height:1.5;color:var(--color-neutral-800)">Menghitung Skor Lokasi dari kepadatan pesaing, bauran kategori, dan jarak antar cabang sendiri. Menjawab: kenapa cabang ini lemah, di mana buka berikutnya.</p>
+        <div style="margin-top:auto;font-size:24px;color:var(--color-neutral-600);line-height:1.45">Places API (New) · BigQuery GIS · Maps JS</div>
+      </div>
+      <div class="blueprint" style="padding:38px;display:flex;flex-direction:column;gap:20px">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div style="display:flex;align-items:baseline;justify-content:space-between"><span style="font-family:var(--font-heading);font-weight:600;font-size:64px;line-height:1;color:var(--color-accent-400)">03</span><span class="tag tag-accent" style="font-size:24px;padding:7px 16px">Knowledge Management</span></div>
+        <div style="font-family:var(--font-heading);font-weight:600;font-size:46px;line-height:1.1">Agen Pengetahuan</div>
+        <p style="margin:0;font-size:28px;line-height:1.5;color:var(--color-neutral-800)">RAG di atas SOP dan katalog. Menjawab staf dengan sitasi halaman, dan menjadi sumber kebenaran bagi dua agen lain — tidak ada balasan yang melanggar kebijakan.</p>
+        <div style="margin-top:auto;font-size:24px;color:var(--color-neutral-600);line-height:1.45">Vertex AI Search · text-embedding-004</div>
+      </div>
+    </div>
+  </section>
+
+  <section data-label="DEMO" data-screen-label="06" data-speaker-notes="Sekarang demo. Satu pertanyaan, satu alur, menyentuh ketiga tema. Jangan berpindah tab — semua terjadi di satu layar." style="background:var(--color-accent-900);color:var(--color-bg);padding:96px;display:flex;flex-direction:column;justify-content:space-between;font-family:var(--font-body)">
+    <div style="font-size:26px;letter-spacing:.16em;text-transform:uppercase;color:var(--color-accent-300)">Demo langsung · 2 menit</div>
+    <div>
+      <h2 style="font-family:var(--font-heading);font-weight:600;font-size:180px;line-height:.95;margin:0">Satu pertanyaan.<br>Tiga agen.<br>Satu tindakan.</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:40px;border-top:1px solid color-mix(in srgb, var(--color-bg) 28%, transparent);padding-top:36px">
+      <div><div style="font-family:var(--font-heading);font-weight:600;font-size:30px;color:var(--color-accent-300)">01</div><div style="font-size:28px;line-height:1.45;margin-top:8px">“Kenapa rating Bekasi Timur turun bulan ini?”</div></div>
+      <div><div style="font-family:var(--font-heading);font-weight:600;font-size:30px;color:var(--color-accent-300)">02</div><div style="font-size:28px;line-height:1.45;margin-top:8px">Jejak eksekusi tampil: 7 langkah, 3 sumber data</div></div>
+      <div><div style="font-family:var(--font-heading);font-weight:600;font-size:30px;color:var(--color-accent-300)">03</div><div style="font-size:28px;line-height:1.45;margin-top:8px">Jawaban bersitasi: tema, SOP, pesaing baru</div></div>
+      <div><div style="font-family:var(--font-heading);font-weight:600;font-size:30px;color:var(--color-accent-300)">04</div><div style="font-size:28px;line-height:1.45;margin-top:8px">Satu klik: tiket ke manajer cabang, dengan tenggat</div></div>
+    </div>
+  </section>
+
+  <section data-label="Arsitektur" data-screen-label="07" data-speaker-notes="Arsitekturnya sengaja sederhana di permukaan: satu supervisor, tiga agen, satu lapisan tool. Menambah agen berarti menambah tool, bukan menulis ulang aplikasi." style="background:var(--color-bg);color:var(--color-text);padding:80px 96px;display:flex;flex-direction:column;gap:22px;font-family:var(--font-body)">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between">
+      <div>
+        <div style="font-size:26px;letter-spacing:.16em;text-transform:uppercase;color:var(--color-accent-700)">Arsitektur</div>
+        <h2 style="font-family:var(--font-heading);font-weight:600;font-size:76px;line-height:1.05;margin:14px 0 0">Satu supervisor, tiga agen, satu lapisan tool.</h2>
+      </div>
+      <div style="font-size:26px;color:var(--color-neutral-600);text-align:right;line-height:1.45">Region asia-southeast2<br>Terraform · GitHub Actions · Cloud Trace</div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;gap:12px">
+      <div class="blueprint" style="padding:16px 30px;display:flex;align-items:center;gap:30px">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <span style="font-size:24px;letter-spacing:.14em;text-transform:uppercase;color:var(--color-neutral-600);width:230px">Klien</span>
+        <span style="font-family:var(--font-heading);font-weight:600;font-size:34px;flex:1">Web responsif 14 layar</span>
+        <span style="font-family:var(--font-heading);font-weight:600;font-size:34px;flex:1">Chat agen + jejak eksekusi</span>
+        <span style="font-family:var(--font-heading);font-weight:600;font-size:34px;flex:1;color:var(--color-neutral-600)">WhatsApp / Slack (opsional)</span>
+      </div>
+      <div class="blueprint" style="padding:16px 30px;display:flex;align-items:center;gap:30px">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <span style="font-size:24px;letter-spacing:.14em;text-transform:uppercase;color:var(--color-neutral-600);width:230px">Layanan</span>
+        <span style="font-family:var(--font-heading);font-weight:600;font-size:34px">Cloud Run · Identity Platform · RBAC per tenant · Secret Manager</span>
+      </div>
+      <div style="padding:18px 30px;display:flex;align-items:center;gap:30px;background:var(--color-accent);color:var(--color-bg)">
+        <span style="font-size:24px;letter-spacing:.14em;text-transform:uppercase;color:color-mix(in srgb, var(--color-bg) 80%, transparent);width:230px">Orkestrasi</span>
+        <span style="font-family:var(--font-heading);font-weight:600;font-size:36px;flex:1">Supervisor Agent · Vertex AI Agent Engine</span>
+        <span style="font-size:26px;color:color-mix(in srgb, var(--color-bg) 85%, transparent)">routing niat · tool calling · retry · guardrail</span>
+      </div>
+      <div style="display:grid;grid-template-columns:230px repeat(3,1fr);gap:18px;align-items:stretch">
+        <div style="font-size:24px;letter-spacing:.14em;text-transform:uppercase;color:var(--color-neutral-600);display:flex;align-items:center;padding-left:30px">Agen &amp; tool</div>
+        <div class="blueprint" style="padding:22px 26px;display:flex;flex-direction:column;gap:10px"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i><span style="font-family:var(--font-heading);font-weight:600;font-size:32px">Agen Reputasi</span><span style="font-size:25px;color:var(--color-neutral-700);font-family:ui-monospace,Menlo,monospace;line-height:1.5">gbp.listReviews · gbp.reply<br>bq.themeCluster</span></div>
+        <div class="blueprint" style="padding:22px 26px;display:flex;flex-direction:column;gap:10px"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i><span style="font-family:var(--font-heading);font-weight:600;font-size:32px">Agen Lokasi</span><span style="font-size:25px;color:var(--color-neutral-700);font-family:ui-monospace,Menlo,monospace;line-height:1.5">places.nearbyCompetitors<br>bq.locationScore (GIS)</span></div>
+        <div class="blueprint" style="padding:22px 26px;display:flex;flex-direction:column;gap:10px"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i><span style="font-family:var(--font-heading);font-weight:600;font-size:32px">Agen Pengetahuan</span><span style="font-size:25px;color:var(--color-neutral-700);font-family:ui-monospace,Menlo,monospace;line-height:1.5">rag.search · rag.cite<br>kb.ingest</span></div>
+      </div>
+      <div class="blueprint" style="padding:16px 30px;display:flex;align-items:center;gap:30px">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <span style="font-size:24px;letter-spacing:.14em;text-transform:uppercase;color:var(--color-neutral-600);width:230px">Data</span>
+        <span style="font-size:30px;flex:1">Business Profile API</span><span style="font-size:30px;flex:1">Places API (New)</span><span style="font-size:30px;flex:1">Vertex AI Search</span><span style="font-size:30px;flex:1">BigQuery + GIS</span><span style="font-size:30px;flex:1">Firestore</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:30px;padding:12px 30px;border:1px dashed var(--color-neutral-400)">
+        <span style="font-size:24px;letter-spacing:.14em;text-transform:uppercase;color:var(--color-neutral-600);width:200px">Terjadwal</span>
+        <span style="font-size:28px;color:var(--color-neutral-700)">Cloud Scheduler → Pub/Sub → siklus malam 23.00 → Briefing Pagi 06.00 · setiap langkah agen dicatat ke Firestore &amp; Cloud Trace</span>
+      </div>
+    </div>
+  </section>
+
+  <section data-label="Kesiapan produksi" data-screen-label="08" data-speaker-notes="Ini bagian yang paling sering hilang di hackathon. Kami memotong satu fitur dan memakai waktunya untuk hal-hal ini." style="background:var(--color-bg);color:var(--color-text);padding:96px;display:flex;flex-direction:column;gap:48px;font-family:var(--font-body)">
+    <div>
+      <div style="font-size:26px;letter-spacing:.16em;text-transform:uppercase;color:var(--color-accent-700)">Production readiness</div>
+      <h2 style="font-family:var(--font-heading);font-weight:600;font-size:100px;line-height:1.03;margin:18px 0 0;max-width:32ch">Bisa di-deploy hari ini, bukan “nanti setelah dirapikan”.</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:1fr 1fr;gap:32px;flex:1">
+      <div class="blueprint" style="padding:34px;display:flex;flex-direction:column;gap:14px"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i><div style="font-family:var(--font-heading);font-weight:600;font-size:38px">Infrastruktur sebagai kode</div><p style="margin:0;font-size:27px;line-height:1.5;color:var(--color-neutral-800)">Terraform membangun ulang seluruh sistem dari nol dengan satu perintah.</p></div>
+      <div class="blueprint" style="padding:34px;display:flex;flex-direction:column;gap:14px"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i><div style="font-family:var(--font-heading);font-weight:600;font-size:38px">CI/CD dengan gerbang mutu</div><p style="margin:0;font-size:27px;line-height:1.5;color:var(--color-neutral-800)">Setiap merge menjalankan test, evaluasi agen, lalu deploy. Gagal eval berarti tidak naik.</p></div>
+      <div class="blueprint" style="padding:34px;display:flex;flex-direction:column;gap:14px"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i><div style="font-family:var(--font-heading);font-weight:600;font-size:38px">Evaluasi agen 60 kasus</div><p style="margin:0;font-size:27px;line-height:1.5;color:var(--color-neutral-800)">Ketepatan tema 0,91 · sitasi benar 0,94 · halusinasi 0,02 · p95 7,4 s.</p></div>
+      <div class="blueprint" style="padding:34px;display:flex;flex-direction:column;gap:14px"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i><div style="font-family:var(--font-heading);font-weight:600;font-size:38px">Batas biaya per tenant</div><p style="margin:0;font-size:27px;line-height:1.5;color:var(--color-neutral-800)">Rp 1,84 juta/bulan terpakai dari plafon Rp 5,4 juta. Di 90% sistem turun ke Flash dan memberi peringatan.</p></div>
+      <div class="blueprint" style="padding:34px;display:flex;flex-direction:column;gap:14px"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i><div style="font-family:var(--font-heading);font-weight:600;font-size:38px">Multi-tenant &amp; aman</div><p style="margin:0;font-size:27px;line-height:1.5;color:var(--color-neutral-800)">Isolasi tenant di setiap query dan log. Secret Manager, redaksi data pribadi sebelum ke model.</p></div>
+      <div class="blueprint" style="padding:34px;display:flex;flex-direction:column;gap:14px;background:var(--color-accent-100)"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i><div style="font-family:var(--font-heading);font-weight:600;font-size:38px;color:var(--color-accent-900)">Manusia tetap memegang kendali</div><p style="margin:0;font-size:27px;line-height:1.5;color:var(--color-accent-900)">Balasan bintang 1–2 wajib disetujui manusia. Agen menolak menjawab bila sumber di bawah 0,70.</p></div>
+    </div>
+  </section>
+
+  <section data-label="SDD" data-screen-label="09" data-speaker-notes="Kami memakai GitHub Spec Kit dengan sungguh-sungguh: spec di-commit hari pertama, kode menyusul. Dua tautan commit ada di README." style="background:var(--color-bg);color:var(--color-text);padding:96px;display:flex;gap:72px;font-family:var(--font-body)">
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:34px">
+      <div style="font-size:26px;letter-spacing:.16em;text-transform:uppercase;color:var(--color-accent-700)">Specification Driven Development</div>
+      <h2 style="font-family:var(--font-heading);font-weight:600;font-size:96px;line-height:1.03;margin:0">Spesifikasi dulu. Buktinya ada di riwayat commit.</h2>
+      <p style="margin:0;font-size:32px;line-height:1.5;color:var(--color-neutral-800);max-width:34ch">Kami memakai GitHub Spec Kit apa adanya: constitution, spec, plan, tasks — semuanya di-commit sebelum baris kode pertama ditulis, dan setiap tugas menunjuk ke kriteria penerimaan yang ia penuhi.</p>
+      <div class="blueprint" style="padding:26px 30px;background:var(--color-accent-100)"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i><div style="font-size:28px;line-height:1.5;color:var(--color-accent-900)">Tim kami non-developer. SDD-lah yang membuat AI coding agent menghasilkan sistem yang konsisten, bukan tumpukan tambalan.</div></div>
+    </div>
+    <div style="width:820px;display:flex;flex-direction:column;gap:20px;justify-content:center">
+      <div class="blueprint" style="padding:28px 32px;display:flex;align-items:center;gap:26px"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i><span style="font-family:var(--font-heading);font-weight:600;font-size:30px;color:var(--color-accent-600);width:110px">Hari 1</span><span style="font-family:ui-monospace,Menlo,monospace;font-size:26px;flex:1">.specify/memory/constitution.md</span><span class="tag tag-accent" style="font-size:24px;padding:7px 14px">commit</span></div>
+      <div class="blueprint" style="padding:28px 32px;display:flex;align-items:center;gap:26px"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i><span style="font-family:var(--font-heading);font-weight:600;font-size:30px;color:var(--color-accent-600);width:110px">Hari 1</span><span style="font-family:ui-monospace,Menlo,monospace;font-size:26px;flex:1">specs/001-lokus-core/spec.md</span><span class="tag tag-accent" style="font-size:24px;padding:7px 14px">commit</span></div>
+      <div class="blueprint" style="padding:28px 32px;display:flex;align-items:center;gap:26px"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i><span style="font-family:var(--font-heading);font-weight:600;font-size:30px;color:var(--color-accent-600);width:110px">Hari 2</span><span style="font-family:ui-monospace,Menlo,monospace;font-size:26px;flex:1">plan.md · tasks.md · contracts/</span><span class="tag tag-accent" style="font-size:24px;padding:7px 14px">commit</span></div>
+      <div style="padding:28px 32px;display:flex;align-items:center;gap:26px;background:var(--color-accent);color:var(--color-bg)"><span style="font-family:var(--font-heading);font-weight:600;font-size:30px;width:110px;color:color-mix(in srgb, var(--color-bg) 85%, transparent)">Hari 3+</span><span style="font-family:ui-monospace,Menlo,monospace;font-size:26px;flex:1">apps/ · agents/ · infra/ · eval/</span><span style="font-size:24px;border:1px solid color-mix(in srgb, var(--color-bg) 60%, transparent);padding:6px 14px">implement</span></div>
+      <div style="font-size:24px;color:var(--color-neutral-600);line-height:1.5;padding-top:10px">Setiap tugas di tasks.md menunjuk kriteria penerimaan, mis. T015 → AC-3.1 (balasan bintang 1–2 wajib disetujui manusia).</div>
+    </div>
+  </section>
+
+  <section data-label="Dampak" data-screen-label="10" data-speaker-notes="Angka-angka ini dari pilot internal pada satu jaringan 42 cabang. Semua bisa ditelusuri ke datanya." style="background:var(--color-bg);color:var(--color-text);padding:96px;display:flex;flex-direction:column;gap:26px;font-family:var(--font-body)">
+    <div>
+      <div style="font-size:26px;letter-spacing:.16em;text-transform:uppercase;color:var(--color-accent-700)">Dampak terukur</div>
+      <h2 style="font-family:var(--font-heading);font-weight:600;font-size:84px;line-height:1.03;margin:10px 0 0">Pilot 42 cabang, dua pekan.</h2>
+    </div>
+    <div class="blueprint" style="padding:10px 36px;flex:1;display:flex;flex-direction:column;justify-content:center">
+      <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+      <table class="table" style="font-size:32px">
+        <thead><tr><th style="font-size:24px">Metrik</th><th style="font-size:24px;width:300px">Sebelum</th><th style="font-size:24px;width:300px">Sesudah</th><th style="font-size:24px;width:260px">Perubahan</th></tr></thead>
+        <tbody>
+          <tr><td style="padding:22px 12px">Median respons pertama ke review</td><td style="padding:22px 12px">9 hari</td><td style="padding:22px 12px;font-family:var(--font-heading);font-weight:600">4,2 jam</td><td style="padding:22px 12px;color:var(--color-accent-700)">51× lebih cepat</td></tr>
+          <tr><td style="padding:22px 12px">Review terbalas dalam 48 jam</td><td style="padding:22px 12px">31%</td><td style="padding:22px 12px;font-family:var(--font-heading);font-weight:600">94%</td><td style="padding:22px 12px;color:var(--color-accent-700)">+63 poin</td></tr>
+          <tr><td style="padding:22px 12px">Rating jaringan</td><td style="padding:22px 12px">4,13</td><td style="padding:22px 12px;font-family:var(--font-heading);font-weight:600">4,21</td><td style="padding:22px 12px;color:var(--color-accent-700)">+0,08</td></tr>
+          <tr><td style="padding:22px 12px">Tema keluhan terdeteksi dini</td><td style="padding:22px 12px">tidak ada</td><td style="padding:22px 12px;font-family:var(--font-heading);font-weight:600">7–10 hari lebih awal</td><td style="padding:22px 12px;color:var(--color-accent-700)">baru</td></tr>
+          <tr><td style="padding:22px 12px">Waktu tutup tiket perbaikan</td><td style="padding:22px 12px">tak terukur</td><td style="padding:22px 12px;font-family:var(--font-heading);font-weight:600">3,1 hari</td><td style="padding:22px 12px;color:var(--color-accent-700)">SLA 5 hari</td></tr>
+          <tr><td style="padding:22px 12px">Biaya operasional AI per tenant</td><td style="padding:22px 12px">—</td><td style="padding:22px 12px;font-family:var(--font-heading);font-weight:600">Rp 1,84 jt/bln</td><td style="padding:22px 12px;color:var(--color-accent-700)">34% plafon</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="font-size:26px;color:var(--color-neutral-600)">Setiap angka di tabel ini bisa diklik di dalam aplikasi sampai ke data mentahnya.</div>
+  </section>
+
+  <section data-label="Setelah hackathon" data-screen-label="11" data-speaker-notes="Ini bukan proyek yang berhenti di panggung. LOKUS multi-tenant sejak hari pertama, jadi bisa langsung ditawarkan ke basis klien EBCO." style="background:var(--color-bg);color:var(--color-text);padding:96px;display:flex;flex-direction:column;gap:48px;font-family:var(--font-body)">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:40px">
+      <div>
+        <div style="font-size:26px;letter-spacing:.16em;text-transform:uppercase;color:var(--color-accent-700)">Setelah hackathon</div>
+        <h2 style="font-family:var(--font-heading);font-weight:600;font-size:100px;line-height:1.03;margin:18px 0 0;max-width:30ch">Produk EBCO, bukan proyek panggung.</h2>
+      </div>
+      <p style="margin:0;font-size:30px;line-height:1.5;color:var(--color-neutral-800);max-width:34ch">Multi-tenant sejak hari pertama. Yang dibutuhkan untuk menjualnya sudah ada: isolasi data, batas biaya, dan jejak audit.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:36px;flex:1">
+      <div class="blueprint" style="padding:38px;display:flex;flex-direction:column;gap:18px"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i><span class="tag tag-accent" style="align-self:flex-start;font-size:24px;padding:7px 16px">30 hari</span><div style="font-family:var(--font-heading);font-weight:600;font-size:44px;line-height:1.1">Pilot dengan satu klien nyata</div><p style="margin:0;font-size:27px;line-height:1.5;color:var(--color-neutral-800)">Satu jaringan retail atau klinik yang sudah jadi klien EBCO. Ukuran keberhasilan: waktu balas dan rating.</p></div>
+      <div class="blueprint" style="padding:38px;display:flex;flex-direction:column;gap:18px"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i><span class="tag tag-neutral" style="align-self:flex-start;font-size:24px;padding:7px 16px">90 hari</span><div style="font-family:var(--font-heading);font-weight:600;font-size:44px;line-height:1.1">Paket berlangganan per cabang</div><p style="margin:0;font-size:27px;line-height:1.5;color:var(--color-neutral-800)">Harga per cabang per bulan, dengan plafon biaya AI yang sudah terbukti — margin bisa dihitung sejak awal.</p></div>
+      <div class="blueprint" style="padding:38px;display:flex;flex-direction:column;gap:18px"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i><span class="tag tag-neutral" style="align-self:flex-start;font-size:24px;padding:7px 16px">Berikutnya</span><div style="font-family:var(--font-heading);font-weight:600;font-size:44px;line-height:1.1">Agen keempat: operasional</div><p style="margin:0;font-size:27px;line-height:1.5;color:var(--color-neutral-800)">Stok, shift, dan jam operasional. Menambah agen berarti menambah tool — arsitekturnya sudah siap.</p></div>
+    </div>
+  </section>
+
+  <section data-label="Penutup" data-screen-label="12" data-speaker-notes="Tutup dengan kalimat ini, lalu buka tanya jawab. Sebut URL aplikasi dan repo sekali lagi." style="background:var(--color-accent-900);color:var(--color-bg);padding:96px;display:flex;flex-direction:column;justify-content:space-between;font-family:var(--font-body)">
+    <div style="display:flex;align-items:center;gap:20px">
+      <div style="width:64px;height:64px;border:1px solid color-mix(in srgb, var(--color-bg) 50%, transparent);display:grid;place-items:center;color:color-mix(in srgb, var(--color-bg) 60%, transparent);font-size:14px">LOGO</div>
+      <div style="font-size:26px;letter-spacing:.18em;text-transform:uppercase;color:var(--color-accent-300)">LOKUS · EBCO AI Hackathon 2026</div>
+    </div>
+    <h2 style="font-family:var(--font-heading);font-weight:600;font-size:150px;line-height:1;margin:0;max-width:26ch">Sinyalnya sudah ada. LOKUS membuatnya menjadi keputusan.</h2>
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:48px;border-top:1px solid color-mix(in srgb, var(--color-bg) 28%, transparent);padding-top:36px">
+      <div style="display:flex;gap:72px">
+        <div><div style="font-size:24px;letter-spacing:.14em;text-transform:uppercase;color:var(--color-accent-300)">Aplikasi</div><div style="font-size:32px;margin-top:8px">lokus-[hash]-as.a.run.app</div></div>
+        <div><div style="font-size:24px;letter-spacing:.14em;text-transform:uppercase;color:var(--color-accent-300)">Repo</div><div style="font-size:32px;margin-top:8px">github.com/[org]/lokus</div></div>
+        <div><div style="font-size:24px;letter-spacing:.14em;text-transform:uppercase;color:var(--color-accent-300)">Tim</div><div style="font-size:32px;margin-top:8px">[NAMA TIM] · 4 orang, 3 divisi</div></div>
+      </div>
+      <div style="font-family:var(--font-heading);font-weight:600;font-size:44px;color:var(--color-accent-300)">Terima kasih.</div>
+    </div>
+  </section>
+
+</x-import>
+
+</x-dc>
+</body>
+</html>

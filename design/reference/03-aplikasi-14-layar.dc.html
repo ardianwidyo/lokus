@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/industry-15a06925-6b92-4677-b55f-d0d7baa27743/styles.css">
+<script src="_ds/industry-15a06925-6b92-4677-b55f-d0d7baa27743/_ds_bundle.js"></script>
+<style>
+html,body{margin:0;height:100%;background:var(--color-bg);color:var(--color-text)}
+a{color:var(--color-accent-700)}a:hover{color:var(--color-accent-900)}
+.bp{position:relative;border:1px solid var(--color-divider)}
+.railbtn:hover{background:var(--color-accent-100)}
+.k{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--color-neutral-600)}
+.h{font-family:var(--font-heading);font-weight:600}
+.big{font-family:var(--font-heading);font-weight:600;line-height:.9}
+</style>
+</helmet>
+
+<div style="display:flex;height:100vh;overflow:hidden;font-family:var(--font-body)">
+
+  <nav style="width:238px;flex:none;border-right:1px solid var(--color-divider);display:flex;flex-direction:column;overflow-y:auto;background:var(--color-bg)">
+    <div style="padding:16px 16px 14px;display:flex;align-items:center;gap:11px;border-bottom:1px solid var(--color-divider)">
+      <div style="width:32px;height:32px;border:1px solid var(--color-divider);display:grid;place-items:center;color:var(--color-neutral-500);font-size:8.5px;flex:none">LOGO</div>
+      <div style="display:flex;flex-direction:column;line-height:1.05">
+        <span class="h" style="font-size:18px;letter-spacing:.02em">LOKUS</span>
+        <span style="font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--color-neutral-600)">Local Ops Intelligence</span>
+      </div>
+    </div>
+    <button style="margin:12px 12px 4px;padding:9px 11px;display:flex;align-items:center;gap:9px;background:transparent;border:1px solid var(--color-divider);cursor:pointer;text-align:left">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="1.5"><path d="M3 21V8l9-5 9 5v13"/><path d="M9 21v-6h6v6"/></svg>
+      <span style="display:flex;flex-direction:column;line-height:1.15;flex:1">
+        <span class="h" style="font-size:14px">Nusa Retail</span>
+        <span style="font-size:10.5px;color:var(--color-neutral-600)">42 cabang · Jabodetabek</span>
+      </span>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--color-neutral-600)" stroke-width="1.5"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <div style="padding:14px 16px 6px" class="k">14 layar</div>
+    <sc-for list="{{ navItems }}" as="it" hint-placeholder-count="14">
+      <button class="railbtn" onClick="{{ it.go }}" style="display:flex;align-items:center;gap:10px;width:100%;padding:7px 16px;border:0;border-left:2px solid {{ it.mark }};background:{{ it.bg }};color:{{ it.fg }};cursor:pointer;text-align:left;font-family:var(--font-heading);font-weight:600;font-size:14.5px">
+        <span style="font-size:10px;font-family:var(--font-body);color:var(--color-neutral-500);min-width:15px">{{ it.no }}</span>
+        <span>{{ it.label }}</span>
+      </button>
+    </sc-for>
+    <div style="margin-top:auto;padding:14px 16px;border-top:1px solid var(--color-divider);font-size:11px;color:var(--color-neutral-600);line-height:1.5">
+      Prototipe desain · data contoh<br>Siklus agen terakhir 06.00 WIB
+    </div>
+  </nav>
+
+  <main style="flex:1;overflow-y:auto;display:flex;flex-direction:column">
+    <header style="padding:18px 28px;border-bottom:1px solid var(--color-divider);display:flex;align-items:center;gap:18px;flex-wrap:wrap;position:sticky;top:0;background:var(--color-bg);z-index:5">
+      <div style="display:flex;flex-direction:column;line-height:1.15;margin-right:auto">
+        <span class="k">Layar {{ no }}</span>
+        <span class="h" style="font-size:26px">{{ title }}</span>
+      </div>
+      <span style="font-size:12.5px;color:var(--color-neutral-700);max-width:44ch;line-height:1.45;text-align:right">{{ subtitle }}</span>
+      <button class="btn btn-primary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 3l14 9-14 9z"/></svg>
+        Jalankan agen
+      </button>
+    </header>
+
+    <div style="padding:26px 28px 60px;display:flex;flex-direction:column;gap:22px">
+
+      <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;gap:26px;align-items:flex-start;flex-wrap:wrap">
+          <div class="bp" style="width:400px;padding:30px;display:flex;flex-direction:column;gap:16px">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <div style="display:flex;align-items:center;gap:11px">
+              <div style="width:36px;height:36px;border:1px solid var(--color-divider);display:grid;place-items:center;color:var(--color-neutral-500);font-size:8.5px">LOGO</div>
+              <div style="display:flex;flex-direction:column;line-height:1.05"><span class="h" style="font-size:21px">LOKUS</span><span style="font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--color-neutral-600)">oleh EBCO</span></div>
+            </div>
+            <p style="margin:0;font-size:14px;color:var(--color-neutral-700);line-height:1.55">Masuk dengan akun kerja Anda. Akses ke cabang mengikuti peran Anda di organisasi.</p>
+            <button class="btn btn-secondary btn-block" style="justify-content:flex-start;gap:10px;padding:11px 13px">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg>
+              Lanjutkan dengan Google Workspace
+            </button>
+            <div style="display:flex;align-items:center;gap:10px;color:var(--color-neutral-500);font-size:11px"><span style="flex:1;height:1px;background:var(--color-divider)"></span>atau<span style="flex:1;height:1px;background:var(--color-divider)"></span></div>
+            <div class="field"><label>Email kerja</label><input class="input" placeholder="nama@perusahaan.co.id"></div>
+            <button class="btn btn-primary btn-block">Kirim tautan masuk</button>
+            <div style="font-size:11.5px;color:var(--color-neutral-600);line-height:1.5">Dilindungi SSO organisasi. LOKUS tidak menyimpan kata sandi.</div>
+          </div>
+          <div style="flex:1;min-width:330px;display:flex;flex-direction:column;gap:16px">
+            <div class="bp" style="padding:22px;display:flex;flex-direction:column;gap:14px">
+              <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+              <div class="k">Setelah masuk · pilih tenant</div>
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <div class="bp" style="padding:13px 15px;display:flex;align-items:center;gap:12px;border-color:var(--color-accent)">
+                  <div style="flex:1"><div class="h" style="font-size:16px">Nusa Retail</div><div style="font-size:12px;color:var(--color-neutral-600)">42 cabang · minimarket · peran: Area Manager</div></div>
+                  <span class="tag tag-accent">Terakhir dibuka</span>
+                </div>
+                <div class="bp" style="padding:13px 15px;display:flex;align-items:center;gap:12px">
+                  <div style="flex:1"><div class="h" style="font-size:16px">Klinik Sehat Prima</div><div style="font-size:12px;color:var(--color-neutral-600)">11 cabang · klinik · peran: Viewer</div></div>
+                  <span class="tag tag-neutral">Baca saja</span>
+                </div>
+                <div class="bp" style="padding:13px 15px;display:flex;align-items:center;gap:12px">
+                  <div style="flex:1"><div class="h" style="font-size:16px">Dealer Arta Motor</div><div style="font-size:12px;color:var(--color-neutral-600)">7 cabang · otomotif · peran: Admin</div></div>
+                  <span class="tag tag-neutral">Uji coba · 12 hari</span>
+                </div>
+              </div>
+              <p style="margin:0;font-size:12.5px;color:var(--color-neutral-600);line-height:1.5">Pemisahan tenant dan peran ditampilkan sejak layar pertama — ini bukti nyata kesiapan multi-tenant, bukan klaim di slide.</p>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isBriefing }}" hint-placeholder-val="{{ true }}">
+        <div class="bp" style="padding:22px 24px;display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start;background:var(--color-accent-100)">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <div style="flex:1;min-width:300px">
+            <div class="k" style="color:var(--color-accent-700)">Briefing pagi · Selasa, 28 Juli 2026 · 06.00</div>
+            <h3 style="margin:6px 0 8px;font-size:27px;color:var(--color-accent-900)">Tiga hal yang perlu Anda putuskan hari ini.</h3>
+            <p style="margin:0;font-size:14.5px;line-height:1.6;color:var(--color-accent-900);max-width:70ch">Agen membaca 214 review baru, 42 profil lokasi, dan 3 SOP yang diperbarui tadi malam. Yang di bawah ini sudah disaring: hanya yang berdampak, sudah ada usul tindakannya.</p>
+          </div>
+          <div style="display:flex;gap:26px">
+            <div><div class="k" style="color:var(--color-accent-700)">Review dibaca</div><div class="big" style="font-size:38px;color:var(--color-accent-900)">214</div></div>
+            <div><div class="k" style="color:var(--color-accent-700)">Perlu keputusan</div><div class="big" style="font-size:38px;color:var(--color-accent-900)">3</div></div>
+            <div><div class="k" style="color:var(--color-accent-700)">Ditangani agen</div><div class="big" style="font-size:38px;color:var(--color-accent-900)">187</div></div>
+          </div>
+        </div>
+        <div class="bp" style="padding:22px 26px;display:flex;flex-direction:column;gap:4px">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <div style="display:flex;align-items:baseline;gap:12px;padding-bottom:14px">
+            <span class="h" style="font-size:22px">Semalam di jaringan Anda</span>
+            <span style="margin-left:auto;font-size:12.5px;color:var(--color-neutral-600)">23.00 → 06.00 · 7 jam kerja agen · Rp 61.400</span>
+          </div>
+          <div style="display:flex;flex-direction:column;padding-left:20px;border-left:1px solid var(--color-divider)">
+
+            <div style="position:relative;padding:12px 0 12px 22px">
+              <span style="position:absolute;left:-26px;top:18px;width:11px;height:11px;border:1px solid var(--color-accent);background:var(--color-bg)"></span>
+              <div style="font-size:12px;color:var(--color-neutral-600)">23.02</div>
+              <div class="h" style="font-size:18px">Agen Reputasi membaca 214 review baru</div>
+              <div style="font-size:13px;color:var(--color-neutral-700)">42 cabang · 7 tema terdeteksi · 3 tema naik dibanding pekan lalu</div>
+            </div>
+
+            <div style="position:relative;padding:12px 0 12px 22px">
+              <span style="position:absolute;left:-26px;top:18px;width:11px;height:11px;border:1px solid var(--color-accent);background:var(--color-bg)"></span>
+              <div style="font-size:12px;color:var(--color-neutral-600)">23.48</div>
+              <div class="h" style="font-size:18px">187 review dibalas otomatis</div>
+              <div style="font-size:13px;color:var(--color-neutral-700)">semua bintang 3–5 · 27 ditahan untuk persetujuan Anda</div>
+            </div>
+
+            <div style="position:relative;padding:18px 22px;margin:8px 0;background:var(--color-accent-100);border:1px solid var(--color-accent-300)">
+              <span style="position:absolute;left:-27px;top:24px;width:11px;height:11px;background:var(--color-accent)"></span>
+              <div style="display:flex;align-items:center;gap:10px">
+                <span class="tag tag-outline">Keputusan 1</span>
+                <span style="font-size:12px;color:var(--color-accent-700)">01.14 · Agen Reputasi</span>
+              </div>
+              <div class="h" style="font-size:22px;color:var(--color-accent-900);margin-top:7px">Antrean kasir Bekasi Timur memburuk</div>
+              <p style="margin:7px 0 0;font-size:13.5px;line-height:1.6;color:var(--color-accent-900);max-width:88ch">Muncul di 11 dari 18 review pekan ini, naik 3× dari Juni. Rating cabang turun 0,4. Usulan agen: buka kasir kedua pukul 17.00–20.00 selama dua pekan, lalu ukur ulang.</p>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;padding-top:10px"><span class="tag tag-neutral">rating 3,8</span><span class="tag tag-neutral">−0,4 poin</span><span class="tag tag-neutral">SOP v4 hal. 12</span></div>
+              <div style="display:flex;gap:8px;padding-top:12px"><button class="btn btn-primary" onClick="{{ go_tickets }}">Setujui &amp; buat tiket</button><button class="btn btn-secondary" onClick="{{ go_outlet }}">Telaah</button></div>
+            </div>
+
+            <div style="position:relative;padding:12px 0 12px 22px">
+              <span style="position:absolute;left:-26px;top:18px;width:11px;height:11px;border:1px solid var(--color-accent);background:var(--color-bg)"></span>
+              <div style="font-size:12px;color:var(--color-neutral-600)">02.30</div>
+              <div class="h" style="font-size:18px">Agen Lokasi memindai 42 area cabang</div>
+              <div style="font-size:13px;color:var(--color-neutral-700)">1.284 POI · 1 pesaing baru ditemukan · 2 cabang berisiko kanibalisasi</div>
+            </div>
+
+            <div style="position:relative;padding:18px 22px;margin:8px 0;background:var(--color-accent-100);border:1px solid var(--color-accent-300)">
+              <span style="position:absolute;left:-27px;top:24px;width:11px;height:11px;background:var(--color-accent)"></span>
+              <div style="display:flex;align-items:center;gap:10px">
+                <span class="tag tag-outline">Keputusan 2</span>
+                <span style="font-size:12px;color:var(--color-accent-700)">02.51 · Agen Lokasi</span>
+              </div>
+              <div class="h" style="font-size:22px;color:var(--color-accent-900);margin-top:7px">Pesaing baru 400 m dari Depok Margonda</div>
+              <p style="margin:7px 0 0;font-size:13.5px;line-height:1.6;color:var(--color-accent-900);max-width:88ch">Sebuah minimarket dibuka 28 Juni dan jam sibuknya bertumpuk. Skor lokasi Depok turun dari 78 ke 69. Usulan agen: geser promo jam sibuk dan tinjau ulang jam operasional.</p>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;padding-top:10px"><span class="tag tag-neutral">skor 69</span><span class="tag tag-neutral">radius 1 km · 6 POI</span><span class="tag tag-neutral">Places Insight</span></div>
+              <div style="display:flex;gap:8px;padding-top:12px"><button class="btn btn-primary" onClick="{{ go_map }}">Lihat di peta</button><button class="btn btn-secondary">Tunda</button></div>
+            </div>
+
+            <div style="position:relative;padding:12px 0 12px 22px">
+              <span style="position:absolute;left:-26px;top:18px;width:11px;height:11px;border:1px solid var(--color-accent);background:var(--color-bg)"></span>
+              <div style="font-size:12px;color:var(--color-neutral-600)">05.10</div>
+              <div class="h" style="font-size:18px">Agen Pengetahuan mengindeks 3 dokumen baru</div>
+              <div style="font-size:13px;color:var(--color-neutral-700)">cakupan jawaban 79% → 82% · 1 celah pengetahuan dilaporkan</div>
+            </div>
+
+            <div style="position:relative;padding:18px 22px;margin:8px 0;background:var(--color-accent-100);border:1px solid var(--color-accent-300)">
+              <span style="position:absolute;left:-27px;top:24px;width:11px;height:11px;background:var(--color-accent)"></span>
+              <div style="display:flex;align-items:center;gap:10px">
+                <span class="tag tag-outline">Keputusan 3</span>
+                <span style="font-size:12px;color:var(--color-accent-700)">05.22 · Agen Pengetahuan</span>
+              </div>
+              <div class="h" style="font-size:22px;color:var(--color-accent-900);margin-top:7px">SOP keluhan antrean belum menyebut batas waktu</div>
+              <p style="margin:7px 0 0;font-size:13.5px;line-height:1.6;color:var(--color-accent-900);max-width:88ch">37 pertanyaan staf bulan ini tidak bisa dijawab dari dokumen yang ada. Usulan agen: tambahkan satu klausa batas waktu 10 menit; draft klausa sudah disiapkan.</p>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;padding-top:10px"><span class="tag tag-neutral">37 pertanyaan</span><span class="tag tag-neutral">cakupan 82%</span><span class="tag tag-neutral">draft siap</span></div>
+              <div style="display:flex;gap:8px;padding-top:12px"><button class="btn btn-primary" onClick="{{ go_kb }}">Baca draft klausa</button><button class="btn btn-secondary">Tugaskan</button></div>
+            </div>
+
+            <div style="position:relative;padding:12px 0 4px 22px">
+              <span style="position:absolute;left:-26px;top:18px;width:11px;height:11px;border:1px solid var(--color-accent);background:var(--color-bg)"></span>
+              <div style="font-size:12px;color:var(--color-neutral-600)">06.00</div>
+              <div class="h" style="font-size:18px">Briefing diserahkan</div>
+              <div style="font-size:13px;color:var(--color-neutral-700)">3 panggilan tool gagal malam ini · semuanya berhasil diulang otomatis</div>
+            </div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px">
+          <div class="bp" style="padding:17px;display:flex;flex-direction:column;gap:9px">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <div class="k">Rating jaringan</div>
+            <div style="display:flex;align-items:flex-end;gap:7px"><span class="big" style="font-size:40px">4,21</span><span style="font-size:13px;color:var(--color-accent-700);padding-bottom:5px">+0,08</span></div>
+            <svg viewBox="0 0 200 36" style="width:100%;height:36px" preserveAspectRatio="none"><polyline points="0,30 25,28 50,31 75,24 100,26 125,18 150,20 175,12 200,9" fill="none" stroke="var(--color-accent)" stroke-width="1.5"/></svg>
+          </div>
+          <div class="bp" style="padding:17px;display:flex;flex-direction:column;gap:9px">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <div class="k">Belum dibalas</div>
+            <div style="display:flex;align-items:flex-end;gap:7px"><span class="big" style="font-size:40px">137</span><span style="font-size:13px;color:var(--color-neutral-700);padding-bottom:5px">−64</span></div>
+            <div style="font-size:11.5px;color:var(--color-neutral-600)">Target akhir pekan: di bawah 40</div>
+          </div>
+          <div class="bp" style="padding:17px;display:flex;flex-direction:column;gap:9px">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <div class="k">Waktu balas</div>
+            <div style="display:flex;align-items:flex-end;gap:6px"><span class="big" style="font-size:40px">4,2</span><span style="font-size:14px;color:var(--color-neutral-700);padding-bottom:6px">jam</span></div>
+            <div style="height:6px;background:var(--color-neutral-200)"><div style="width:4%;height:100%;background:var(--color-accent)"></div></div>
+            <div style="font-size:11.5px;color:var(--color-neutral-600)">Sebelum LOKUS: 9 hari</div>
+          </div>
+          <div class="bp" style="padding:17px;display:flex;flex-direction:column;gap:9px">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <div class="k">Cabang perlu perhatian</div>
+            <div style="display:flex;align-items:flex-end;gap:7px"><span class="big" style="font-size:40px">6</span><span style="font-size:13px;color:var(--color-neutral-700);padding-bottom:5px">dari 42</span></div>
+            <div style="display:flex;gap:3px">
+              <span style="flex:1;height:22px;background:var(--color-accent-800)"></span><span style="flex:1;height:22px;background:var(--color-accent-600)"></span><span style="flex:1;height:22px;background:var(--color-accent-400)"></span><span style="flex:4;height:22px;background:var(--color-neutral-200)"></span>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isMap }}" hint-placeholder-val="{{ true }}">
+        <div style="display:grid;grid-template-columns:1fr 330px;gap:18px;align-items:start">
+          <div class="bp" style="padding:0;background:var(--color-accent-900);height:520px;position:relative;overflow:hidden">
+            <i class="corner tl" style="color:rgba(242,242,243,.6)"></i><i class="corner tr" style="color:rgba(242,242,243,.6)"></i><i class="corner bl" style="color:rgba(242,242,243,.6)"></i><i class="corner br" style="color:rgba(242,242,243,.6)"></i>
+            <svg viewBox="0 0 900 520" style="position:absolute;inset:0;width:100%;height:100%">
+              <g stroke="rgba(242,242,243,.1)" stroke-width="1"><path d="M0 65H900M0 130H900M0 195H900M0 260H900M0 325H900M0 390H900M0 455H900M75 0V520M150 0V520M225 0V520M300 0V520M375 0V520M450 0V520M525 0V520M600 0V520M675 0V520M750 0V520M825 0V520"/></g>
+              <path d="M-20 380 L200 300 L390 350 L600 250 L780 300 L920 260" stroke="rgba(242,242,243,.3)" stroke-width="2.5" fill="none"/>
+              <path d="M320 -20 L360 210 L330 520" stroke="rgba(242,242,243,.22)" stroke-width="1.5" fill="none"/>
+              <path d="M-20 150 L250 130 L520 170 L900 120" stroke="rgba(242,242,243,.22)" stroke-width="1.5" fill="none"/>
+              <circle cx="420" cy="250" r="86" fill="rgba(148,188,227,.1)" stroke="rgba(148,188,227,.45)" stroke-width="1" stroke-dasharray="5 5"/>
+              <g fill="none" stroke="#94bce3" stroke-width="1.5">
+                <rect x="414" y="244" width="13" height="13"/><rect x="620" y="170" width="13" height="13"/><rect x="200" y="360" width="13" height="13"/><rect x="740" y="330" width="13" height="13"/><rect x="290" y="150" width="13" height="13"/>
+                <circle cx="480" cy="300" r="6"/><circle cx="380" cy="190" r="6"/><circle cx="660" cy="240" r="6"/><circle cx="240" cy="300" r="6"/>
+                <path d="M560 420 l7 12 -14 0 z"/><path d="M820 200 l7 12 -14 0 z"/>
+              </g>
+              <text x="438" y="253" fill="#f2f2f3" font-family="Barlow Condensed" font-size="17">BKS-02 Bekasi Timur</text>
+              <text x="438" y="270" fill="rgba(242,242,243,.62)" font-family="Barlow" font-size="12">skor 72 · rating 3,8 · 18 review baru</text>
+              <text x="640" y="180" fill="rgba(242,242,243,.8)" font-family="Barlow Condensed" font-size="15">DPK-01 · 69</text>
+              <text x="220" y="370" fill="rgba(242,242,243,.8)" font-family="Barlow Condensed" font-size="15">SRP-03 · 81</text>
+              <text x="578" y="432" fill="rgba(148,188,227,.95)" font-family="Barlow Condensed" font-size="15">kandidat · 84</text>
+            </svg>
+            <div style="position:absolute;left:16px;top:16px;display:flex;gap:8px">
+              <span class="tag" style="background:rgba(242,242,243,.14);color:#f2f2f3">Skor lokasi</span>
+              <span class="tag" style="background:transparent;border:1px solid rgba(242,242,243,.35);color:rgba(242,242,243,.8)">Kesehatan reputasi</span>
+              <span class="tag" style="background:transparent;border:1px solid rgba(242,242,243,.35);color:rgba(242,242,243,.8)">Kepadatan pesaing</span>
+            </div>
+            <div style="position:absolute;left:16px;bottom:16px;display:flex;gap:14px;font-size:11px;color:rgba(242,242,243,.8)">
+              <span style="display:flex;align-items:center;gap:6px"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="#94bce3" stroke-width="1.5"><rect x="1" y="1" width="10" height="10"/></svg>cabang sendiri</span>
+              <span style="display:flex;align-items:center;gap:6px"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="#94bce3" stroke-width="1.5"><circle cx="6" cy="6" r="5"/></svg>pesaing</span>
+              <span style="display:flex;align-items:center;gap:6px"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="#94bce3" stroke-width="1.5"><path d="M6 2 l4 7 H2 z"/></svg>kandidat</span>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div class="bp" style="padding:16px;display:flex;flex-direction:column;gap:11px">
+              <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+              <div class="k">Urut menurut · skor terendah</div>
+              <div style="display:flex;flex-direction:column">
+                <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--color-divider)"><span class="h" style="font-size:15px;flex:1">Depok Margonda</span><span style="font-size:12px;color:var(--color-neutral-600)">3,6</span><span class="h" style="font-size:17px;color:var(--color-accent-700)">69</span></div>
+                <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--color-divider);background:var(--color-accent-100)"><span class="h" style="font-size:15px;flex:1;padding-left:6px">Bekasi Timur</span><span style="font-size:12px;color:var(--color-neutral-600)">3,8</span><span class="h" style="font-size:17px;color:var(--color-accent-700);padding-right:6px">72</span></div>
+                <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--color-divider)"><span class="h" style="font-size:15px;flex:1">Cikarang Jababeka</span><span style="font-size:12px;color:var(--color-neutral-600)">4,0</span><span class="h" style="font-size:17px;color:var(--color-accent-700)">74</span></div>
+                <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--color-divider)"><span class="h" style="font-size:15px;flex:1">Serpong Sektor 7</span><span style="font-size:12px;color:var(--color-neutral-600)">4,3</span><span class="h" style="font-size:17px;color:var(--color-accent-700)">81</span></div>
+                <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider)"><span class="h" style="font-size:15px;flex:1">Bogor Pajajaran</span><span style="font-size:12px;color:var(--color-neutral-600)">4,5</span><span class="h" style="font-size:17px;color:var(--color-accent-700)">86</span></div>
+              </div>
+              <button class="btn btn-secondary btn-block" onClick="{{ go_outlet }}">Buka detail Bekasi Timur</button>
+            </div>
+            <div class="bp" style="padding:16px;display:flex;flex-direction:column;gap:9px">
+              <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+              <div class="k">Catatan agen lokasi</div>
+              <p style="margin:0;font-size:13px;line-height:1.6;color:var(--color-neutral-800)">Dua cabang berjarak kurang dari 900 m di Depok — indikasi kanibalisasi. Saya sudah menghitung ulang catchment keduanya; laporan lengkap ada di Site Scout.</p>
+              <button class="btn btn-ghost" style="align-self:flex-start" onClick="{{ go_scout }}">Buka Site Scout →</button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isOutlet }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start">
+          <div class="bp" style="flex:1;min-width:420px;padding:22px;display:flex;flex-direction:column;gap:18px">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap">
+              <div style="flex:1;min-width:200px">
+                <div class="k">BKS-02 · dibuka Maret 2021</div>
+                <h3 style="margin:5px 0 4px;font-size:30px">Bekasi Timur</h3>
+                <div style="font-size:13px;color:var(--color-neutral-700)">Jl. Chairil Anwar No. 88 · Manajer: Dwi Kurnia</div>
+              </div>
+              <div style="display:flex;gap:22px">
+                <div><div class="k">Rating</div><div class="big" style="font-size:34px">3,8</div><div style="font-size:11.5px;color:var(--color-neutral-600)">−0,4 bulan ini</div></div>
+                <div><div class="k">Skor lokasi</div><div class="big" style="font-size:34px;color:var(--color-accent-700)">72</div><div style="font-size:11.5px;color:var(--color-neutral-600)">peringkat 24/42</div></div>
+              </div>
+            </div>
+            <div>
+              <div class="k" style="margin-bottom:8px">Rating 12 pekan</div>
+              <svg viewBox="0 0 620 120" style="width:100%;height:120px">
+                <g stroke="var(--color-neutral-300)" stroke-width="1"><path d="M0 30H620M0 60H620M0 90H620"/></g>
+                <polyline points="0,42 52,38 104,44 156,40 208,36 260,46 312,52 364,60 416,74 468,82 520,88 572,84 620,86" fill="none" stroke="var(--color-accent)" stroke-width="2"/>
+                <g fill="var(--color-accent-800)"><circle cx="364" cy="60" r="3"/><circle cx="416" cy="74" r="3"/></g>
+                <line x1="364" y1="10" x2="364" y2="110" stroke="var(--color-accent-400)" stroke-width="1" stroke-dasharray="3 3"/>
+                <text x="370" y="20" font-family="Barlow" font-size="11" fill="var(--color-neutral-700)">28 Jun · pesaing baru buka</text>
+              </svg>
+            </div>
+            <div>
+              <div class="k" style="margin-bottom:8px">Tema keluhan · 8 pekan</div>
+              <div style="display:flex;flex-direction:column;gap:7px">
+                <div style="display:flex;align-items:center;gap:11px;font-size:13.5px"><span style="width:130px">Antrean kasir</span><span style="flex:1;height:14px;background:var(--color-neutral-200)"><span style="display:block;width:78%;height:100%;background:var(--color-accent-700)"></span></span><span class="h" style="width:26px;text-align:right">31</span></div>
+                <div style="display:flex;align-items:center;gap:11px;font-size:13.5px"><span style="width:130px">Parkir</span><span style="flex:1;height:14px;background:var(--color-neutral-200)"><span style="display:block;width:33%;height:100%;background:var(--color-accent-500)"></span></span><span class="h" style="width:26px;text-align:right">13</span></div>
+                <div style="display:flex;align-items:center;gap:11px;font-size:13.5px"><span style="width:130px">Stok kosong</span><span style="flex:1;height:14px;background:var(--color-neutral-200)"><span style="display:block;width:18%;height:100%;background:var(--color-accent-400)"></span></span><span class="h" style="width:26px;text-align:right">7</span></div>
+                <div style="display:flex;align-items:center;gap:11px;font-size:13.5px"><span style="width:130px">Kebersihan</span><span style="flex:1;height:14px;background:var(--color-neutral-200)"><span style="display:block;width:12%;height:100%;background:var(--color-accent-300)"></span></span><span class="h" style="width:26px;text-align:right">5</span></div>
+                <div style="display:flex;align-items:center;gap:11px;font-size:13.5px"><span style="width:130px">Keramahan staf</span><span style="flex:1;height:14px;background:var(--color-neutral-200)"><span style="display:block;width:6%;height:100%;background:var(--color-accent-200)"></span></span><span class="h" style="width:26px;text-align:right">2</span></div>
+              </div>
+            </div>
+          </div>
+          <div style="width:320px;display:flex;flex-direction:column;gap:14px">
+            <div class="bp" style="padding:0;background:var(--color-accent-900);height:200px;position:relative;overflow:hidden">
+              <i class="corner tl" style="color:rgba(242,242,243,.6)"></i><i class="corner tr" style="color:rgba(242,242,243,.6)"></i><i class="corner bl" style="color:rgba(242,242,243,.6)"></i><i class="corner br" style="color:rgba(242,242,243,.6)"></i>
+              <svg viewBox="0 0 320 200" style="position:absolute;inset:0;width:100%;height:100%">
+                <g stroke="rgba(242,242,243,.1)"><path d="M0 50H320M0 100H320M0 150H320M80 0V200M160 0V200M240 0V200"/></g>
+                <path d="M-10 130 L120 90 L230 120 L330 80" stroke="rgba(242,242,243,.3)" stroke-width="2" fill="none"/>
+                <circle cx="160" cy="100" r="62" fill="rgba(148,188,227,.1)" stroke="rgba(148,188,227,.45)" stroke-dasharray="4 4"/>
+                <g fill="none" stroke="#94bce3" stroke-width="1.5"><rect x="154" y="94" width="12" height="12"/><circle cx="96" cy="76" r="5"/><circle cx="212" cy="128" r="5"/><circle cx="118" cy="140" r="5"/><circle cx="230" cy="66" r="5"/></g>
+                <text x="10" y="188" fill="rgba(242,242,243,.75)" font-family="Barlow" font-size="11">radius 1 km · 6 POI · 1 baru sejak 28 Jun</text>
+              </svg>
+            </div>
+            <div class="bp" style="padding:16px;display:flex;flex-direction:column;gap:11px">
+              <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+              <div class="k">Faktor skor lokasi</div>
+              <div style="display:flex;flex-direction:column;gap:8px;font-size:13px">
+                <div style="display:flex;justify-content:space-between"><span>Lalu lintas pejalan</span><span class="h">88</span></div>
+                <div style="display:flex;justify-content:space-between"><span>Bauran kategori sekitar</span><span class="h">76</span></div>
+                <div style="display:flex;justify-content:space-between"><span>Kepadatan pesaing</span><span class="h">61</span></div>
+                <div style="display:flex;justify-content:space-between"><span>Ketersediaan parkir</span><span class="h">44</span></div>
+              </div>
+              <p style="margin:0;font-size:12.5px;color:var(--color-neutral-700);line-height:1.5">Parkir adalah penahan terbesar dan juga tema keluhan nomor dua — dua sinyal berbeda menunjuk hal yang sama.</p>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <button class="btn btn-primary btn-block" onClick="{{ go_inbox }}">Lihat 18 review baru</button>
+              <button class="btn btn-secondary btn-block" onClick="{{ go_chat }}">Tanya agen soal cabang ini</button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isInbox }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+          <div class="seg">
+            <label class="seg-opt"><input type="radio" name="ibx" defaultChecked="{{ true }}">Perlu tindakan · 24</label>
+            <label class="seg-opt"><input type="radio" name="ibx">Draft siap · 63</label>
+            <label class="seg-opt"><input type="radio" name="ibx">Terkirim · 187</label>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-left:auto">
+            <span class="tag tag-outline">antrean kasir 31</span><span class="tag tag-neutral">parkir 13</span><span class="tag tag-neutral">stok 7</span><span class="tag tag-neutral">kebersihan 5</span>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:320px 1fr;gap:0;align-items:stretch">
+          <div class="bp" style="padding:0;display:flex;flex-direction:column">
+            <i class="corner tl"></i><i class="corner bl"></i>
+            <div style="padding:12px 15px;border-bottom:1px solid var(--color-divider);display:flex;align-items:center;gap:8px">
+              <span class="h" style="font-size:15px">24 perlu tindakan</span>
+              <span style="margin-left:auto;font-size:11.5px;color:var(--color-neutral-600)">urut prioritas</span>
+            </div>
+            <div style="padding:12px 15px;background:var(--color-accent-100);border-left:2px solid var(--color-accent)">
+              <div style="display:flex;align-items:center;gap:7px"><span style="letter-spacing:2px;color:var(--color-accent);font-size:12px">★☆☆☆☆</span><span style="margin-left:auto;font-size:11px;color:var(--color-accent-700)">2 jam</span></div>
+              <div class="h" style="font-size:15px;color:var(--color-accent-900)">Bekasi Timur</div>
+              <div style="font-size:12.5px;color:var(--color-accent-900);opacity:.8;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Antre 25 menit cuma buat bayar. Kasir dua…</div>
+            </div>
+            <div style="padding:12px 15px;border-top:1px solid var(--color-divider)">
+              <div style="display:flex;align-items:center;gap:7px"><span style="letter-spacing:2px;color:var(--color-accent);font-size:12px">★★☆☆☆</span><span style="margin-left:auto;font-size:11px;color:var(--color-neutral-600)">5 jam</span></div>
+              <div class="h" style="font-size:15px">Depok Margonda</div>
+              <div style="font-size:12.5px;color:var(--color-neutral-700);line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Rak minuman dingin kosong terus tiap sore…</div>
+            </div>
+            <div style="padding:12px 15px;border-top:1px solid var(--color-divider)">
+              <div style="display:flex;align-items:center;gap:7px"><span style="letter-spacing:2px;color:var(--color-accent);font-size:12px">★★☆☆☆</span><span style="margin-left:auto;font-size:11px;color:var(--color-neutral-600)">6 jam</span></div>
+              <div class="h" style="font-size:15px">Cikarang Jababeka</div>
+              <div style="font-size:12.5px;color:var(--color-neutral-700);line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Toilet kotor, tidak ada sabun di dispenser…</div>
+            </div>
+            <div style="padding:12px 15px;border-top:1px solid var(--color-divider)">
+              <div style="display:flex;align-items:center;gap:7px"><span style="letter-spacing:2px;color:var(--color-accent);font-size:12px">★★★☆☆</span><span style="margin-left:auto;font-size:11px;color:var(--color-neutral-600)">kemarin</span></div>
+              <div class="h" style="font-size:15px">Serpong Sektor 7</div>
+              <div style="font-size:12.5px;color:var(--color-neutral-700);line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Bersih, tapi parkir motor sempit banget…</div>
+            </div>
+            <div style="padding:12px 15px;border-top:1px solid var(--color-divider)">
+              <div style="display:flex;align-items:center;gap:7px"><span style="letter-spacing:2px;color:var(--color-accent);font-size:12px">★★★☆☆</span><span style="margin-left:auto;font-size:11px;color:var(--color-neutral-600)">kemarin</span></div>
+              <div class="h" style="font-size:15px">Tangerang Alam Sutera</div>
+              <div style="font-size:12.5px;color:var(--color-neutral-700);line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Harga di rak beda dengan di kasir…</div>
+            </div>
+            <div style="padding:12px 15px;border-top:1px solid var(--color-divider);opacity:.6">
+              <div style="display:flex;align-items:center;gap:7px"><span style="letter-spacing:2px;color:var(--color-accent);font-size:12px">★★★★★</span><span style="margin-left:auto;font-size:11px;color:var(--color-neutral-600)">kemarin</span></div>
+              <div class="h" style="font-size:15px">Bogor Pajajaran</div>
+              <div style="font-size:12.5px;color:var(--color-neutral-700);line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Kasir cepat, ada yang bantu cari barang…</div>
+            </div>
+            <div style="margin-top:auto;padding:11px 15px;border-top:1px solid var(--color-divider);font-size:11.5px;color:var(--color-neutral-600)">↑ ↓ pindah · ⏎ setujui &amp; lanjut · E ubah</div>
+          </div>
+          <div class="bp" style="padding:22px;display:flex;flex-direction:column;gap:16px;border-left:0">
+            <i class="corner tr"></i><i class="corner br"></i>
+            <div>
+              <div style="display:flex;align-items:center;gap:8px"><span class="k">Review · Bekasi Timur</span><span style="margin-left:auto;font-size:11.5px;color:var(--color-neutral-600)">Google · Ratna W. · 2 jam lalu</span></div>
+              <div style="display:flex;align-items:center;gap:7px;padding-top:7px"><span style="letter-spacing:2px;color:var(--color-accent);font-size:13px">★☆☆☆☆</span></div>
+              <p style="margin:8px 0 0;font-size:15px;line-height:1.55">“Antre 25 menit cuma buat bayar. Kasir dua, yang buka satu. Pegawainya ramah sih, tapi ya capek.”</p>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;padding-top:11px"><span class="tag tag-neutral">antrean kasir</span><span class="tag tag-neutral">jumlah staf</span><span class="tag tag-accent">tema naik 3×</span></div>
+            </div>
+            <div class="bp" style="padding:18px;display:flex;flex-direction:column;gap:11px;background:var(--color-accent-100)">
+              <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+              <div style="display:flex;align-items:center;gap:8px"><span class="k" style="color:var(--color-accent-700)">Draft balasan</span><span style="margin-left:auto;font-size:11.5px;color:var(--color-accent-700)">nada: hangat, bertanggung jawab</span></div>
+              <p style="margin:0;font-size:14.5px;line-height:1.6;color:var(--color-accent-900)">Terima kasih sudah memberi tahu, Bu Ratna. Antrean sepanjang itu tidak sesuai standar kami. Mulai pekan ini kasir kedua kami buka pada jam 17.00–20.00 di Bekasi Timur. Kalau Ibu berkenan menyebutkan tanggal kunjungannya, kami akan periksa jadwal shift hari itu.</p>
+              <div style="display:flex;gap:6px;flex-wrap:wrap"><span class="tag tag-accent">SOP Layanan v4 · hal. 12</span><span class="tag tag-accent">Nada Brand · hal. 3</span></div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-primary">Setujui &amp; kirim ⏎</button>
+              <button class="btn btn-secondary" onClick="{{ go_draft }}">Ubah teks</button>
+              <button class="btn btn-secondary" onClick="{{ go_tickets }}">Jadikan tiket</button>
+              <button class="btn btn-ghost">Abaikan</button>
+            </div>
+            <div style="margin-top:auto;display:flex;align-items:center;gap:14px;border-top:1px solid var(--color-divider);padding-top:12px;font-size:12px;color:var(--color-neutral-600)">
+              <span>Guardrail lolos 4/4</span><span>·</span><span>Berikutnya: Depok Margonda</span><span style="margin-left:auto">23 tersisa di antrean ini</span>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isDraft }}" hint-placeholder-val="{{ true }}">
+        <div style="display:grid;grid-template-columns:1fr 340px;gap:18px;align-items:start">
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div class="bp" style="padding:20px;display:flex;flex-direction:column;gap:11px">
+              <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+              <div style="display:flex;align-items:center;gap:8px"><span class="k">Review asal</span><span style="margin-left:auto;font-size:11.5px;color:var(--color-neutral-600)">Google · Bekasi Timur · 2 jam lalu</span></div>
+              <div style="display:flex;align-items:center;gap:7px"><span style="letter-spacing:2px;color:var(--color-accent);font-size:13px">★☆☆☆☆</span><span style="font-size:11.5px;color:var(--color-neutral-600)">· Ratna W.</span></div>
+              <p style="margin:0;font-size:14.5px;line-height:1.55">“Antre 25 menit cuma buat bayar. Kasir dua, yang buka satu. Pegawainya ramah sih, tapi ya capek.”</p>
+            </div>
+            <div class="bp" style="padding:20px;display:flex;flex-direction:column;gap:13px">
+              <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+              <div style="display:flex;align-items:center;gap:8px"><span class="tag tag-accent">Draft balasan</span><span style="margin-left:auto;font-size:11.5px;color:var(--color-neutral-600)">Gemini · nada: hangat, bertanggung jawab</span></div>
+              <p style="margin:0;font-size:15px;line-height:1.65;padding-left:13px;border-left:2px solid var(--color-accent-400)">Terima kasih sudah memberi tahu, Bu Ratna. Antrean sepanjang itu tidak sesuai standar kami. Mulai pekan ini kasir kedua kami buka pada jam 17.00–20.00 di Bekasi Timur. Kalau Ibu berkenan menyebutkan tanggal kunjungannya, kami akan periksa jadwal shift hari itu dan memperbaikinya.</p>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;padding-top:2px">
+                <button class="btn btn-primary">Setujui &amp; kirim</button>
+                <button class="btn btn-secondary">Ubah teks</button>
+                <button class="btn btn-secondary">Minta versi lain</button>
+                <button class="btn btn-ghost">Tolak</button>
+              </div>
+              <div style="font-size:12px;color:var(--color-neutral-600);line-height:1.5">Balasan tidak pernah terkirim otomatis. Persetujuan manusia wajib untuk semua review bintang 1–2 — aturan ini ditetapkan di halaman Admin.</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div class="bp" style="padding:16px;display:flex;flex-direction:column;gap:12px">
+              <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+              <div class="k">Bersumber pada</div>
+              <div style="display:flex;flex-direction:column;gap:11px">
+                <div class="bp" style="padding:11px 12px;display:flex;flex-direction:column;gap:5px">
+                  <div style="display:flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="1.5"><path d="M14 2H6v20h12V8z"/><path d="M14 2v6h6"/></svg><span class="h" style="font-size:13.5px">SOP Layanan v4 · hal. 12</span><span style="margin-left:auto;font-size:11px;color:var(--color-neutral-600)">0,88</span></div>
+                  <p style="margin:0;font-size:12.5px;line-height:1.5;color:var(--color-neutral-700)">“Antrean lebih dari 10 menit wajib ditangani dengan membuka kasir tambahan pada jam sibuk.”</p>
+                </div>
+                <div class="bp" style="padding:11px 12px;display:flex;flex-direction:column;gap:5px">
+                  <div style="display:flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="1.5"><path d="M14 2H6v20h12V8z"/><path d="M14 2v6h6"/></svg><span class="h" style="font-size:13.5px">Nada Brand · hal. 3</span><span style="margin-left:auto;font-size:11px;color:var(--color-neutral-600)">0,81</span></div>
+                  <p style="margin:0;font-size:12.5px;line-height:1.5;color:var(--color-neutral-700)">“Akui masalahnya, sebut tindakan konkret, jangan berjanji tanpa tanggal.”</p>
+                </div>
+              </div>
+            </div>
+            <div class="bp" style="padding:16px;display:flex;flex-direction:column;gap:9px">
+              <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+              <div class="k">Pemeriksaan guardrail</div>
+              <div style="display:flex;flex-direction:column;gap:7px;font-size:13px">
+                <div style="display:flex;justify-content:space-between"><span>Tanpa klaim tak bersumber</span><span style="color:var(--color-accent-700)">lolos</span></div>
+                <div style="display:flex;justify-content:space-between"><span>Tanpa data pribadi</span><span style="color:var(--color-accent-700)">lolos</span></div>
+                <div style="display:flex;justify-content:space-between"><span>Nada sesuai panduan</span><span style="color:var(--color-accent-700)">lolos</span></div>
+                <div style="display:flex;justify-content:space-between"><span>Tanpa janji kompensasi</span><span style="color:var(--color-accent-700)">lolos</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isThemes }}" hint-placeholder-val="{{ true }}">
+        <div class="bp" style="padding:20px">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <table class="table">
+            <thead><tr><th style="width:160px">Tema keluhan</th><th>Bekasi</th><th>Cikarang</th><th>Depok</th><th>Serpong</th><th>Bogor</th><th>Tangerang</th><th style="width:110px">Tren 8 pekan</th></tr></thead>
+            <tbody>
+              <tr><td>Antrean kasir</td>
+                <td style="background:var(--color-accent-800);color:#f2f2f3" class="h">31</td><td style="background:var(--color-accent-300)" class="h">9</td><td style="background:var(--color-accent-200)" class="h">4</td><td style="background:var(--color-accent-400)" class="h">12</td><td style="background:var(--color-accent-200)" class="h">3</td><td style="background:var(--color-accent-300)" class="h">8</td>
+                <td><svg viewBox="0 0 90 20" style="width:90px;height:20px"><polyline points="0,16 15,15 30,12 45,13 60,8 75,5 90,2" fill="none" stroke="var(--color-accent)" stroke-width="1.5"/></svg></td></tr>
+              <tr><td>Kebersihan</td>
+                <td style="background:var(--color-accent-200)" class="h">5</td><td style="background:var(--color-accent-500);color:#f2f2f3" class="h">17</td><td style="background:var(--color-accent-200)" class="h">2</td><td style="background:var(--color-accent-200)" class="h">4</td><td style="background:var(--color-accent-300)" class="h">8</td><td style="background:var(--color-accent-200)" class="h">3</td>
+                <td><svg viewBox="0 0 90 20" style="width:90px;height:20px"><polyline points="0,6 15,8 30,7 45,11 60,10 75,14 90,15" fill="none" stroke="var(--color-accent)" stroke-width="1.5"/></svg></td></tr>
+              <tr><td>Stok kosong</td>
+                <td style="background:var(--color-accent-300)" class="h">7</td><td style="background:var(--color-accent-200)" class="h">3</td><td style="background:var(--color-accent-700);color:#f2f2f3" class="h">22</td><td style="background:var(--color-accent-300)" class="h">6</td><td style="background:var(--color-accent-200)" class="h">1</td><td style="background:var(--color-accent-200)" class="h">2</td>
+                <td><svg viewBox="0 0 90 20" style="width:90px;height:20px"><polyline points="0,14 15,10 30,11 45,6 60,7 75,4 90,6" fill="none" stroke="var(--color-accent)" stroke-width="1.5"/></svg></td></tr>
+              <tr><td>Parkir</td>
+                <td style="background:var(--color-accent-400)" class="h">13</td><td style="background:var(--color-accent-200)" class="h">2</td><td style="background:var(--color-accent-300)" class="h">6</td><td style="background:var(--color-accent-600);color:#f2f2f3" class="h">19</td><td style="background:var(--color-accent-200)" class="h">4</td><td style="background:var(--color-accent-300)" class="h">7</td>
+                <td><svg viewBox="0 0 90 20" style="width:90px;height:20px"><polyline points="0,10 15,11 30,9 45,10 60,9 75,11 90,10" fill="none" stroke="var(--color-accent)" stroke-width="1.5"/></svg></td></tr>
+              <tr><td>Harga vs pesaing</td>
+                <td style="background:var(--color-accent-300)" class="h">8</td><td style="background:var(--color-accent-300)" class="h">7</td><td style="background:var(--color-accent-400)" class="h">11</td><td style="background:var(--color-accent-200)" class="h">3</td><td style="background:var(--color-accent-200)" class="h">2</td><td style="background:var(--color-accent-200)" class="h">4</td>
+                <td><svg viewBox="0 0 90 20" style="width:90px;height:20px"><polyline points="0,12 15,10 30,11 45,9 60,8 75,9 90,7" fill="none" stroke="var(--color-accent)" stroke-width="1.5"/></svg></td></tr>
+              <tr><td>Keramahan staf</td>
+                <td style="background:var(--color-accent-200)" class="h">2</td><td style="background:var(--color-accent-200)" class="h">3</td><td style="background:var(--color-accent-200)" class="h">1</td><td style="background:var(--color-accent-200)" class="h">2</td><td style="background:var(--color-accent-200)" class="h">1</td><td style="background:var(--color-accent-200)" class="h">2</td>
+                <td><svg viewBox="0 0 90 20" style="width:90px;height:20px"><polyline points="0,9 15,10 30,9 45,10 60,11 75,10 90,11" fill="none" stroke="var(--color-accent)" stroke-width="1.5"/></svg></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px">
+          <div class="bp" style="padding:18px;display:flex;flex-direction:column;gap:9px">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <div class="k">Temuan agen · prioritas jaringan</div>
+            <div class="h" style="font-size:19px">Antrean kasir adalah masalah sistemik, bukan lokal</div>
+            <p style="margin:0;font-size:13.5px;line-height:1.6;color:var(--color-neutral-800)">Muncul di 5 dari 6 wilayah dan naik di semuanya. Perbaikan per cabang tidak akan cukup — usulan agen: ubah aturan pembukaan kasir di SOP pusat.</p>
+            <button class="btn btn-primary" style="align-self:flex-start" onClick="{{ go_kb }}">Lihat draft perubahan SOP</button>
+          </div>
+          <div class="bp" style="padding:18px;display:flex;flex-direction:column;gap:9px">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <div class="k">Sentimen jaringan · 8 pekan</div>
+            <div style="display:flex;gap:3px;align-items:flex-end;height:74px">
+              <div style="flex:1;height:56%;background:var(--color-accent-300)"></div><div style="flex:1;height:62%;background:var(--color-accent-300)"></div><div style="flex:1;height:58%;background:var(--color-accent-300)"></div><div style="flex:1;height:71%;background:var(--color-accent-400)"></div><div style="flex:1;height:66%;background:var(--color-accent-400)"></div><div style="flex:1;height:78%;background:var(--color-accent-500)"></div><div style="flex:1;height:88%;background:var(--color-accent-600)"></div><div style="flex:1;height:95%;background:var(--color-accent-700)"></div>
+            </div>
+            <div style="font-size:12px;color:var(--color-neutral-600)">Proporsi review negatif per pekan · 12% → 21%</div>
+          </div>
+          <div class="bp" style="padding:18px;display:flex;flex-direction:column;gap:9px">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <div class="k">Praktik baik terdeteksi</div>
+            <div class="h" style="font-size:19px">Bogor Pajajaran</div>
+            <p style="margin:0;font-size:13.5px;line-height:1.6;color:var(--color-neutral-800)">Satu-satunya cabang tanpa kenaikan tema antrean. Bedanya: staf floating diarahkan ke kasir pada jam 17–20. Agen mengusulkan menyalin pola ini ke 5 cabang terlemah.</p>
+            <button class="btn btn-secondary" style="align-self:flex-start" onClick="{{ go_tickets }}">Buat 5 tiket replikasi</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isScout }}" hint-placeholder-val="{{ true }}">
+        <div class="bp" style="padding:20px 22px;display:flex;gap:20px;flex-wrap:wrap;align-items:center">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <div style="flex:1;min-width:300px">
+            <div class="k">Permintaan ke Agen Lokasi</div>
+            <p style="margin:6px 0 0;font-size:15.5px;line-height:1.5">“Cari 3 kandidat lokasi baru di Jakarta Timur, minimal 1,2 km dari cabang kami sendiri, dengan lalu lintas pejalan tinggi.”</p>
+          </div>
+          <div style="display:flex;gap:20px">
+            <div><div class="k">POI dianalisis</div><div class="big" style="font-size:32px">1.284</div></div>
+            <div><div class="k">Lolos filter</div><div class="big" style="font-size:32px">17</div></div>
+            <div><div class="k">Direkomendasikan</div><div class="big" style="font-size:32px;color:var(--color-accent-700)">3</div></div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:16px">
+          <div class="bp" style="padding:18px;display:flex;flex-direction:column;gap:12px;border-left:2px solid var(--color-accent)">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <div style="display:flex;align-items:flex-start;gap:12px">
+              <div style="flex:1"><div class="k">Peringkat 1</div><div class="h" style="font-size:21px">Cibubur Junction · sisi timur</div></div>
+              <div class="big" style="font-size:38px;color:var(--color-accent-700)">84</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px;font-size:13px">
+              <div style="display:flex;align-items:center;gap:9px"><span style="width:110px;color:var(--color-neutral-700)">Lalu lintas</span><span style="flex:1;height:9px;background:var(--color-neutral-200)"><span style="display:block;width:91%;height:100%;background:var(--color-accent-700)"></span></span><span class="h">91</span></div>
+              <div style="display:flex;align-items:center;gap:9px"><span style="width:110px;color:var(--color-neutral-700)">Bauran kategori</span><span style="flex:1;height:9px;background:var(--color-neutral-200)"><span style="display:block;width:86%;height:100%;background:var(--color-accent-600)"></span></span><span class="h">86</span></div>
+              <div style="display:flex;align-items:center;gap:9px"><span style="width:110px;color:var(--color-neutral-700)">Pesaing</span><span style="flex:1;height:9px;background:var(--color-neutral-200)"><span style="display:block;width:74%;height:100%;background:var(--color-accent-500)"></span></span><span class="h">74</span></div>
+              <div style="display:flex;align-items:center;gap:9px"><span style="width:110px;color:var(--color-neutral-700)">Kanibalisasi</span><span style="flex:1;height:9px;background:var(--color-neutral-200)"><span style="display:block;width:88%;height:100%;background:var(--color-accent-600)"></span></span><span class="h">88</span></div>
+            </div>
+            <p style="margin:0;font-size:13px;line-height:1.55;color:var(--color-neutral-800)">Perkantoran dan dua sekolah dalam radius 600 m, tanpa minimarket sejenis. Cabang terdekat kami 2,1 km — tidak berebut pelanggan.</p>
+            <div style="display:flex;gap:8px;margin-top:auto;padding-top:4px"><button class="btn btn-primary" onClick="{{ go_compare }}">Bandingkan</button><button class="btn btn-secondary" onClick="{{ go_tickets }}">Jadikan tiket survei</button></div>
+          </div>
+          <div class="bp" style="padding:18px;display:flex;flex-direction:column;gap:12px">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <div style="display:flex;align-items:flex-start;gap:12px">
+              <div style="flex:1"><div class="k">Peringkat 2</div><div class="h" style="font-size:21px">Kramat Jati · dekat pasar</div></div>
+              <div class="big" style="font-size:38px;color:var(--color-accent-700)">79</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px;font-size:13px">
+              <div style="display:flex;align-items:center;gap:9px"><span style="width:110px;color:var(--color-neutral-700)">Lalu lintas</span><span style="flex:1;height:9px;background:var(--color-neutral-200)"><span style="display:block;width:95%;height:100%;background:var(--color-accent-700)"></span></span><span class="h">95</span></div>
+              <div style="display:flex;align-items:center;gap:9px"><span style="width:110px;color:var(--color-neutral-700)">Bauran kategori</span><span style="flex:1;height:9px;background:var(--color-neutral-200)"><span style="display:block;width:71%;height:100%;background:var(--color-accent-500)"></span></span><span class="h">71</span></div>
+              <div style="display:flex;align-items:center;gap:9px"><span style="width:110px;color:var(--color-neutral-700)">Pesaing</span><span style="flex:1;height:9px;background:var(--color-neutral-200)"><span style="display:block;width:52%;height:100%;background:var(--color-accent-400)"></span></span><span class="h">52</span></div>
+              <div style="display:flex;align-items:center;gap:9px"><span style="width:110px;color:var(--color-neutral-700)">Kanibalisasi</span><span style="flex:1;height:9px;background:var(--color-neutral-200)"><span style="display:block;width:80%;height:100%;background:var(--color-accent-600)"></span></span><span class="h">80</span></div>
+            </div>
+            <p style="margin:0;font-size:13px;line-height:1.55;color:var(--color-neutral-800)">Lalu lintas tertinggi dari semua kandidat, tapi empat pesaing sejenis dalam 800 m. Cocok bila strateginya harga, bukan kenyamanan.</p>
+            <div style="display:flex;gap:8px;margin-top:auto;padding-top:4px"><button class="btn btn-secondary" onClick="{{ go_compare }}">Bandingkan</button><button class="btn btn-ghost">Simpan</button></div>
+          </div>
+          <div class="bp" style="padding:18px;display:flex;flex-direction:column;gap:12px">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <div style="display:flex;align-items:flex-start;gap:12px">
+              <div style="flex:1"><div class="k">Peringkat 3</div><div class="h" style="font-size:21px">Duren Sawit · jalan utama</div></div>
+              <div class="big" style="font-size:38px;color:var(--color-accent-700)">73</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px;font-size:13px">
+              <div style="display:flex;align-items:center;gap:9px"><span style="width:110px;color:var(--color-neutral-700)">Lalu lintas</span><span style="flex:1;height:9px;background:var(--color-neutral-200)"><span style="display:block;width:69%;height:100%;background:var(--color-accent-500)"></span></span><span class="h">69</span></div>
+              <div style="display:flex;align-items:center;gap:9px"><span style="width:110px;color:var(--color-neutral-700)">Bauran kategori</span><span style="flex:1;height:9px;background:var(--color-neutral-200)"><span style="display:block;width:78%;height:100%;background:var(--color-accent-600)"></span></span><span class="h">78</span></div>
+              <div style="display:flex;align-items:center;gap:9px"><span style="width:110px;color:var(--color-neutral-700)">Pesaing</span><span style="flex:1;height:9px;background:var(--color-neutral-200)"><span style="display:block;width:81%;height:100%;background:var(--color-accent-600)"></span></span><span class="h">81</span></div>
+              <div style="display:flex;align-items:center;gap:9px"><span style="width:110px;color:var(--color-neutral-700)">Kanibalisasi</span><span style="flex:1;height:9px;background:var(--color-neutral-200)"><span style="display:block;width:64%;height:100%;background:var(--color-accent-500)"></span></span><span class="h">64</span></div>
+            </div>
+            <p style="margin:0;font-size:13px;line-height:1.55;color:var(--color-neutral-800)">Paling aman dari pesaing, tetapi 1,3 km dari cabang Jatinegara — sebagian pelanggan akan berpindah, bukan bertambah.</p>
+            <div style="display:flex;gap:8px;margin-top:auto;padding-top:4px"><button class="btn btn-secondary" onClick="{{ go_compare }}">Bandingkan</button><button class="btn btn-ghost">Simpan</button></div>
+          </div>
+        </div>
+        <div class="bp" style="padding:16px 18px;display:flex;gap:14px;align-items:flex-start">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="1.5" style="flex:none;margin-top:2px"><circle cx="12" cy="12" r="9"/><path d="M12 8v.01M12 11v5"/></svg>
+          <p style="margin:0;font-size:13px;line-height:1.6;color:var(--color-neutral-800)">Skor dihitung dari Places Insight (kepadatan &amp; kategori POI dalam radius), jarak antar cabang sendiri lewat BigQuery GIS, dan bobot yang bisa Anda ubah di Admin. Setiap angka bisa diklik untuk melihat data mentahnya — tidak ada skor tanpa jejak.</p>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isCompare }}" hint-placeholder-val="{{ true }}">
+        <div class="bp" style="padding:0">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <div style="display:grid;grid-template-columns:200px 1fr 1fr">
+            <div style="padding:18px;border-right:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider)"><div class="k">Faktor</div></div>
+            <div style="padding:18px;border-right:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);background:var(--color-accent-100)">
+              <div class="k" style="color:var(--color-accent-700)">Kandidat A · direkomendasikan</div>
+              <div class="h" style="font-size:22px;margin-top:3px">Cibubur Junction</div>
+              <div class="big" style="font-size:40px;color:var(--color-accent-800);margin-top:4px">84</div>
+            </div>
+            <div style="padding:18px;border-bottom:1px solid var(--color-divider)">
+              <div class="k">Kandidat B</div>
+              <div class="h" style="font-size:22px;margin-top:3px">Kramat Jati</div>
+              <div class="big" style="font-size:40px;margin-top:4px">79</div>
+            </div>
+
+            <div style="padding:13px 18px;border-right:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);font-size:13.5px">Lalu lintas pejalan</div>
+            <div style="padding:13px 18px;border-right:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);font-size:13.5px">91 · perkantoran + 2 sekolah</div>
+            <div style="padding:13px 18px;border-bottom:1px solid var(--color-divider);font-size:13.5px"><strong>95</strong> · pasar harian</div>
+
+            <div style="padding:13px 18px;border-right:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);font-size:13.5px">Pesaing dalam 800 m</div>
+            <div style="padding:13px 18px;border-right:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);font-size:13.5px"><strong>1</strong> minimarket</div>
+            <div style="padding:13px 18px;border-bottom:1px solid var(--color-divider);font-size:13.5px">4 minimarket</div>
+
+            <div style="padding:13px 18px;border-right:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);font-size:13.5px">Cabang sendiri terdekat</div>
+            <div style="padding:13px 18px;border-right:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);font-size:13.5px"><strong>2,1 km</strong> · aman</div>
+            <div style="padding:13px 18px;border-bottom:1px solid var(--color-divider);font-size:13.5px">1,6 km · risiko sedang</div>
+
+            <div style="padding:13px 18px;border-right:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);font-size:13.5px">Estimasi kunjungan/hari</div>
+            <div style="padding:13px 18px;border-right:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);font-size:13.5px"><strong>620–740</strong></div>
+            <div style="padding:13px 18px;border-bottom:1px solid var(--color-divider);font-size:13.5px">700–910 · rentang lebih lebar</div>
+
+            <div style="padding:13px 18px;border-right:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);font-size:13.5px">Sewa pasaran (indikatif)</div>
+            <div style="padding:13px 18px;border-right:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);font-size:13.5px">Rp 18–22 jt/bln</div>
+            <div style="padding:13px 18px;border-bottom:1px solid var(--color-divider);font-size:13.5px"><strong>Rp 12–15 jt/bln</strong></div>
+
+            <div style="padding:13px 18px;border-right:1px solid var(--color-divider);font-size:13.5px">Kesimpulan agen</div>
+            <div style="padding:13px 18px;border-right:1px solid var(--color-divider);font-size:13.5px;line-height:1.55">Pendapatan lebih stabil dan mudah diprediksi. Pilih ini jika target margin, bukan volume.</div>
+            <div style="padding:13px 18px;font-size:13.5px;line-height:1.55">Volume lebih tinggi tapi perang harga hampir pasti. Pilih ini hanya jika siap bersaing harga.</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-primary" onClick="{{ go_tickets }}">Ajukan survei Kandidat A</button>
+          <button class="btn btn-secondary">Tambah kandidat ketiga</button>
+          <button class="btn btn-secondary">Ekspor ke PDF</button>
+          <button class="btn btn-ghost" onClick="{{ go_chat }}">Tanya agen: “bagaimana kalau target volume?”</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isChat }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;gap:18px">
+          <div class="bp" style="padding:20px;display:flex;flex-direction:column;gap:16px;min-height:460px">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <div style="align-self:flex-end;max-width:74%;background:var(--color-accent-900);color:var(--color-bg);padding:11px 14px;font-size:14.5px;line-height:1.5">Kenapa rating cabang Bekasi Timur turun bulan ini?</div>
+            <div style="align-self:flex-start;max-width:86%;border:1px solid var(--color-divider);padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;align-items:center;gap:7px" class="k">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-700)" stroke-width="1.5"><rect x="4" y="8" width="16" height="12"/><path d="M12 8V4"/><circle cx="9" cy="14" r="1"/><circle cx="15" cy="14" r="1"/></svg>
+                <span style="color:var(--color-accent-700)">Supervisor → Agen Reputasi + Agen Lokasi</span>
+                <span style="margin-left:auto;font-size:11px;color:var(--color-neutral-600);letter-spacing:0;text-transform:none">7 langkah · 6,8 s · Rp 412</span>
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:5px">
+                <span style="font-size:11px;font-family:ui-monospace,Menlo,monospace;border:1px solid var(--color-divider);padding:3px 8px">01 supervisor.route</span>
+                <span style="font-size:11px;font-family:ui-monospace,Menlo,monospace;border:1px solid var(--color-divider);padding:3px 8px">02 gbp.listReviews · 18</span>
+                <span style="font-size:11px;font-family:ui-monospace,Menlo,monospace;border:1px solid var(--color-divider);padding:3px 8px">03 bq.themeCluster · 7</span>
+                <span style="font-size:11px;font-family:ui-monospace,Menlo,monospace;border:1px solid var(--color-divider);padding:3px 8px">04 rag.search · 2</span>
+                <span style="font-size:11px;font-family:ui-monospace,Menlo,monospace;border:1px solid var(--color-divider);padding:3px 8px">05 places.nearby · 6</span>
+                <span style="font-size:11px;font-family:ui-monospace,Menlo,monospace;border:1px solid var(--color-divider);padding:3px 8px">06 bq.ratingTrend</span>
+                <span style="font-size:11px;font-family:ui-monospace,Menlo,monospace;border:1px solid var(--color-accent);color:var(--color-accent-700);padding:3px 8px">07 guardrail.check · lolos</span>
+              </div>
+              <p style="margin:0;font-size:14.5px;line-height:1.6">Rating turun 0,4 poin sejak 3 Juli. Penyebab dominan <strong>antrean kasir</strong> — muncul di 11 dari 18 review baru, naik 3× dibanding Juni. Ada dua faktor yang bertemu: kasir kedua tidak dibuka pada jam sibuk, dan sebuah minimarket baru dibuka 400 m dari cabang pada 28 Juni dengan jam sibuk yang bertumpuk.</p>
+              <p style="margin:0;font-size:14.5px;line-height:1.6">SOP Layanan v4 hal. 12 sebenarnya sudah mewajibkan kasir tambahan bila antrean melewati 10 menit — jadi ini masalah kepatuhan, bukan kebijakan.</p>
+              <div style="display:flex;gap:6px;flex-wrap:wrap"><span class="tag tag-neutral">18 review</span><span class="tag tag-neutral">SOP v4 hal. 12</span><span class="tag tag-neutral">Places · radius 1 km</span><span class="tag tag-neutral">6 POI</span></div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;padding-top:4px">
+                <button class="btn btn-primary" onClick="{{ go_tickets }}">Buat tiket ke manajer cabang</button>
+                <button class="btn btn-secondary" onClick="{{ go_inbox }}">Lihat 18 review</button>
+                <button class="btn btn-secondary" onClick="{{ go_map }}">Tunjukkan di peta</button>
+              </div>
+            </div>
+            <div style="align-self:flex-end;max-width:74%;background:var(--color-accent-900);color:var(--color-bg);padding:11px 14px;font-size:14.5px;line-height:1.5">Apakah cabang lain punya masalah yang sama?</div>
+            <div style="align-self:flex-start;display:flex;align-items:center;gap:9px;font-size:13px;color:var(--color-neutral-600)">
+              <span style="display:flex;gap:3px"><span style="width:5px;height:5px;background:var(--color-accent-500)"></span><span style="width:5px;height:5px;background:var(--color-accent-400)"></span><span style="width:5px;height:5px;background:var(--color-accent-300)"></span></span>
+              Agen Reputasi menjalankan bq.themeCluster untuk 42 cabang…
+            </div>
+            <div style="margin-top:auto;display:flex;gap:9px;align-items:flex-end">
+              <input class="input" placeholder="Tanya apa saja tentang cabang, review, lokasi, atau SOP…">
+              <button class="btn btn-primary" style="height:36px">Kirim</button>
+            </div>
+            <div style="display:flex;gap:7px;flex-wrap:wrap">
+              <button class="btn btn-secondary" style="font-size:12.5px">Ringkas keluhan pekan ini</button>
+              <button class="btn btn-secondary" style="font-size:12.5px">Cabang mana paling siap ekspansi?</button>
+              <button class="btn btn-secondary" style="font-size:12.5px">Apa kata SOP soal refund?</button>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 320px;gap:14px;align-items:start">
+            <div class="bp" style="padding:16px;display:flex;flex-direction:column;gap:11px">
+              <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+              <div style="display:flex;align-items:baseline;gap:8px"><span class="h" style="font-size:16px">Jejak eksekusi lengkap</span><span style="margin-left:auto;font-size:11px;color:var(--color-neutral-600)">6,8 s · 4.210 token</span></div>
+              <div style="display:flex;flex-direction:column">
+                <div style="display:flex;gap:11px;padding:9px 0;border-top:1px solid var(--color-divider)"><span class="h" style="font-size:12px;color:var(--color-accent-600);min-width:16px">01</span><div style="font-size:12.5px;line-height:1.45"><div class="h" style="font-size:14px">supervisor.route</div><span style="color:var(--color-neutral-600)">niat: diagnosis_cabang · 2 agen</span></div></div>
+                <div style="display:flex;gap:11px;padding:9px 0;border-top:1px solid var(--color-divider)"><span class="h" style="font-size:12px;color:var(--color-accent-600);min-width:16px">02</span><div style="font-size:12.5px;line-height:1.45"><div class="h" style="font-size:14px">gbp.listReviews</div><span style="color:var(--color-neutral-600)">outlet=BKS-02 · 18 baris · 0,9 s</span></div></div>
+                <div style="display:flex;gap:11px;padding:9px 0;border-top:1px solid var(--color-divider)"><span class="h" style="font-size:12px;color:var(--color-accent-600);min-width:16px">03</span><div style="font-size:12.5px;line-height:1.45"><div class="h" style="font-size:14px">bq.themeCluster</div><span style="color:var(--color-neutral-600)">7 tema · dominan antrean_kasir</span></div></div>
+                <div style="display:flex;gap:11px;padding:9px 0;border-top:1px solid var(--color-divider)"><span class="h" style="font-size:12px;color:var(--color-accent-600);min-width:16px">04</span><div style="font-size:12.5px;line-height:1.45"><div class="h" style="font-size:14px">rag.search</div><span style="color:var(--color-neutral-600)">2 kutipan · skor 0,84</span></div></div>
+                <div style="display:flex;gap:11px;padding:9px 0;border-top:1px solid var(--color-divider)"><span class="h" style="font-size:12px;color:var(--color-accent-600);min-width:16px">05</span><div style="font-size:12.5px;line-height:1.45"><div class="h" style="font-size:14px">places.nearbyCompetitors</div><span style="color:var(--color-neutral-600)">radius 1 km · 6 POI · 1 baru</span></div></div>
+                <div style="display:flex;gap:11px;padding:9px 0;border-top:1px solid var(--color-divider)"><span class="h" style="font-size:12px;color:var(--color-accent-600);min-width:16px">06</span><div style="font-size:12.5px;line-height:1.45"><div class="h" style="font-size:14px">bq.ratingTrend</div><span style="color:var(--color-neutral-600)">12 pekan · titik ubah 3 Jul</span></div></div>
+                <div style="display:flex;gap:11px;padding:9px 0;border-top:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider)"><span class="h" style="font-size:12px;color:var(--color-accent-600);min-width:16px">07</span><div style="font-size:12.5px;line-height:1.45"><div class="h" style="font-size:14px">guardrail.check</div><span style="color:var(--color-neutral-600)">lolos · semua klaim bersumber</span></div></div>
+              </div>
+              <button class="btn btn-ghost" style="align-self:flex-start">Buka trace lengkap di Cloud Trace →</button>
+            </div>
+            <div class="bp" style="padding:16px;display:flex;flex-direction:column;gap:8px">
+              <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+              <div class="k">Biaya percakapan ini</div>
+              <div style="display:flex;align-items:flex-end;gap:7px"><span class="big" style="font-size:30px">Rp 412</span><span style="font-size:12px;color:var(--color-neutral-600);padding-bottom:5px">· 3 panggilan model</span></div>
+              <div style="font-size:12px;color:var(--color-neutral-600);line-height:1.5">Anggaran tenant bulan ini terpakai 34%. Batas keras diatur di Admin.</div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isKb }}" hint-placeholder-val="{{ true }}">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px">
+          <div class="bp" style="padding:17px;display:flex;flex-direction:column;gap:7px"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i><div class="k">Dokumen terindeks</div><div class="big" style="font-size:36px">48</div><div style="font-size:11.5px;color:var(--color-neutral-600)">1.902 potongan · 3 diperbarui tadi malam</div></div>
+          <div class="bp" style="padding:17px;display:flex;flex-direction:column;gap:7px"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i><div class="k">Cakupan jawaban</div><div class="big" style="font-size:36px;color:var(--color-accent-700)">82%</div><div style="height:6px;background:var(--color-neutral-200)"><div style="width:82%;height:100%;background:var(--color-accent)"></div></div></div>
+          <div class="bp" style="padding:17px;display:flex;flex-direction:column;gap:7px"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i><div class="k">Pertanyaan tak terjawab</div><div class="big" style="font-size:36px">37</div><div style="font-size:11.5px;color:var(--color-neutral-600)">bulan ini · 12 soal antrean</div></div>
+          <div class="bp" style="padding:17px;display:flex;flex-direction:column;gap:7px"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i><div class="k">Model embedding</div><div class="h" style="font-size:19px;margin-top:4px">text-embedding-004</div><div style="font-size:11.5px;color:var(--color-neutral-600)">768 dim · chunk 800 token · overlap 120</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start">
+          <div class="bp" style="padding:20px">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <table class="table">
+              <thead><tr><th>Dokumen</th><th style="width:100px">Jenis</th><th style="width:80px">Halaman</th><th style="width:110px">Status indeks</th><th style="width:110px">Diperbarui</th></tr></thead>
+              <tbody>
+                <tr><td>SOP Layanan Pelanggan v4</td><td>PDF</td><td>34</td><td><span class="tag tag-accent">Terindeks</span></td><td>28 Jul 2026</td></tr>
+                <tr><td>Panduan Nada Brand 2026</td><td>PDF</td><td>12</td><td><span class="tag tag-accent">Terindeks</span></td><td>28 Jul 2026</td></tr>
+                <tr><td>SOP Penanganan Keluhan (draft v5)</td><td>DOCX</td><td>18</td><td><span class="tag tag-outline">Menunggu tinjauan</span></td><td>28 Jul 2026</td></tr>
+                <tr><td>Katalog Produk Q3</td><td>XLSX</td><td>—</td><td><span class="tag tag-accent">Terindeks</span></td><td>21 Jul 2026</td></tr>
+                <tr><td>Perjanjian Layanan Waralaba</td><td>PDF</td><td>26</td><td><span class="tag tag-neutral">Diproses · 60%</span></td><td>28 Jul 2026</td></tr>
+                <tr><td>Notulen Rapat Ops Juni</td><td>PDF</td><td>9</td><td><span class="tag tag-neutral" style="opacity:.6">Dikecualikan</span></td><td>02 Jul 2026</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div class="bp" style="padding:16px;display:flex;flex-direction:column;gap:10px;background:var(--color-accent-100)">
+              <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+              <div class="k" style="color:var(--color-accent-700)">Celah pengetahuan · usulan agen</div>
+              <div class="h" style="font-size:18px;color:var(--color-accent-900)">Tambahkan klausa batas waktu antrean</div>
+              <p style="margin:0;font-size:13px;line-height:1.6;color:var(--color-accent-900)">12 pertanyaan staf bulan ini menanyakan batas waktu antrean yang wajib dilaporkan. SOP v4 menyebut “jam sibuk” tanpa angka. Draft klausa: <em>“Antrean lebih dari 10 menit wajib dilaporkan ke area manager pada hari yang sama.”</em></p>
+              <div style="display:flex;gap:8px"><button class="btn btn-primary">Kirim ke pemilik SOP</button><button class="btn btn-secondary">Ubah draft</button></div>
+            </div>
+            <div class="bp" style="padding:16px;display:flex;flex-direction:column;gap:10px">
+              <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+              <div class="k">Unggah dokumen</div>
+              <div style="border:1px dashed var(--color-neutral-400);padding:20px;text-align:center;font-size:13px;color:var(--color-neutral-600);line-height:1.5">Tarik PDF, DOCX, atau XLSX ke sini<br><span style="font-size:11.5px">maks. 50 MB · diindeks dalam ±2 menit</span></div>
+              <label class="radio"><input type="checkbox" style="position:absolute;opacity:0"><span class="dot"></span><span style="font-size:13px">Batasi akses ke peran Admin</span></label>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isAnswer }}" hint-placeholder-val="{{ true }}">
+        <div style="display:grid;grid-template-columns:1fr 360px;gap:18px;align-items:start">
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div class="bp" style="padding:20px;display:flex;flex-direction:column;gap:12px">
+              <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+              <div style="display:flex;align-items:center;gap:9px"><span class="k">Pertanyaan staf cabang</span><span style="margin-left:auto;font-size:11.5px;color:var(--color-neutral-600)">Dwi Kurnia · Bekasi Timur · via WhatsApp</span></div>
+              <p style="margin:0;font-size:16.5px;line-height:1.5">“Pelanggan minta refund barang promo yang sudah dibuka. Boleh atau tidak, dan apa syaratnya?”</p>
+            </div>
+            <div class="bp" style="padding:20px;display:flex;flex-direction:column;gap:13px">
+              <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+              <div style="display:flex;align-items:center;gap:8px"><span class="tag tag-accent">Jawaban Agen Pengetahuan</span><span style="margin-left:auto;font-size:11.5px;color:var(--color-neutral-600)">2 sumber · keyakinan tinggi</span></div>
+              <p style="margin:0;font-size:15px;line-height:1.7">Boleh, dengan tiga syarat: barang promo masih dalam masa 7 hari sejak pembelian <sup style="color:var(--color-accent-700)">[1]</sup>, struk asli ada, dan kemasan tidak rusak permanen. Barang promo yang sudah dibuka <strong>tidak</strong> bisa ditukar uang tunai — hanya penggantian barang sejenis atau voucher <sup style="color:var(--color-accent-700)">[2]</sup>.</p>
+              <p style="margin:0;font-size:15px;line-height:1.7">Jika pelanggan menolak penggantian, eskalasi ke area manager pada hari yang sama; jangan menjanjikan pengembalian tunai di kasir <sup style="color:var(--color-accent-700)">[2]</sup>.</p>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;padding-top:2px">
+                <button class="btn btn-primary">Kirim ke WhatsApp Dwi</button>
+                <button class="btn btn-secondary">Simpan sebagai FAQ</button>
+                <button class="btn btn-ghost">Jawaban ini salah</button>
+              </div>
+            </div>
+            <div class="bp" style="padding:16px 18px;display:flex;gap:13px;align-items:flex-start">
+              <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="1.5" style="flex:none;margin-top:2px"><path d="M12 3l9 5v8l-9 5-9-5V8z"/><path d="M12 12v9M3 8l9 4 9-4"/></svg>
+              <p style="margin:0;font-size:13px;line-height:1.6;color:var(--color-neutral-800)">Agen menolak menjawab bila skor kemiripan sumber di bawah 0,7 — dalam kasus itu ia mengatakan “tidak ada di dokumen” dan mencatat pertanyaannya sebagai celah pengetahuan. Tidak ada jawaban yang dikarang.</p>
+            </div>
+          </div>
+          <div class="bp" style="padding:16px;display:flex;flex-direction:column;gap:12px">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <div class="k">Sumber</div>
+            <div class="bp" style="padding:13px;display:flex;flex-direction:column;gap:7px">
+              <div style="display:flex;align-items:center;gap:7px"><span class="h" style="font-size:12px;color:var(--color-accent-700)">[1]</span><span class="h" style="font-size:14px">SOP Layanan v4 · hal. 21</span><span style="margin-left:auto;font-size:11px;color:var(--color-neutral-600)">0,91</span></div>
+              <p style="margin:0;font-size:12.5px;line-height:1.55;color:var(--color-neutral-700);padding-left:11px;border-left:2px solid var(--color-accent-300)">“Pengembalian barang promo dapat dilayani dalam 7 (tujuh) hari kalender sejak tanggal pembelian dengan menunjukkan struk asli.”</p>
+              <button class="btn btn-ghost" style="align-self:flex-start;font-size:12px">Buka halaman 21 →</button>
+            </div>
+            <div class="bp" style="padding:13px;display:flex;flex-direction:column;gap:7px">
+              <div style="display:flex;align-items:center;gap:7px"><span class="h" style="font-size:12px;color:var(--color-accent-700)">[2]</span><span class="h" style="font-size:14px">SOP Layanan v4 · hal. 22</span><span style="margin-left:auto;font-size:11px;color:var(--color-neutral-600)">0,86</span></div>
+              <p style="margin:0;font-size:12.5px;line-height:1.55;color:var(--color-neutral-700);padding-left:11px;border-left:2px solid var(--color-accent-300)">“Barang promo yang segelnya telah dibuka hanya dapat diganti dengan barang sejenis atau voucher, bukan uang tunai. Penolakan pelanggan dieskalasi ke area manager pada hari yang sama.”</p>
+              <button class="btn btn-ghost" style="align-self:flex-start;font-size:12px">Buka halaman 22 →</button>
+            </div>
+            <div style="font-size:11.5px;color:var(--color-neutral-600);line-height:1.5;padding-top:2px">Potongan yang dipertimbangkan tapi tidak dipakai: 4 · semuanya di bawah ambang 0,7.</div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isTickets }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+          <div class="seg">
+            <label class="seg-opt"><input type="radio" name="tk" defaultChecked="{{ true }}">Semua · 24</label>
+            <label class="seg-opt"><input type="radio" name="tk">Dari agen · 19</label>
+            <label class="seg-opt"><input type="radio" name="tk">Milik saya · 6</label>
+          </div>
+          <span style="margin-left:auto;font-size:12.5px;color:var(--color-neutral-700)">Rata-rata waktu tutup tiket: <strong>3,1 hari</strong> · SLA 5 hari</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;align-items:start">
+          <div style="display:flex;flex-direction:column;gap:11px">
+            <div style="display:flex;align-items:baseline;gap:7px"><span class="h" style="font-size:16px">Baru</span><span style="font-size:12px;color:var(--color-neutral-600)">5</span></div>
+            <div class="bp" style="padding:13px;display:flex;flex-direction:column;gap:8px"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i><span class="h" style="font-size:12px;color:var(--color-accent-700)">T-119</span><div style="font-size:13.5px;line-height:1.45">Audit jadwal restock rak minuman</div><div style="display:flex;gap:5px;flex-wrap:wrap"><span class="tag tag-neutral">Depok</span><span class="tag tag-neutral">stok</span></div><div style="font-size:11.5px;color:var(--color-neutral-600)">dibuat Agen Reputasi · 5 jam</div></div>
+            <div class="bp" style="padding:13px;display:flex;flex-direction:column;gap:8px"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i><span class="h" style="font-size:12px;color:var(--color-accent-700)">T-121</span><div style="font-size:13.5px;line-height:1.45">Tinjau kapasitas parkir motor jam pulang kerja</div><div style="display:flex;gap:5px;flex-wrap:wrap"><span class="tag tag-neutral">Serpong</span><span class="tag tag-neutral">parkir</span></div><div style="font-size:11.5px;color:var(--color-neutral-600)">dibuat Agen Reputasi · 1 hari</div></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:11px">
+            <div style="display:flex;align-items:baseline;gap:7px"><span class="h" style="font-size:16px">Dikerjakan</span><span style="font-size:12px;color:var(--color-neutral-600)">8</span></div>
+            <div class="bp" style="padding:13px;display:flex;flex-direction:column;gap:8px;border-left:2px solid var(--color-accent)"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i><span class="h" style="font-size:12px;color:var(--color-accent-700)">T-118</span><div style="font-size:13.5px;line-height:1.45">Buka kasir kedua 17.00–20.00 selama 2 pekan</div><div style="display:flex;gap:5px;flex-wrap:wrap"><span class="tag tag-accent">Bekasi Timur</span><span class="tag tag-neutral">antrean</span></div><div style="font-size:11.5px;color:var(--color-neutral-600)">Dwi Kurnia · tenggat 4 Agt</div></div>
+            <div class="bp" style="padding:13px;display:flex;flex-direction:column;gap:8px"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i><span class="h" style="font-size:12px;color:var(--color-accent-700)">T-116</span><div style="font-size:13.5px;line-height:1.45">Replikasi pola staf floating dari Bogor</div><div style="display:flex;gap:5px;flex-wrap:wrap"><span class="tag tag-neutral">5 cabang</span></div><div style="font-size:11.5px;color:var(--color-neutral-600)">Ops Excellence · tenggat 8 Agt</div></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:11px">
+            <div style="display:flex;align-items:baseline;gap:7px"><span class="h" style="font-size:16px">Menunggu</span><span style="font-size:12px;color:var(--color-neutral-600)">4</span></div>
+            <div class="bp" style="padding:13px;display:flex;flex-direction:column;gap:8px"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i><span class="h" style="font-size:12px;color:var(--color-accent-700)">T-120</span><div style="font-size:13.5px;line-height:1.45">Survei lahan kandidat Cibubur Junction</div><div style="display:flex;gap:5px;flex-wrap:wrap"><span class="tag tag-neutral">ekspansi</span><span class="tag tag-neutral">skor 84</span></div><div style="font-size:11.5px;color:var(--color-neutral-600)">menunggu anggaran · Agen Lokasi</div></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:11px">
+            <div style="display:flex;align-items:baseline;gap:7px"><span class="h" style="font-size:16px">Selesai</span><span style="font-size:12px;color:var(--color-neutral-600)">7</span></div>
+            <div class="bp" style="padding:13px;display:flex;flex-direction:column;gap:8px;opacity:.72"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i><span class="h" style="font-size:12px;color:var(--color-accent-700)">T-114</span><div style="font-size:13.5px;line-height:1.45">Perbarui SOP penanganan keluhan antrean</div><div style="display:flex;gap:5px;flex-wrap:wrap"><span class="tag tag-neutral">semua cabang</span></div><div style="font-size:11.5px;color:var(--color-neutral-600)">ditutup 3,1 hari · dampak: −18% keluhan</div></div>
+            <div class="bp" style="padding:13px;display:flex;flex-direction:column;gap:8px;opacity:.72"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i><span class="h" style="font-size:12px;color:var(--color-accent-700)">T-109</span><div style="font-size:13.5px;line-height:1.45">Balas 63 review tertunda Bogor</div><div style="display:flex;gap:5px;flex-wrap:wrap"><span class="tag tag-neutral">Bogor</span></div><div style="font-size:11.5px;color:var(--color-neutral-600)">ditutup 1,2 hari · rating +0,2</div></div>
+          </div>
+        </div>
+        <div class="bp" style="padding:16px 18px;display:flex;gap:13px;align-items:flex-start">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="1.5" style="flex:none;margin-top:2px"><path d="M20 6L9 17l-5-5"/></svg>
+          <p style="margin:0;font-size:13px;line-height:1.6;color:var(--color-neutral-800)">Setiap tiket menyimpan tautan ke insight yang melahirkannya dan mencatat dampaknya setelah ditutup. Itu yang membuat LOKUS bisa membuktikan nilai gunanya dengan angka, bukan cerita.</p>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ true }}">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px">
+          <div class="bp" style="padding:18px;display:flex;flex-direction:column;gap:12px">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <div class="k">Model &amp; infrastruktur</div>
+            <div style="display:flex;flex-direction:column;gap:9px;font-size:13.5px">
+              <div style="display:flex;justify-content:space-between;gap:10px"><span style="color:var(--color-neutral-700)">Penalaran</span><span class="h">Gemini · Vertex AI</span></div>
+              <div style="display:flex;justify-content:space-between;gap:10px"><span style="color:var(--color-neutral-700)">Ringkasan massal</span><span class="h">Gemini Flash</span></div>
+              <div style="display:flex;justify-content:space-between;gap:10px"><span style="color:var(--color-neutral-700)">Embedding</span><span class="h">text-embedding-004</span></div>
+              <div style="display:flex;justify-content:space-between;gap:10px"><span style="color:var(--color-neutral-700)">Runtime agen</span><span class="h">Agent Engine</span></div>
+              <div style="display:flex;justify-content:space-between;gap:10px"><span style="color:var(--color-neutral-700)">Region</span><span class="h">asia-southeast2</span></div>
+              <div style="display:flex;justify-content:space-between;gap:10px"><span style="color:var(--color-neutral-700)">Layanan</span><span class="h">Cloud Run · 2 svc</span></div>
+            </div>
+            <p style="margin:0;font-size:12px;color:var(--color-neutral-600);line-height:1.5">Model dipilih per tugas, bukan satu model untuk semua — Flash untuk 214 review, model penalaran hanya untuk diagnosis.</p>
+          </div>
+          <div class="bp" style="padding:18px;display:flex;flex-direction:column;gap:12px">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <div class="k">Guardrail &amp; kendali manusia</div>
+            <div style="display:flex;flex-direction:column;gap:10px;font-size:13.5px">
+              <label class="radio" style="justify-content:space-between;width:100%"><span>Balasan bintang 1–2 wajib disetujui manusia</span><input type="checkbox" defaultChecked="{{ true }}" style="position:absolute;opacity:0"><span class="dot"></span></label>
+              <label class="radio" style="justify-content:space-between;width:100%"><span>Larang janji kompensasi finansial</span><input type="checkbox" defaultChecked="{{ true }}" style="position:absolute;opacity:0"><span class="dot"></span></label>
+              <label class="radio" style="justify-content:space-between;width:100%"><span>Tolak menjawab bila sumber &lt; 0,7</span><input type="checkbox" defaultChecked="{{ true }}" style="position:absolute;opacity:0"><span class="dot"></span></label>
+              <label class="radio" style="justify-content:space-between;width:100%"><span>Redaksi data pribadi sebelum ke model</span><input type="checkbox" defaultChecked="{{ true }}" style="position:absolute;opacity:0"><span class="dot"></span></label>
+            </div>
+            <div class="field" style="padding-top:2px"><label>Ambang keyakinan minimum</label><input class="input" value="0,70"></div>
+          </div>
+          <div class="bp" style="padding:18px;display:flex;flex-direction:column;gap:12px">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <div class="k">Biaya per tenant · Juli</div>
+            <div style="display:flex;align-items:flex-end;gap:8px"><span class="big" style="font-size:38px">Rp 1,84</span><span style="font-size:14px;color:var(--color-neutral-700);padding-bottom:6px">juta</span></div>
+            <div style="height:8px;background:var(--color-neutral-200)"><div style="width:34%;height:100%;background:var(--color-accent)"></div></div>
+            <div style="font-size:12px;color:var(--color-neutral-600)">34% dari batas keras Rp 5,4 juta. Di atas 90%, agen turun ke mode Flash dan mengirim peringatan.</div>
+            <div style="display:flex;flex-direction:column;gap:6px;font-size:13px;padding-top:4px">
+              <div style="display:flex;justify-content:space-between"><span style="color:var(--color-neutral-700)">Model</span><span class="h">Rp 1,12 jt</span></div>
+              <div style="display:flex;justify-content:space-between"><span style="color:var(--color-neutral-700)">Places &amp; Maps</span><span class="h">Rp 0,41 jt</span></div>
+              <div style="display:flex;justify-content:space-between"><span style="color:var(--color-neutral-700)">BigQuery &amp; Run</span><span class="h">Rp 0,31 jt</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div class="bp" style="padding:20px;display:flex;flex-direction:column;gap:13px">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <div style="display:flex;align-items:baseline;gap:9px"><span class="h" style="font-size:19px">Evaluasi agen</span><span style="margin-left:auto;font-size:11.5px;color:var(--color-neutral-600)">golden set 60 kasus · dijalankan tiap deploy</span></div>
+            <table class="table">
+              <thead><tr><th>Metrik</th><th style="width:80px">Skor</th><th style="width:90px">Ambang</th><th style="width:70px">Status</th></tr></thead>
+              <tbody>
+                <tr><td>Ketepatan tema keluhan</td><td class="h">0,91</td><td>0,85</td><td><span class="tag tag-accent">lolos</span></td></tr>
+                <tr><td>Sitasi benar &amp; relevan</td><td class="h">0,94</td><td>0,90</td><td><span class="tag tag-accent">lolos</span></td></tr>
+                <tr><td>Kepatuhan nada brand</td><td class="h">0,88</td><td>0,80</td><td><span class="tag tag-accent">lolos</span></td></tr>
+                <tr><td>Halusinasi terdeteksi</td><td class="h">0,02</td><td>&lt; 0,05</td><td><span class="tag tag-accent">lolos</span></td></tr>
+                <tr><td>Latensi p95</td><td class="h">7,4 s</td><td>&lt; 10 s</td><td><span class="tag tag-accent">lolos</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="bp" style="padding:20px;display:flex;flex-direction:column;gap:13px">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <div class="h" style="font-size:19px">Kesehatan operasional</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+              <div><div class="k">Uptime 30 hari</div><div class="big" style="font-size:30px">99,7%</div></div>
+              <div><div class="k">Siklus malam terakhir</div><div class="big" style="font-size:30px">06.02</div></div>
+              <div><div class="k">Kegagalan tool 7 hari</div><div class="big" style="font-size:30px">3</div><div style="font-size:11.5px;color:var(--color-neutral-600)">semua berhasil retry</div></div>
+              <div><div class="k">Deploy terakhir</div><div class="big" style="font-size:30px">v0.9.4</div><div style="font-size:11.5px;color:var(--color-neutral-600)">CI hijau · 28 Jul 05.11</div></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:7px;padding-top:4px">
+              <div style="display:flex;align-items:center;gap:9px;font-size:12.5px"><span style="width:9px;height:9px;background:var(--color-accent);flex:none"></span>Terraform · infrastruktur terkelola kode</div>
+              <div style="display:flex;align-items:center;gap:9px;font-size:12.5px"><span style="width:9px;height:9px;background:var(--color-accent);flex:none"></span>GitHub Actions · test, eval, deploy</div>
+              <div style="display:flex;align-items:center;gap:9px;font-size:12.5px"><span style="width:9px;height:9px;background:var(--color-accent);flex:none"></span>Cloud Logging + Trace · setiap langkah agen tercatat</div>
+              <div style="display:flex;align-items:center;gap:9px;font-size:12.5px"><span style="width:9px;height:9px;background:var(--color-accent);flex:none"></span>Secret Manager · tanpa kunci di repo</div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+    </div>
+  </main>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;startScreen&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;login&quot;,&quot;briefing&quot;,&quot;map&quot;,&quot;outlet&quot;,&quot;inbox&quot;,&quot;draft&quot;,&quot;themes&quot;,&quot;scout&quot;,&quot;compare&quot;,&quot;chat&quot;,&quot;kb&quot;,&quot;answer&quot;,&quot;tickets&quot;,&quot;admin&quot;],&quot;default&quot;:&quot;briefing&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Prototipe&quot;}}">
+const SCREENS = [
+  ['login','Masuk &amp; pilih tenant','Pemisahan tenant dan peran terlihat sejak layar pertama.'],
+  ['briefing','Briefing Pagi','Hasil siklus agen tadi malam, disaring jadi keputusan yang perlu Anda ambil.'],
+  ['map','Peta jaringan cabang','Skor lokasi dan kesehatan reputasi 42 cabang di satu permukaan.'],
+  ['outlet','Detail cabang','Satu cabang: tren rating, tema keluhan, dan konteks sekitarnya.'],
+  ['inbox','Kotak masuk review','Triase otomatis: prioritas, tema, dan draft balasan yang menunggu persetujuan.'],
+  ['draft','Draft balasan AI','Balasan yang patuh SOP, dengan kutipan sumber dan pemeriksaan guardrail.'],
+  ['themes','Analisis tema &amp; sentimen','Tema keluhan × cabang sepanjang waktu — memisahkan masalah lokal dari sistemik.'],
+  ['scout','Site Scout','Kandidat lokasi baru, diberi skor dan alasan oleh Agen Lokasi.'],
+  ['compare','Bandingkan lokasi','Dua kandidat berhadapan, faktor demi faktor.'],
+  ['chat','Chat agen','Satu pertanyaan bahasa manusia, dijawab lintas tiga agen — dengan jejak eksekusinya.'],
+  ['kb','Pusat pengetahuan','Dokumen, status indeks, dan celah pengetahuan yang perlu ditutup.'],
+  ['answer','Jawaban bersitasi','Pertanyaan staf cabang dijawab dengan kutipan halaman SOP.'],
+  ['tickets','Papan tindakan','Insight ditutup menjadi pekerjaan yang benar-benar selesai.'],
+  ['admin','Admin: model, guardrail, biaya','Bukti kesiapan produksi yang bisa dilihat juri, bukan diklaim.'],
+];
+const LABELS = {login:'Masuk',briefing:'Briefing Pagi',map:'Peta jaringan',outlet:'Detail cabang',inbox:'Kotak masuk review',draft:'Draft balasan AI',themes:'Analisis tema',scout:'Site Scout',compare:'Bandingkan lokasi',chat:'Chat agen',kb:'Pusat pengetahuan',answer:'Jawaban bersitasi',tickets:'Papan tindakan',admin:'Admin & biaya'};
+
+class Component extends DCLogic {
+  state = { screen: null };
+  get cur() { return this.state.screen || this.props.startScreen || 'briefing'; }
+  renderVals() {
+    const cur = this.cur;
+    const out = {};
+    SCREENS.forEach(([id]) => { out['go_' + id] = () => this.setState({ screen: id }); });
+    SCREENS.forEach(([id]) => {
+      const k = id.charAt(0).toUpperCase() + id.slice(1);
+      out['is' + k] = cur === id;
+    });
+    const i = SCREENS.findIndex(s => s[0] === cur);
+    const row = SCREENS[i] || SCREENS[1];
+    out.navItems = SCREENS.map(([id], n) => ({
+      key: id, no: String(n + 1).padStart(2, '0'), label: LABELS[id], go: out['go_' + id],
+      bg: cur === id ? 'var(--color-accent-100)' : 'transparent',
+      fg: cur === id ? 'var(--color-accent-900)' : 'var(--color-text)',
+      mark: cur === id ? 'var(--color-accent)' : 'transparent',
+    }));
+    out.no = String(i + 1).padStart(2, '0');
+    out.title = row[1].replace('&amp;', '&');
+    out.subtitle = row[2];
+    return out;
+  }
+}
+</script>
+</body>
+</html>

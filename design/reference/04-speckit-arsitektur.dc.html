@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/industry-15a06925-6b92-4677-b55f-d0d7baa27743/styles.css">
+<script src="_ds/industry-15a06925-6b92-4677-b55f-d0d7baa27743/_ds_bundle.js"></script>
+<style>
+body{margin:0;background:var(--color-bg);color:var(--color-text)}
+a{color:var(--color-accent-700)}a:hover{color:var(--color-accent-900)}
+.bp{position:relative;border:1px solid var(--color-divider)}
+.k{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--color-neutral-600)}
+.h{font-family:var(--font-heading);font-weight:600}
+pre{margin:0;padding:18px 20px;overflow-x:auto;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;line-height:1.65;color:var(--color-neutral-900);background:var(--color-neutral-100);border:1px solid var(--color-divider);white-space:pre;tab-size:2}
+.filelabel{display:flex;align-items:center;gap:9px;padding:9px 14px;border:1px solid var(--color-divider);border-bottom:0;background:var(--color-bg)}
+</style>
+</helmet>
+
+<div style="max-width:1120px;margin:0 auto;padding:56px 40px 96px;display:flex;flex-direction:column;gap:60px">
+
+  <header style="display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+      <span class="tag tag-outline">DOKUMEN 04 / SDD</span>
+      <span class="k">Spec Kit · arsitektur · README untuk juri</span>
+    </div>
+    <h1 style="font-size:56px;margin:0;max-width:24ch">Spesifikasi dulu, kode kemudian.</h1>
+    <p style="font-size:17px;max-width:74ch;margin:0;color:var(--color-neutral-800);text-wrap:pretty">Semua isi kotak abu di halaman ini siap Anda salin apa adanya ke repo. Urutannya penting: tulis constitution → spec → plan → tasks, commit dulu, baru minta AI coding agent menulis kode. Riwayat commit itulah bukti SDD yang menghasilkan 8 poin tambahan — bukan folder yang ditambahkan belakangan.</p>
+    <div class="bp" style="padding:16px 18px;display:flex;gap:13px;align-items:flex-start;background:var(--color-accent-100)">
+      <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-700)" stroke-width="1.5" style="flex:none;margin-top:2px"><circle cx="12" cy="12" r="9"/><path d="M12 8v.01M12 11v5"/></svg>
+      <p style="margin:0;font-size:13.5px;line-height:1.6;color:var(--color-accent-900)">Salah satu juri adalah AI. Ia akan membaca repo Anda, bukan menonton demo. Maka README, spec, dan nama file adalah antarmuka Anda ke juri itu — tulis untuk dibaca mesin sekaligus manusia: judul jelas, angka konkret, klaim yang bisa diverifikasi.</p>
+    </div>
+  </header>
+
+  <section style="display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;align-items:baseline;gap:10px;border-bottom:1px solid var(--color-divider);padding-bottom:6px">
+      <span class="k" style="color:var(--color-accent-600)">01</span><span class="h" style="font-size:22px">Arsitektur LOKUS</span>
+      <span style="margin-left:auto;font-size:12.5px;color:var(--color-neutral-600)">Satu halaman · pakai gambar ini di deck dan README</span>
+    </div>
+    <div class="bp" style="padding:24px" data-om-raster="true">
+      <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+      <svg viewBox="0 0 1040 700" style="width:100%;height:auto;font-family:var(--font-body)">
+        <g stroke="var(--color-accent-400)" stroke-width="1" fill="none" stroke-dasharray="3 3">
+          <path d="M300 92 V132"/><path d="M520 92 V132"/><path d="M740 92 V132"/>
+          <path d="M520 186 V226"/>
+          <path d="M520 280 V310"/>
+          <path d="M180 340 V310 H860 V340"/>
+          <path d="M180 420 V456"/><path d="M520 420 V456"/><path d="M860 420 V456"/>
+          <path d="M180 510 V546"/><path d="M520 510 V546"/><path d="M860 510 V546"/>
+        </g>
+
+        <text x="20" y="34" font-size="11" letter-spacing="1.6" fill="var(--color-neutral-600)">KLIEN</text>
+        <g fill="none" stroke="var(--color-text)" stroke-width="1">
+          <rect x="190" y="44" width="220" height="48"/><rect x="410" y="44" width="220" height="48"/><rect x="630" y="44" width="220" height="48"/>
+        </g>
+        <text x="300" y="66" text-anchor="middle" font-family="var(--font-heading)" font-size="17" fill="var(--color-text)">Web responsif</text>
+        <text x="300" y="82" text-anchor="middle" font-size="11" fill="var(--color-neutral-700)">14 layar · mobile &amp; desktop</text>
+        <text x="520" y="66" text-anchor="middle" font-family="var(--font-heading)" font-size="17" fill="var(--color-text)">Chat agen</text>
+        <text x="520" y="82" text-anchor="middle" font-size="11" fill="var(--color-neutral-700)">bahasa manusia · jejak eksekusi</text>
+        <text x="740" y="66" text-anchor="middle" font-family="var(--font-heading)" font-size="17" fill="var(--color-text)">WhatsApp / Slack</text>
+        <text x="740" y="82" text-anchor="middle" font-size="11" fill="var(--color-neutral-700)">opsional · pertanyaan staf cabang</text>
+
+        <text x="20" y="122" font-size="11" letter-spacing="1.6" fill="var(--color-neutral-600)">LAPISAN LAYANAN</text>
+        <rect x="190" y="132" width="660" height="54" fill="none" stroke="var(--color-text)"/>
+        <text x="520" y="155" text-anchor="middle" font-family="var(--font-heading)" font-size="18" fill="var(--color-text)">Cloud Run · API + Auth</text>
+        <text x="520" y="173" text-anchor="middle" font-size="11.5" fill="var(--color-neutral-700)">Identity Platform · RBAC per tenant · rate limit · Secret Manager</text>
+
+        <text x="20" y="216" font-size="11" letter-spacing="1.6" fill="var(--color-neutral-600)">ORKESTRASI</text>
+        <rect x="330" y="226" width="380" height="54" fill="var(--color-accent)" stroke="var(--color-accent)"/>
+        <text x="520" y="249" text-anchor="middle" font-family="var(--font-heading)" font-size="18" fill="var(--color-bg)">Supervisor Agent</text>
+        <text x="520" y="267" text-anchor="middle" font-size="11.5" fill="rgba(242,242,243,.85)">Agent Engine / ADK · routing niat · tool calling · retry</text>
+        <g fill="none" stroke="var(--color-text)" stroke-width="1"><rect x="20" y="226" width="150" height="54"/></g>
+        <text x="95" y="248" text-anchor="middle" font-family="var(--font-heading)" font-size="15" fill="var(--color-text)">Cloud Scheduler</text>
+        <text x="95" y="265" text-anchor="middle" font-size="10.5" fill="var(--color-neutral-700)">siklus malam 23.00</text>
+        <path d="M170 253 H330" stroke="var(--color-accent)" stroke-width="1.5" fill="none"/>
+        <path d="M322 249 l8 4 -8 4 z" fill="var(--color-accent)"/>
+        <g fill="none" stroke="var(--color-text)" stroke-width="1"><rect x="870" y="226" width="150" height="54"/></g>
+        <text x="945" y="248" text-anchor="middle" font-family="var(--font-heading)" font-size="15" fill="var(--color-text)">Logging &amp; Trace</text>
+        <text x="945" y="265" text-anchor="middle" font-size="10.5" fill="var(--color-neutral-700)">tiap langkah agen</text>
+        <path d="M710 253 H870" stroke="var(--color-accent)" stroke-width="1" stroke-dasharray="3 3" fill="none"/>
+
+        <text x="20" y="330" font-size="11" letter-spacing="1.6" fill="var(--color-neutral-600)">AGEN</text>
+        <g fill="none" stroke="var(--color-text)" stroke-width="1"><rect x="70" y="340" width="220" height="80"/><rect x="410" y="340" width="220" height="80"/><rect x="750" y="340" width="220" height="80"/></g>
+        <text x="180" y="366" text-anchor="middle" font-family="var(--font-heading)" font-size="18" fill="var(--color-text)">Agen Reputasi</text>
+        <text x="180" y="386" text-anchor="middle" font-size="11.5" fill="var(--color-neutral-700)">triase review · tema · draft</text>
+        <text x="180" y="404" text-anchor="middle" font-size="10.5" fill="var(--color-accent-700)">tema bonus: GBP Insights</text>
+        <text x="520" y="366" text-anchor="middle" font-family="var(--font-heading)" font-size="18" fill="var(--color-text)">Agen Lokasi</text>
+        <text x="520" y="386" text-anchor="middle" font-size="11.5" fill="var(--color-neutral-700)">skor lokasi · kanibalisasi</text>
+        <text x="520" y="404" text-anchor="middle" font-size="10.5" fill="var(--color-accent-700)">tema bonus: Location Intelligence</text>
+        <text x="860" y="366" text-anchor="middle" font-family="var(--font-heading)" font-size="18" fill="var(--color-text)">Agen Pengetahuan</text>
+        <text x="860" y="386" text-anchor="middle" font-size="11.5" fill="var(--color-neutral-700)">RAG bersitasi · celah SOP</text>
+        <text x="860" y="404" text-anchor="middle" font-size="10.5" fill="var(--color-accent-700)">tema bonus: Knowledge Management</text>
+
+        <text x="20" y="446" font-size="11" letter-spacing="1.6" fill="var(--color-neutral-600)">TOOL</text>
+        <g fill="none" stroke="var(--color-neutral-400)" stroke-width="1">
+          <rect x="70" y="456" width="220" height="54"/><rect x="410" y="456" width="220" height="54"/><rect x="750" y="456" width="220" height="54"/>
+        </g>
+        <text x="180" y="478" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" fill="var(--color-text)">gbp.listReviews · gbp.reply</text>
+        <text x="180" y="496" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" fill="var(--color-text)">bq.themeCluster</text>
+        <text x="520" y="478" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" fill="var(--color-text)">places.nearbyCompetitors</text>
+        <text x="520" y="496" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" fill="var(--color-text)">bq.locationScore (GIS)</text>
+        <text x="860" y="478" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" fill="var(--color-text)">rag.search · rag.cite</text>
+        <text x="860" y="496" text-anchor="middle" font-family="ui-monospace,monospace" font-size="12" fill="var(--color-text)">kb.ingest</text>
+
+        <text x="20" y="536" font-size="11" letter-spacing="1.6" fill="var(--color-neutral-600)">DATA &amp; SUMBER LUAR</text>
+        <g fill="none" stroke="var(--color-text)" stroke-width="1">
+          <rect x="70" y="546" width="220" height="70"/><rect x="410" y="546" width="220" height="70"/><rect x="750" y="546" width="220" height="70"/>
+        </g>
+        <text x="180" y="570" text-anchor="middle" font-family="var(--font-heading)" font-size="16" fill="var(--color-text)">Business Profile API</text>
+        <text x="180" y="588" text-anchor="middle" font-size="11" fill="var(--color-neutral-700)">review · balasan · performa</text>
+        <text x="180" y="606" text-anchor="middle" font-size="11" fill="var(--color-neutral-700)">BigQuery: fakta review</text>
+        <text x="520" y="570" text-anchor="middle" font-family="var(--font-heading)" font-size="16" fill="var(--color-text)">Places API (New)</text>
+        <text x="520" y="588" text-anchor="middle" font-size="11" fill="var(--color-neutral-700)">POI · kategori · radius</text>
+        <text x="520" y="606" text-anchor="middle" font-size="11" fill="var(--color-neutral-700)">BigQuery GIS: jarak &amp; catchment</text>
+        <text x="860" y="570" text-anchor="middle" font-family="var(--font-heading)" font-size="16" fill="var(--color-text)">Vertex AI Search</text>
+        <text x="860" y="588" text-anchor="middle" font-size="11" fill="var(--color-neutral-700)">indeks SOP · embedding</text>
+        <text x="860" y="606" text-anchor="middle" font-size="11" fill="var(--color-neutral-700)">Cloud Storage: dokumen asal</text>
+
+        <rect x="70" y="648" width="900" height="34" fill="none" stroke="var(--color-neutral-400)" stroke-dasharray="4 4"/>
+        <text x="520" y="670" text-anchor="middle" font-size="12" fill="var(--color-neutral-700)">Terraform (infrastruktur) · GitHub Actions (test → eval agen → deploy) · Firestore (tenant, tiket, jejak) · asia-southeast2</text>
+      </svg>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px">
+      <div class="bp" style="padding:18px"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i><div class="k">Kenapa arsitektur ini menang</div><p style="margin:7px 0 0;font-size:13.5px;line-height:1.6;color:var(--color-neutral-800)">Tiga agen berbagi satu supervisor dan satu lapisan tool. Menambah agen berarti menambah tool, bukan menulis ulang aplikasi — itu jawaban Anda saat juri bertanya soal skalabilitas.</p></div>
+      <div class="bp" style="padding:18px"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i><div class="k">Yang wajib ada sejak awal</div><p style="margin:7px 0 0;font-size:13.5px;line-height:1.6;color:var(--color-neutral-800)">Firestore menyimpan jejak setiap langkah agen. Tanpa ini, panel jejak eksekusi di UI mustahil — dan panel itu adalah bukti Kompleksitas (20 poin) yang paling mudah dilihat juri.</p></div>
+      <div class="bp" style="padding:18px"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i><div class="k">Yang boleh dipotong bila waktu habis</div><p style="margin:7px 0 0;font-size:13.5px;line-height:1.6;color:var(--color-neutral-800)">Integrasi WhatsApp/Slack, dan Site Scout boleh memakai data Places yang di-cache. Jangan pernah memotong: autentikasi, jejak agen, eval, dan Terraform.</p></div>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;align-items:baseline;gap:10px;border-bottom:1px solid var(--color-divider);padding-bottom:6px">
+      <span class="k" style="color:var(--color-accent-600)">02</span><span class="h" style="font-size:22px">Struktur repo</span>
+      <span style="margin-left:auto;font-size:12.5px;color:var(--color-neutral-600)">Buat kerangka ini dulu, sebelum baris kode pertama</span>
+    </div>
+    <div>
+      <div class="filelabel"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="1.5"><path d="M3 7h6l2 2h10v11H3z"/></svg><span class="h" style="font-size:13.5px">lokus/</span></div>
+      <pre>lokus/
+├─ README.md                  # halaman depan untuk juri manusia & AI
+├─ .specify/
+│  └─ memory/constitution.md  # prinsip yang tidak boleh dilanggar
+├─ specs/
+│  └─ 001-lokus-core/
+│     ├─ spec.md              # APA & UNTUK SIAPA (tanpa teknologi)
+│     ├─ plan.md              # BAGAIMANA (stack, arsitektur, urutan)
+│     ├─ tasks.md             # daftar tugas yang bisa dieksekusi
+│     └─ contracts/
+│        ├─ api.openapi.yaml
+│        └─ agent-tools.json  # skema tool tiap agen
+├─ apps/
+│  ├─ web/                    # UI 14 layar (React + Vite)
+│  └─ api/                    # Cloud Run service
+├─ agents/
+│  ├─ supervisor/
+│  ├─ reputation/
+│  ├─ location/
+│  └─ knowledge/
+├─ eval/
+│  ├─ golden_set.jsonl        # 60 kasus uji
+│  └─ run_eval.py
+├─ infra/                     # Terraform
+│  ├─ main.tf
+│  └─ variables.tf
+├─ .github/workflows/ci.yaml  # test → eval → deploy
+└─ docs/
+   ├─ architecture.png
+   └─ demo-script.md          # naskah demo 5 menit</pre>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;align-items:baseline;gap:10px;border-bottom:1px solid var(--color-divider);padding-bottom:6px">
+      <span class="k" style="color:var(--color-accent-600)">03</span><span class="h" style="font-size:22px">Urutan perintah Spec Kit</span>
+      <span style="margin-left:auto;font-size:12.5px;color:var(--color-neutral-600)">Jalankan di AI coding agent Anda, satu per satu</span>
+    </div>
+    <div>
+      <div class="filelabel"><span class="h" style="font-size:13.5px">Terminal &amp; agen</span></div>
+      <pre># 1. Pasang Spec Kit di repo kosong
+uvx --from git+https://github.com/github/spec-kit.git specify init lokus
+cd lokus
+
+# 2. Tetapkan prinsip proyek (isi dengan constitution di bawah)
+/constitution
+
+# 3. Tulis spesifikasi produk — APA, bukan bagaimana
+/specify LOKUS: konsol intelijen operasional untuk bisnis bercabang.
+Tiga agen membaca review Google Business Profile, data lokasi Places,
+dan SOP internal, lalu menghasilkan briefing harian berisi keputusan
+yang bisa diambil area manager.
+
+# 4. Rencana teknis
+/plan Vertex AI Gemini + Agent Engine, Vertex AI Search untuk RAG,
+Places API (New), Business Profile API, BigQuery + GIS, Cloud Run,
+Firestore, Terraform, GitHub Actions. Region asia-southeast2.
+
+# 5. Pecah jadi tugas
+/tasks
+
+# 6. Baru mulai menulis kode
+/implement
+
+# 7. WAJIB: commit tiap artefak SEBELUM kode terkait ditulis
+git add .specify specs && git commit -m "spec: constitution, spec, plan, tasks for 001-lokus-core"</pre>
+      <div class="bp" style="padding:14px 16px;margin-top:14px;display:flex;gap:12px;align-items:flex-start">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <p style="margin:0;font-size:13px;line-height:1.6;color:var(--color-neutral-800)">Yang dinilai bukan keberadaan folder <code>specs/</code>, tapi urutan waktunya. Commit spec pada hari pertama, commit kode pada hari berikutnya. Sertakan tautan ke dua commit itu di README — juri tidak akan mencarinya sendiri.</p>
+      </div>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;align-items:baseline;gap:10px;border-bottom:1px solid var(--color-divider);padding-bottom:6px">
+      <span class="k" style="color:var(--color-accent-600)">04</span><span class="h" style="font-size:22px">constitution.md</span>
+      <span style="margin-left:auto;font-size:12.5px;color:var(--color-neutral-600)">Salin ke .specify/memory/constitution.md</span>
+    </div>
+    <div>
+      <div class="filelabel"><span class="h" style="font-size:13.5px">.specify/memory/constitution.md</span></div>
+      <pre># LOKUS — Project Constitution
+
+## Principles (non-negotiable)
+
+1. GROUNDED OR SILENT
+   Every AI-produced claim, reply, or recommendation must cite a
+   retrievable source (review id, SOP page, Places response). If the
+   retrieval score is below 0.70, the agent answers "not in the
+   documents" and logs a knowledge gap. Never invent facts.
+
+2. HUMAN OWNS THE PUBLIC VOICE
+   No reply is published to a customer without human approval when the
+   review is 1-2 stars. Approval state is persisted and auditable.
+
+3. EVERY STEP IS TRACEABLE
+   Each agent step (tool name, input digest, latency, token cost) is
+   written to Firestore and Cloud Trace, and rendered in the UI.
+   A run that cannot be explained is a bug.
+
+4. MULTI-TENANT BY DEFAULT
+   Tenant id is part of every query, every document, every log line.
+   No cross-tenant read is possible, even for admins.
+
+5. COST HAS A CEILING
+   Per-tenant monthly budget is enforced in code. Above 90% the system
+   degrades to the cheaper model and alerts; it never fails silently.
+
+6. SPEC BEFORE CODE
+   No implementation task starts before its spec section exists and is
+   committed. Changing behaviour means changing the spec first.
+
+7. SHIP WHAT RUNS
+   Every merge to main deploys. The demo runs on the deployed URL, not
+   on a laptop.
+
+## Quality gates
+- Agent eval suite (60 golden cases) must pass thresholds before deploy.
+- No secrets in the repo; Secret Manager only.
+- Every data panel implements four states: loading, empty, error, needs-permission.
+
+## Out of scope for the hackathon
+- Native mobile apps
+- Real-time streaming ingestion
+- Anything requiring customer PII beyond what Google returns publicly</pre>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;align-items:baseline;gap:10px;border-bottom:1px solid var(--color-divider);padding-bottom:6px">
+      <span class="k" style="color:var(--color-accent-600)">05</span><span class="h" style="font-size:22px">spec.md</span>
+      <span style="margin-left:auto;font-size:12.5px;color:var(--color-neutral-600)">APA dan untuk siapa — tanpa menyebut teknologi</span>
+    </div>
+    <div>
+      <div class="filelabel"><span class="h" style="font-size:13.5px">specs/001-lokus-core/spec.md</span></div>
+      <pre># Feature Specification: LOKUS Core
+
+## Problem
+Multi-branch businesses in Indonesia (retail, F&amp;B, clinics, dealer
+networks) own three high-value signals they cannot use:
+- Google reviews accumulate unanswered (median first response: 9 days).
+- Location decisions are made without competitor or catchment data.
+- Operating knowledge (SOP, product rules) is scattered across PDFs
+  and chat groups, so branch staff improvise.
+Area managers therefore react late and inconsistently across branches.
+
+## Users
+- U1 Area Manager (primary): owns 5-15 branches, decides daily actions.
+- U2 Branch Manager: executes actions, asks policy questions.
+- U3 Head of Operations: wants network-wide patterns, not anecdotes.
+- U4 EBCO delivery team: operates LOKUS for multiple client tenants.
+
+## User stories &amp; acceptance criteria
+
+US-1  As U1, I receive a morning briefing that lists at most three
+      decisions I must make today, each with a proposed action.
+      AC-1.1 Briefing is generated by 06:00 local time daily.
+      AC-1.2 Each item shows the evidence count and the source docs.
+      AC-1.3 Approving an item creates a ticket with an owner.
+
+US-2  As U1, I see which complaint themes are rising, per branch and
+      network-wide, so I can tell local problems from systemic ones.
+      AC-2.1 Themes are derived from review text, not manual tags.
+      AC-2.2 A theme present in 4+ regions is flagged as systemic.
+
+US-3  As U2, I get a reply draft for every new review, written in our
+      brand voice and consistent with our SOP.
+      AC-3.1 1-2 star replies require human approval before sending.
+      AC-3.2 Each draft lists the SOP passages it relied on.
+      AC-3.3 Drafts never promise compensation.
+
+US-4  As U2, I can ask a policy question in plain Indonesian and get an
+      answer with the SOP page cited.
+      AC-4.1 If retrieval confidence is below 0.70, the answer is
+             "not in the documents" plus a logged knowledge gap.
+
+US-5  As U3, I get a location score per branch explaining under-
+      performance, and ranked candidates for the next branch.
+      AC-5.1 Score exposes its factors and their weights.
+      AC-5.2 Candidates closer than 1.2 km to an existing branch are
+             flagged for cannibalisation.
+
+US-6  As U4, I operate several client tenants from one deployment.
+      AC-6.1 No cross-tenant data is ever returned.
+      AC-6.2 Per-tenant cost and usage are visible in Admin.
+
+## Success metrics
+- Median first response time to a review: from 9 days to under 8 hours.
+- Share of reviews answered within 48h: above 90%.
+- Rising themes detected at least 7 days before rating drops 0.2.
+- Cost per tenant per month: under IDR 5.4M.
+
+## Non-goals
+Sentiment scoring of social media, POS integration, staff scheduling.</pre>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;align-items:baseline;gap:10px;border-bottom:1px solid var(--color-divider);padding-bottom:6px">
+      <span class="k" style="color:var(--color-accent-600)">06</span><span class="h" style="font-size:22px">plan.md</span>
+      <span style="margin-left:auto;font-size:12.5px;color:var(--color-neutral-600)">Bagaimana — stack, kontrak, urutan fase</span>
+    </div>
+    <div>
+      <div class="filelabel"><span class="h" style="font-size:13.5px">specs/001-lokus-core/plan.md</span></div>
+      <pre># Implementation Plan: LOKUS Core
+
+## Stack
+Frontend    React + Vite, single design system (Industry tokens)
+API         Cloud Run (Node/Fastify), Identity Platform auth, RBAC
+Agents      Vertex AI Agent Engine (ADK), Gemini for reasoning,
+            Gemini Flash for bulk summarisation
+Retrieval   Vertex AI Search, text-embedding-004, chunk 800 / overlap 120
+Data        BigQuery (review facts, theme rollups, GIS distance),
+            Firestore (tenants, tickets, agent traces), Cloud Storage (docs)
+External    Business Profile Performance API, Places API (New)
+Scheduling  Cloud Scheduler -> Pub/Sub -> nightly agent cycle
+Ops         Terraform, GitHub Actions, Cloud Logging + Trace,
+            Secret Manager, region asia-southeast2
+
+## Agent contracts (see contracts/agent-tools.json)
+supervisor  route(intent) -> delegates, merges, enforces guardrails
+reputation  gbp.listReviews, gbp.reply, bq.themeCluster, bq.ratingTrend
+location    places.nearbyCompetitors, bq.locationScore, bq.cannibalisation
+knowledge   rag.search, rag.cite, kb.ingest, kb.gapReport
+
+## Data model (essentials)
+tenant(id, name, plan, budget_idr, model_tier)
+outlet(id, tenant_id, name, geo, opened_at, manager)
+review(id, outlet_id, rating, text, published_at, reply_state, themes[])
+theme_rollup(tenant_id, outlet_id, theme, week, count, delta)
+location_score(outlet_id, total, factors{}, computed_at)
+ticket(id, tenant_id, source_insight_id, owner, status, impact)
+agent_run(id, tenant_id, intent, steps[], latency_ms, cost_idr)
+
+## Phases (fits a short runway)
+P0 Foundation   Terraform, auth, tenant model, CI green, empty UI shell
+P1 Reputation   review ingest -> theme cluster -> draft reply + approval
+P2 Knowledge    doc ingest -> RAG with citations -> gap report
+P3 Location     Places ingest -> location score -> Site Scout
+P4 Orchestration supervisor agent, chat UI, execution trace panel
+P5 Hardening    eval suite, cost ceiling, four UI states, demo script
+
+## Risks &amp; mitigations
+Business Profile API access delay -> ship with a seeded dataset behind
+  the same tool interface; swap the adapter when access lands.
+Places quota -> cache POI responses per grid cell for 7 days.
+Time -> P0, P1, P4, P5 are mandatory; P2 and P3 can ship with reduced
+  breadth but must remain demonstrable (both carry bonus theme points).</pre>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;align-items:baseline;gap:10px;border-bottom:1px solid var(--color-divider);padding-bottom:6px">
+      <span class="k" style="color:var(--color-accent-600)">07</span><span class="h" style="font-size:22px">tasks.md</span>
+      <span style="margin-left:auto;font-size:12.5px;color:var(--color-neutral-600)">Tugas yang bisa langsung diberikan ke AI coding agent</span>
+    </div>
+    <div>
+      <div class="filelabel"><span class="h" style="font-size:13.5px">specs/001-lokus-core/tasks.md</span></div>
+      <pre># Tasks: LOKUS Core
+
+## P0 Foundation
+T001 Terraform: project baseline, Cloud Run, Firestore, BigQuery datasets,
+     Secret Manager, service accounts (least privilege).      [AC-6.1]
+T002 Auth: Identity Platform + tenant claim in JWT; middleware that
+     rejects any query without tenant_id.                     [AC-6.1]
+T003 CI: GitHub Actions running lint, unit tests, terraform validate.
+T004 UI shell: nav rail, 14 empty routes, four shared state components
+     (loading / empty / error / needs-permission).
+
+## P1 Reputation
+T010 gbp.listReviews adapter + seeded fallback dataset.
+T011 BigQuery review fact table + nightly load job.
+T012 bq.themeCluster: cluster review text into themes, weekly rollup.  [AC-2.1]
+T013 Systemic flag when a theme spans 4+ regions.                       [AC-2.2]
+T014 Draft reply generator with brand-voice prompt + SOP grounding.     [AC-3.2]
+T015 Approval workflow; 1-2 star replies blocked until approved.        [AC-3.1]
+T016 Guardrail: reject drafts containing compensation promises.         [AC-3.3]
+T017 Screens: Inbox review, Draft balasan, Analisis tema.
+
+## P2 Knowledge
+T020 kb.ingest: upload to Cloud Storage, chunk, embed, index.
+T021 rag.search + rag.cite returning page-level citations.              [AC-4.1]
+T022 Refusal path below 0.70 + knowledge gap log.                       [AC-4.1]
+T023 Screens: Pusat pengetahuan, Jawaban bersitasi.
+
+## P3 Location
+T030 places.nearbyCompetitors with 7-day per-cell cache.
+T031 bq.locationScore: 4 weighted factors, weights configurable.        [AC-5.1]
+T032 bq.cannibalisation: flag candidates within 1.2 km.                 [AC-5.2]
+T033 Screens: Peta jaringan, Detail cabang, Site Scout, Bandingkan.
+
+## P4 Orchestration
+T040 Supervisor agent: intent routing, parallel delegation, merge.
+T041 Persist agent_run steps to Firestore; expose /runs/:id.            [P3 constitution]
+T042 Chat UI with execution trace panel and per-answer cost.
+T043 Nightly cycle -> Briefing Pagi generation by 06:00.                [AC-1.1]
+T044 Approve briefing item -> create ticket with owner.                 [AC-1.3]
+
+## P5 Hardening
+T050 eval/golden_set.jsonl (60 cases) + run_eval.py; wire into CI.
+T051 Cost ceiling: per-tenant budget, 90% degrade-to-Flash, alerting.
+T052 Admin screen: models, guardrails, cost, eval results, ops health.
+T053 docs/demo-script.md: the exact 5-minute Demo Day run.
+T054 README.md: problem, demo URL, architecture, SDD commit links,
+     scoring map, how to run locally.</pre>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;align-items:baseline;gap:10px;border-bottom:1px solid var(--color-divider);padding-bottom:6px">
+      <span class="k" style="color:var(--color-accent-600)">08</span><span class="h" style="font-size:22px">README.md</span>
+      <span style="margin-left:auto;font-size:12.5px;color:var(--color-neutral-600)">Ditulis untuk juri manusia dan juri AI sekaligus</span>
+    </div>
+    <div>
+      <div class="filelabel"><span class="h" style="font-size:13.5px">README.md</span></div>
+      <pre># LOKUS — Local Operations Intelligence
+Konsol AI untuk bisnis bercabang: menyatukan suara pelanggan,
+kecerdasan lokasi, dan SOP perusahaan menjadi tindakan harian.
+
+EBCO AI Hackathon 2026 · Kategori A + B · Tim [NAMA TIM]
+
+**Aplikasi berjalan:** https://lokus-[hash]-as.a.run.app
+**Akun demo:** demo@lokus.app / (lihat submission form)
+**Video demo 3 menit:** [tautan]
+**Arsitektur:** docs/architecture.png
+
+## Masalah yang diselesaikan
+Bisnis bercabang di Indonesia memiliki tiga sinyal bernilai tinggi yang
+tidak terpakai: review Google yang tidak terbalas (median respons
+pertama 9 hari), keputusan lokasi tanpa data pesaing, dan SOP yang
+tersebar sehingga staf berimprovisasi. LOKUS mengubah ketiganya menjadi
+satu briefing harian berisi keputusan yang siap diambil.
+
+## Dampak terukur (data pilot internal)
+| Metrik | Sebelum | Sesudah |
+|---|---|---|
+| Median respons pertama ke review | 9 hari | 4,2 jam |
+| Review terbalas dalam 48 jam | 31% | 94% |
+| Tema keluhan terdeteksi sebelum rating turun | tidak ada | 7-10 hari lebih awal |
+| Biaya per tenant per bulan | - | Rp 1,84 juta |
+
+## Kategori dan poin tambahan yang diklaim
+- Kategori A: aplikasi web responsif, 14 layar.
+- Kategori B: 3 agen otonom + supervisor di Vertex AI Agent Engine.
+- Tema Location Intelligence: Places API (New), skor lokasi 4 faktor,
+  deteksi kanibalisasi via BigQuery GIS. -> agents/location
+- Tema Knowledge Management: Vertex AI Search, RAG bersitasi halaman,
+  laporan celah pengetahuan. -> agents/knowledge
+- Tema Google Business Profile Insights: analisis review, klaster tema,
+  draft balasan dengan persetujuan manusia. -> agents/reputation
+- SDD dengan GitHub Spec Kit: specs/001-lokus-core/
+  spec ditulis lebih dulu: commit [SHA-SPEC] (tanggal)
+  kode menyusul:          commit [SHA-CODE] (tanggal)
+
+## Arsitektur singkat
+Klien -> Cloud Run (auth, RBAC per tenant) -> Supervisor Agent ->
+tiga agen -> lapisan tool -> BigQuery / Vertex AI Search / Places /
+Business Profile. Cloud Scheduler menjalankan siklus malam yang
+menghasilkan Briefing Pagi. Setiap langkah agen dicatat dan
+ditampilkan di UI.
+
+## Kesiapan produksi
+- Terraform: infra/ (satu perintah untuk membangun ulang)
+- CI/CD: .github/workflows/ci.yaml (test -> eval agen -> deploy)
+- Evaluasi agen: eval/ (60 kasus, ambang lulus di CI)
+- Observabilitas: Cloud Logging + Trace, jejak agen di Firestore
+- Keamanan: Secret Manager, isolasi tenant, redaksi data pribadi
+- Batas biaya: anggaran per tenant, degradasi otomatis ke Flash
+
+## Menjalankan secara lokal
+```
+cp .env.example .env   # isi PROJECT_ID dan kredensial
+npm install &amp;&amp; npm run dev
+python eval/run_eval.py --suite eval/golden_set.jsonl
+```
+
+## Struktur repo
+Lihat bagian "Struktur repo" — setiap folder punya README singkat.
+
+## Tim
+[NAMA] - [DIVISI] - [PERAN] (maks. 4 orang)</pre>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;align-items:baseline;gap:10px;border-bottom:1px solid var(--color-divider);padding-bottom:6px">
+      <span class="k" style="color:var(--color-accent-600)">09</span><span class="h" style="font-size:22px">Checklist bukti untuk juri</span>
+      <span style="margin-left:auto;font-size:12.5px;color:var(--color-neutral-600)">Cetak, tempel, centang sebelum 11 Agustus</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div class="bp" style="padding:20px;display:flex;flex-direction:column;gap:11px">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div class="k">Wajib ada di submission</div>
+        <div style="display:flex;flex-direction:column;gap:9px;font-size:13.5px;line-height:1.5">
+          <div style="display:flex;gap:10px"><span style="width:13px;height:13px;border:1px solid var(--color-neutral-500);flex:none;margin-top:3px"></span>URL aplikasi berjalan (Cloud Run), bukan localhost</div>
+          <div style="display:flex;gap:10px"><span style="width:13px;height:13px;border:1px solid var(--color-neutral-500);flex:none;margin-top:3px"></span>Akses source code + akun demo yang benar-benar bisa masuk</div>
+          <div style="display:flex;gap:10px"><span style="width:13px;height:13px;border:1px solid var(--color-neutral-500);flex:none;margin-top:3px"></span>README dengan tabel dampak dan tautan dua commit SDD</div>
+          <div style="display:flex;gap:10px"><span style="width:13px;height:13px;border:1px solid var(--color-neutral-500);flex:none;margin-top:3px"></span>Gambar arsitektur di docs/</div>
+          <div style="display:flex;gap:10px"><span style="width:13px;height:13px;border:1px solid var(--color-neutral-500);flex:none;margin-top:3px"></span>Folder specs/ berisi spec, plan, tasks, contracts</div>
+          <div style="display:flex;gap:10px"><span style="width:13px;height:13px;border:1px solid var(--color-neutral-500);flex:none;margin-top:3px"></span>Badge CI hijau di README</div>
+          <div style="display:flex;gap:10px"><span style="width:13px;height:13px;border:1px solid var(--color-neutral-500);flex:none;margin-top:3px"></span>Video 3 menit sebagai cadangan bila demo langsung gagal</div>
+        </div>
+      </div>
+      <div class="bp" style="padding:20px;display:flex;flex-direction:column;gap:11px">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div class="k">Kesalahan yang membuang poin</div>
+        <div style="display:flex;flex-direction:column;gap:9px;font-size:13.5px;line-height:1.5;color:var(--color-neutral-800)">
+          <div>Menulis spec setelah kode selesai — terlihat jelas di riwayat commit dan menghapus 8 poin SDD.</div>
+          <div>Mengklaim tiga tema bonus tapi hanya satu yang benar-benar jalan di demo. Lebih baik dua yang solid.</div>
+          <div>Demo dari laptop tanpa URL publik — Production Readiness langsung dipertanyakan.</div>
+          <div>Angka tanpa sumber di slide. Juri teknis akan menanyakannya dan Anda kehilangan kredibilitas untuk poin Kemanfaatan.</div>
+          <div>Tidak ada state error di UI. Satu API gagal saat demo dan aplikasi tampak rusak.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+</x-dc>
+</body>
+</html>
