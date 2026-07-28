@@ -13,3 +13,4 @@ export { createMemoryWarehouse } from './pipeline/warehouse.js';
 export { loadReviewFacts } from './pipeline/loadReviews.js';
 
 export { classifyReview, scoreThemes, themeCluster, themesFor } from './analytics/themeCluster.js';
+export { SYSTEMIC_REGION_THRESHOLD, flagSystemicThemes, systemicFinding } from './analytics/systemic.js';
