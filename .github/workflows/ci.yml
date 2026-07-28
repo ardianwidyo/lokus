@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A pull request only needs to read the repository. Nothing here deploys.
+permissions:
+  contents: read
+
+# A new push supersedes an in-flight run on the same ref.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20'
+  TERRAFORM_VERSION: '1.9.8'
+
+jobs:
+  node:
+    name: Lint and unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests with coverage
+        # Thresholds live in each workspace's vitest config, so a coverage drop
+        # fails here rather than being reported and ignored.
+        run: npm run test:coverage --workspace api
+
+      - name: Build every workspace that has a build
+        run: npm run build
+
+  terraform:
+    name: Terraform validate
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      # No credentials and no state: validation is a type and syntax check, and
+      # a pull request must never be able to touch real infrastructure.
+      - name: Init without backend
+        run: terraform init -backend=false -input=false
+
+      - name: Format check
+        run: terraform fmt -check -recursive
+
+      - name: Validate
+        run: terraform validate -no-color
+
+  secrets:
+    name: No secrets in the repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Constitution quality gate: Secret Manager only. This catches the two
+      # ways a credential usually arrives — a committed env file or a committed
+      # tfvars/state file. `git ls-files` is used so only tracked files count.
+      - name: Reject committed credential files
+        run: |
+          tracked=$(git ls-files \
+            '*.env' '.env' '.env.*' \
+            'terraform.tfvars' '*.auto.tfvars' \
+            '*.tfstate' '*.tfstate.*' \
+            'backend.hcl' \
+            '*service-account*.json' \
+            | grep -v '\.example$' || true)
+          if [ -n "$tracked" ]; then
+            echo "::error::These files must never be committed:"
+            echo "$tracked"
+            exit 1
+          fi
+          echo "No credential files tracked."
