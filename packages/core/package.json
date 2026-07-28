@@ -1,0 +1,20 @@
+{
+  "name": "@lokus/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "LOKUS domain logic: themes, guardrails, drafts, scoring, and the seeded dataset. No cloud SDK.",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^2.1.9",
+    "vitest": "^2.1.8"
+  }
+}
