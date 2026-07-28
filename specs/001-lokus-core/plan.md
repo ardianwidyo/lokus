@@ -5,6 +5,7 @@
 | Layer | Choice | Notes |
 |---|---|---|
 | Frontend | React + Vite | single stylesheet: `design/tokens.css` |
+| Domain | `packages/core` — plain JS, no cloud SDK | theme clustering, guardrails, draft assembly, scoring, seeded dataset |
 | API | Cloud Run (Node 20 + Fastify) | Identity Platform auth, RBAC middleware |
 | Agents | Vertex AI Agent Engine (ADK) | supervisor + 3 specialised agents |
 | Models | Gemini (reasoning), Gemini Flash (bulk summarisation) | tier switch on budget |
@@ -76,6 +77,21 @@ folded in continuously rather than left to the end.
 | Model cost overrun | per-tenant ceiling in code, degrade to Flash at 90%, alert |
 | Non-developer team | every task in `tasks.md` names its acceptance criterion so the coding agent has an unambiguous target |
 | Demo failure | record a 3-minute video as a fallback; demo always runs on the deployed URL |
+| Domain logic duplicated between API and seeded UI | one `packages/core` workspace holds it; the API wraps it in HTTP + auth, the seeded web adapter calls it directly. Logic is written and tested once |
+
+## Recorded deviations
+
+- **2026-07-29 · `packages/core` workspace added.** Theme clustering, guardrail
+  checks, draft assembly and location scoring are needed both by the Cloud Run
+  API and by the web console when it runs on the seeded dataset (Q1). A shared
+  plain-JS workspace keeps one implementation and one test suite instead of
+  two. No new external dependency; it is repository structure, not stack.
+- **2026-07-29 · local development auth mode.** `LOKUS_AUTH_MODE=dev` lets the
+  API mint a local principal so the console is runnable end to end before
+  Identity Platform is provisioned for the pilot tenant (Q1 still open). The
+  server refuses to start if this mode is set while `NODE_ENV=production`, and
+  every request served under it is logged as such. Production is unaffected:
+  the default mode remains Identity Platform token verification.
 
 ## Definition of done (per phase)
 
