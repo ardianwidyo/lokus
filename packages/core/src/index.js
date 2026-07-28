@@ -14,3 +14,7 @@ export { loadReviewFacts } from './pipeline/loadReviews.js';
 
 export { classifyReview, scoreThemes, themeCluster, themesFor } from './analytics/themeCluster.js';
 export { SYSTEMIC_REGION_THRESHOLD, flagSystemicThemes, systemicFinding } from './analytics/systemic.js';
+
+export { CONFIDENCE_THRESHOLD, ragSearch, searchPassages } from './knowledge/retrieval.js';
+export { DOCUMENTS, PASSAGES, findDocument, retrievablePassages } from './seed/documents.js';
+export { addressFor, draftReply } from './reputation/draftReply.js';
