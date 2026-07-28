@@ -11,3 +11,5 @@ export { TenantScopeError, assertTenant, scopeToTenant } from './lib/tenantScope
 
 export { createMemoryWarehouse } from './pipeline/warehouse.js';
 export { loadReviewFacts } from './pipeline/loadReviews.js';
+
+export { classifyReview, scoreThemes, themeCluster, themesFor } from './analytics/themeCluster.js';
