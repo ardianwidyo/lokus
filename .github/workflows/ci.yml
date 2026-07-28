@@ -39,7 +39,7 @@ jobs:
       - name: Unit tests with coverage
         # Thresholds live in each workspace's vitest config, so a coverage drop
         # fails here rather than being reported and ignored.
-        run: npm run test:coverage --workspace api
+        run: npm run test:coverage
 
       - name: Build every workspace that has a build
         run: npm run build

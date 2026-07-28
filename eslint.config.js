@@ -1,5 +1,7 @@
 import js from '@eslint/js';
 import globals from 'globals';
+import react from 'eslint-plugin-react';
+import reactHooks from 'eslint-plugin-react-hooks';
 
 /** Flat config shared by every workspace. Workspace-specific rules are added
  *  by the workspace's own block below rather than in a second config file. */
@@ -28,6 +30,32 @@ export default [
     files: ['api/**/*.js'],
     languageOptions: {
       globals: { ...globals.node },
+    },
+  },
+
+  {
+    files: ['web/**/*.{js,jsx}'],
+    languageOptions: {
+      globals: { ...globals.browser },
+      parserOptions: {
+        ecmaFeatures: { jsx: true },
+      },
+    },
+    plugins: { react, 'react-hooks': reactHooks },
+    rules: {
+      ...reactHooks.configs.recommended.rules,
+      // Only the two rules that teach no-unused-vars to read JSX; the rest of
+      // the react preset is style noise the design system already governs.
+      'react/jsx-uses-react': 'error',
+      'react/jsx-uses-vars': 'error',
+    },
+  },
+
+  {
+    // Vite and Vitest config files run in Node even though they live in web/.
+    files: ['web/vite.config.js', 'web/test/setup.js'],
+    languageOptions: {
+      globals: { ...globals.node, ...globals.browser },
     },
   },
 
