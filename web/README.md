@@ -65,7 +65,37 @@ so the shell is navigable and the four-state wiring exists from the first
 commit rather than being retrofitted.
 
 Screen 01 hides the header's "Jalankan agen" action: no tenant is selected yet,
-so there is nothing to run an agent against.
+so there is nothing to run an agent against. Once a tenant is chosen, a
+`viewer` role hides it too — running an agent writes data (AC-6.3).
+
+### Screen 01 · Masuk & pilih tenant (T005)
+
+Sign-in card (400px) plus the tenant panel. The tenant panel is a `DataPanel`,
+so it carries all four states — including "perlu izin" for an account that
+signed in but was granted no tenant.
+
+Each row shows branch count, segment, and **role**, which is what makes AC-6.3
+visible from the first screen. The tag follows `SCREENS.md`: last-opened wins,
+then a trial countdown, then read-only.
+
+Choosing a tenant stores `tenantId` + `role`, clears the client cache, and
+opens screen 02. `src/data/tenantCache.js` is where that clearing happens —
+every tenant-scoped value the client keeps must live under the
+`lokus:tenant:` prefix so a switch can drop all of it at once, rather than each
+screen being trusted to remember (constitution IV).
+
+### Session source
+
+`src/data/sessionSource.js` has two implementations behind one interface, the
+pattern `plan.md` prescribes for external dependencies (Q1):
+
+- **HTTP** — calls the Fastify API. Active when `VITE_LOKUS_API_URL` is set.
+- **Seeded** — the fixtures from `design/SCREENS.md`, so the console runs and
+  demos before Identity Platform is wired up.
+
+Which one is active is visible on screen: the seeded source reports
+`isSeeded: true` and the tenant panel carries a "data contoh" tag. Seeded data
+is never presented as real.
 
 ## Responsive
 

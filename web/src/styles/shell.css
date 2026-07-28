@@ -298,6 +298,156 @@
   background: var(--color-neutral-200);
 }
 
+/* ── Screen 01 · Masuk & pilih tenant ───────────────────────────────────── */
+
+.masuk {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 26px;
+}
+
+.signin {
+  width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 30px;
+}
+
+.signin-lockup {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.signin-logo {
+  width: 36px;
+  height: 36px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--color-divider);
+  color: var(--color-neutral-500);
+  font-size: 8.5px;
+}
+
+.signin-name {
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  font-size: 21px;
+}
+
+.signin-intro {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--color-neutral-700);
+}
+
+/* The SSO button is the one control whose content is left-aligned. */
+.signin-sso {
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 11px 13px;
+  margin-top: 0;
+}
+
+.signin-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  color: var(--color-neutral-500);
+}
+
+.signin-rule {
+  flex: 1;
+  height: 1px;
+  background: var(--color-divider);
+}
+
+.signin-sent,
+.signin-note {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--color-neutral-600);
+}
+
+.signin-failure {
+  margin: 0;
+  padding-left: 13px;
+  border-left: 2px solid var(--color-accent-400);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--color-accent-700);
+}
+
+.masuk-tenants {
+  flex: 1;
+  min-width: 330px;
+}
+
+.tenant-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tenant-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 15px;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.tenant-row:hover {
+  background: color-mix(in srgb, var(--color-text) 4%, transparent);
+}
+
+.tenant-row.is-last-opened {
+  border-color: var(--color-accent);
+}
+
+.tenant-row:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.tenant-row-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.tenant-name {
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  font-size: 16px;
+}
+
+.tenant-meta {
+  font-size: 12px;
+  color: var(--color-neutral-600);
+}
+
+.tenant-note {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--color-neutral-600);
+}
+
 /* ── Bottom nav, below 900px ────────────────────────────────────────────── */
 
 .bottom-nav {
@@ -341,6 +491,23 @@
 
   .panel {
     padding: 18px 16px;
+  }
+
+  .masuk {
+    gap: 18px;
+  }
+
+  .signin {
+    width: 100%;
+    padding: 22px 18px;
+  }
+
+  .masuk-tenants {
+    min-width: 0;
+  }
+
+  .tenant-row {
+    min-height: 44px;
   }
 
   /* Touch targets of at least 44px, per design/UI-GUIDELINES.md "Responsif". */

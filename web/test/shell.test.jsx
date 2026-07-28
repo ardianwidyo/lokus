@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
 
@@ -35,10 +35,18 @@ describe('screen registry', () => {
 describe('AppShell', () => {
   beforeEach(() => {
     window.history.pushState({}, '', '/masuk');
+    window.sessionStorage.clear();
   });
 
-  it('renders all 14 rail items, numbered', () => {
-    render(<App />);
+  /** Screen 01 loads its tenant list on mount; settle it before asserting. */
+  const renderApp = async () => {
+    const utils = render(<App />);
+    await act(async () => {});
+    return utils;
+  };
+
+  it('renders all 14 rail items, numbered', async () => {
+    await renderApp();
 
     const rail = screen.getByRole('navigation', { name: 'Navigasi layar' });
     const items = within(rail).getAllByRole('link');
@@ -48,8 +56,8 @@ describe('AppShell', () => {
     expect(items[13]).toHaveTextContent('14Admin & biaya');
   });
 
-  it('marks the current screen in the rail', () => {
-    render(<App />);
+  it('marks the current screen in the rail', async () => {
+    await renderApp();
 
     const current = screen
       .getByRole('navigation', { name: 'Navigasi layar' })
@@ -59,9 +67,9 @@ describe('AppShell', () => {
     expect(current).toHaveClass('is-active');
   });
 
-  it('shows the screen number, title and subtitle in the header', () => {
+  it('shows the screen number, title and subtitle in the header', async () => {
     window.history.pushState({}, '', '/briefing');
-    render(<App />);
+    await renderApp();
 
     expect(screen.getByText('Layar 02')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Briefing Pagi');
@@ -73,7 +81,7 @@ describe('AppShell', () => {
   });
 
   it('navigates between screens and updates the URL', async () => {
-    render(<App />);
+    await renderApp();
 
     await userEvent.click(screen.getByRole('link', { name: /Kotak masuk review/ }));
 
@@ -83,7 +91,7 @@ describe('AppShell', () => {
   });
 
   it('follows browser back', async () => {
-    render(<App />);
+    await renderApp();
 
     await userEvent.click(screen.getByRole('link', { name: /Chat agen/ }));
     expect(screen.getByText('Layar 10')).toBeInTheDocument();
@@ -94,28 +102,28 @@ describe('AppShell', () => {
     expect(window.location.pathname).toBe('/masuk');
   });
 
-  it('falls back to the first screen for an unknown path', () => {
+  it('falls back to the first screen for an unknown path', async () => {
     window.history.pushState({}, '', '/tidak-ada');
-    render(<App />);
+    await renderApp();
 
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Masuk & pilih tenant');
   });
 
-  it('hides the agent-run action on screen 01, where no tenant is selected yet', () => {
-    render(<App />);
+  it('hides the agent-run action on screen 01, where no tenant is selected yet', async () => {
+    await renderApp();
 
     expect(screen.queryByRole('button', { name: /Jalankan agen/ })).not.toBeInTheDocument();
   });
 
-  it('shows the agent-run action on the other screens', () => {
+  it('shows the agent-run action on the other screens', async () => {
     window.history.pushState({}, '', '/briefing');
-    render(<App />);
+    await renderApp();
 
     expect(screen.getByRole('button', { name: /Jalankan agen/ })).toBeInTheDocument();
   });
 
-  it('renders the four-item bottom nav for small screens', () => {
-    render(<App />);
+  it('renders the four-item bottom nav for small screens', async () => {
+    await renderApp();
 
     const nav = screen.getByRole('navigation', { name: 'Navigasi utama' });
 
@@ -126,17 +134,17 @@ describe('AppShell', () => {
     expect(nav).toHaveTextContent('Agen');
   });
 
-  it('says no tenant is selected until screen 01 picks one', () => {
-    render(<App />);
+  it('says no tenant is selected until screen 01 picks one', async () => {
+    await renderApp();
 
     expect(screen.getByText('Belum ada tenant')).toBeInTheDocument();
   });
 
-  it('gives every screen a data panel with a declared state', () => {
+  it('gives every screen a data panel with a declared state', async () => {
     // The four-state rule, checked across all 14 screens rather than trusted.
     for (const target of SCREENS) {
       window.history.pushState({}, '', target.path);
-      const { container, unmount } = render(<App />);
+      const { container, unmount } = await renderApp();
 
       const panels = container.querySelectorAll('.panel[data-status]');
       expect(panels.length, `${target.path} has no data panel`).toBeGreaterThan(0);
