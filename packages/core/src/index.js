@@ -36,3 +36,7 @@ export { seedTickets } from './seed/tickets.js';
 // Exported so the eval can assert its golden set does not quote them.
 export { COMPLAINT_TEMPLATES, POSITIVE_TEMPLATES } from './seed/reviewTemplates.js';
 export { BudgetExceededError, DEFAULT_BUDGET_IDR, DEGRADE_AT, MODEL_TIER, createBudgetGuard } from './cost/budget.js';
+
+export { createReputationService } from './services/reputationService.js';
+export { createBriefingService } from './services/briefingService.js';
+export { createAdminService } from './services/adminService.js';

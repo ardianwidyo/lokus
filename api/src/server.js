@@ -1,31 +1,52 @@
 import Fastify from 'fastify';
-import { createMemoryRunStore } from '@lokus/core';
 
+import { createDevVerifier, isDevAuthEnabled } from './auth/devPrincipal.js';
 import { createTokenVerifier } from './auth/verifyIdToken.js';
 import { HttpError } from './lib/errors.js';
 import { registerAuth } from './plugins/auth.js';
 import { createSeededTenantDirectory } from './repositories/tenantDirectory.js';
+import { createServices } from './services/index.js';
+import { adminRoutes } from './routes/admin.js';
+import { agentRoutes } from './routes/agent.js';
+import { briefingRoutes } from './routes/briefing.js';
 import { healthRoutes } from './routes/health.js';
+import { reputationRoutes } from './routes/reputation.js';
 import { runRoutes } from './routes/runs.js';
 import { sessionRoutes } from './routes/session.js';
 
 /**
- * Builds the server without listening, so tests can drive it through
+ * Builds the server without listening, so tests drive it through
  * `fastify.inject` and no port is bound during CI.
  *
- * `verifyIdToken`, `tenantDirectory` and `runStore` are injectable: tests
- * substitute a locally signed key set and in-memory stores, production gets
- * Google's JWKS and Firestore.
+ * Every collaborator is injectable: tests substitute a locally signed key set
+ * and in-memory stores, production gets Google's JWKS and the real adapters.
  */
-export function buildServer({ config, verifyIdToken, tenantDirectory, runStore, logger } = {}) {
+export function buildServer({
+  config,
+  verifyIdToken,
+  tenantDirectory,
+  runStore,
+  services,
+  evaluationReport = EMPTY_REPORT,
+  env = process.env,
+  logger,
+} = {}) {
   const fastify = Fastify({
-    logger: logger ?? { level: process.env.LOG_LEVEL ?? 'info' },
+    logger: logger ?? { level: env.LOG_LEVEL ?? 'info' },
     trustProxy: true,
   });
 
-  const verifier = verifyIdToken ?? createTokenVerifier(config.auth);
+  const domain =
+    services ??
+    createServices({
+      evaluationReport,
+      onBudgetAlert: (alert) =>
+        fastify.log.warn({ event: 'budget_degraded', ...alert }, alert.message),
+    });
+
+  const verifier = verifyIdToken ?? buildVerifier(config, env, fastify.log);
   const directory = tenantDirectory ?? createSeededTenantDirectory();
-  const runs = runStore ?? createMemoryRunStore();
+  const runs = runStore ?? domain.runStore;
 
   registerAuth(fastify, { verifyIdToken: verifier });
 
@@ -38,6 +59,14 @@ export function buildServer({ config, verifyIdToken, tenantDirectory, runStore, 
       return reply.status(error.statusCode).send(error.toJSON());
     }
 
+    // Domain errors carry a code but no status. They are the caller's fault,
+    // not the server's, and the code is what the UI switches on — returning
+    // 500 would make a refused approval look like an outage.
+    if (typeof error.code === 'string' && !error.statusCode) {
+      request.log.warn({ code: error.code, tenantId: request.tenant?.id ?? null }, 'domain rejected');
+      return reply.status(422).send({ error: { code: error.code, message: error.message } });
+    }
+
     request.log.error({ err: error, tenantId: request.tenant?.id ?? null }, 'unhandled error');
     return reply
       .status(error.statusCode && error.statusCode < 500 ? error.statusCode : 500)
@@ -47,6 +76,30 @@ export function buildServer({ config, verifyIdToken, tenantDirectory, runStore, 
   healthRoutes(fastify, { config });
   sessionRoutes(fastify, { tenantDirectory: directory });
   runRoutes(fastify, { runStore: runs });
+  reputationRoutes(fastify, { reputation: domain.reputation });
+  briefingRoutes(fastify, { briefing: domain.briefing, tickets: domain.ticketStore });
+  agentRoutes(fastify, { supervisor: domain.supervisor, budget: domain.budget });
+  adminRoutes(fastify, { admin: domain.admin });
 
   return fastify;
 }
+
+/**
+ * Dev mode is opt-in and cannot exist in production: `createDevVerifier`
+ * throws when NODE_ENV is production, so the server fails to boot rather than
+ * starting with unverified identities accepted.
+ */
+function buildVerifier(config, env, log) {
+  if (isDevAuthEnabled(env)) {
+    log.warn(
+      { event: 'auth.dev_mode_enabled' },
+      'LOKUS_AUTH_MODE=dev — identities are NOT verified. Local development only.',
+    );
+    return createDevVerifier({ env, logger: log });
+  }
+
+  return createTokenVerifier(config.auth);
+}
+
+/** Without a report the Admin screen shows no gates rather than invented ones. */
+const EMPTY_REPORT = Object.freeze({ generatedAt: null, cases: 0, gates: [] });
