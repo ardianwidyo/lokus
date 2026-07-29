@@ -163,6 +163,36 @@ describe('the real Business Profile adapter', () => {
   });
 });
 
+describe('adapters do not share mutable state', () => {
+  it('keeps one adapter\'s reply out of another\'s data', async () => {
+    // The generated rows are cached per seed for speed; each adapter must
+    // still copy them, or a send in one place appears everywhere.
+    const first = createSeededGbpAdapter();
+    const second = createSeededGbpAdapter();
+
+    await first.reply({
+      tenantId: TENANT,
+      reviewId: 'rev-BKS-02-featured-1',
+      text: 'Mohon maaf.',
+      approvedBy: 'dwi@nusaretail.co.id',
+    });
+
+    const fromSecond = (await second.listReviews({ tenantId: TENANT, limit: 5000 })).data.reviews.find(
+      (review) => review.id === 'rev-BKS-02-featured-1',
+    );
+
+    expect(fromSecond.replyState).toBe('none');
+    expect(fromSecond.approvedBy).toBeNull();
+  });
+
+  it('still returns identical data to two untouched adapters', async () => {
+    const a = await createSeededGbpAdapter().listReviews({ tenantId: TENANT, limit: 5000 });
+    const b = await createSeededGbpAdapter().listReviews({ tenantId: TENANT, limit: 5000 });
+
+    expect(a.data.reviews).toEqual(b.data.reviews);
+  });
+});
+
 describe('the seeded dataset', () => {
   it('hits each outlet\'s target rating within a tenth of a star', async () => {
     const gbp = createSeededGbpAdapter();

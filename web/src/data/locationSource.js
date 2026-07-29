@@ -32,5 +32,9 @@ export function createSeededLocationSource({ tenantId = 'nusa-retail' } = {}) {
     return service.networkMap(forTenantId, { ratingsByOutlet: await ratings() });
   }
 
-  return { isSeeded: true, networkMap };
+  async function siteScout(forTenantId = tenantId) {
+    return service.siteScout(forTenantId);
+  }
+
+  return { isSeeded: true, networkMap, siteScout };
 }

@@ -80,6 +80,7 @@ export function createHttpSources({ baseUrl, getTenant, user = 'demo', fetchImpl
   const location = {
     isSeeded: false,
     networkMap: () => api.get('/v1/map'),
+    siteScout: () => api.get('/v1/scout'),
   };
 
   const admin = {

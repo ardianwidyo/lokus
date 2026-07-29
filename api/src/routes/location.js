@@ -5,4 +5,10 @@ export function locationRoutes(fastify, { location }) {
     { preHandler: [fastify.authenticate, fastify.withTenant] },
     async (request) => location.networkMap(request.tenant.id),
   );
+
+  fastify.get(
+    '/v1/scout',
+    { preHandler: [fastify.authenticate, fastify.withTenant] },
+    async (request) => location.siteScout(request.tenant.id),
+  );
 }

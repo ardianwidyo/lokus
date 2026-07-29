@@ -21,7 +21,7 @@ import { contrastRatio, parseColor } from '../src/lib/contrast.js';
  * text contrast computed from design/tokens.css.
  */
 
-const BUILT = ['masuk', 'briefing', 'peta', 'review', 'draft', 'tema', 'chat', 'tindakan', 'admin'];
+const BUILT = ['masuk', 'briefing', 'peta', 'site-scout', 'review', 'draft', 'tema', 'chat', 'tindakan', 'admin'];
 
 const signIn = (role = 'manager') =>
   window.sessionStorage.setItem(

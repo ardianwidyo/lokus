@@ -4,6 +4,7 @@ import { AdminScreen } from './screens/AdminScreen.jsx';
 import { ActionBoardScreen } from './screens/ActionBoardScreen.jsx';
 import { BriefingScreen } from './screens/BriefingScreen.jsx';
 import { ChatScreen } from './screens/ChatScreen.jsx';
+import { SiteScoutScreen } from './screens/SiteScoutScreen.jsx';
 import { NetworkMapScreen } from './screens/NetworkMapScreen.jsx';
 import { MasukScreen } from './screens/MasukScreen.jsx';
 import { PlaceholderScreen } from './screens/PlaceholderScreen.jsx';
@@ -48,6 +49,7 @@ const SCREEN_COMPONENTS = {
   tindakan: ActionBoardScreen,
   admin: AdminScreen,
   peta: NetworkMapScreen,
+  'site-scout': SiteScoutScreen,
 };
 
 function Console() {

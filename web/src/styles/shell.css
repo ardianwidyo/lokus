@@ -1868,3 +1868,133 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Screen 08 · Site Scout ─────────────────────────────────────────────── */
+
+.scout-request {
+  margin: 0;
+  padding-left: 13px;
+  border-left: 2px solid var(--color-accent-400);
+  font-size: 15.5px;
+  line-height: 1.55;
+}
+
+.scout-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 26px;
+  margin: 0;
+}
+
+.scout-stats > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.scout-stats dt {
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-neutral-600);
+}
+
+.scout-stats dd {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  font-size: 30px;
+  line-height: 0.9;
+}
+
+.scout-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.scout-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+/* The recommendation carries an accent edge; the alternatives do not. */
+.scout-card.is-top {
+  border-left: 2px solid var(--color-accent);
+}
+
+.scout-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.scout-name {
+  margin: 0;
+  font-size: 21px;
+  line-height: 1.15;
+  flex: 1;
+}
+
+.scout-score {
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  font-size: 38px;
+  line-height: 0.9;
+  color: var(--color-accent-700);
+}
+
+.scout-area,
+.scout-reasoning {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--color-neutral-700);
+}
+
+.rejected-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.rejected-list > li {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-divider);
+  font-size: 13px;
+}
+
+.rejected-name {
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+}
+
+.rejected-reason {
+  flex-basis: 100%;
+  color: var(--color-neutral-700);
+  font-size: 12.5px;
+}
+
+.scout-foot {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  max-width: 92ch;
+  line-height: 1.55;
+}
+
+@media (max-width: 1199px) {
+  .scout-cards {
+    grid-template-columns: 1fr;
+  }
+}

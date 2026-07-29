@@ -23,10 +23,27 @@ export const GBP_TOOL_NAMES = Object.freeze({
   REPLY: 'gbp.reply',
 });
 
+/**
+ * The generated rows, cached per (instant, seed).
+ *
+ * The dataset is a pure function of those two inputs, so regenerating it for
+ * every adapter is waste — and it was measurable waste: the browser test suite
+ * builds a dozen sources per run and started timing out on slower machines.
+ *
+ * Each adapter still gets its own copies, because `reply()` mutates reply state
+ * and one adapter's send must never appear in another's data.
+ */
+const GENERATED = new Map();
+
+function generatedRows(now, seed) {
+  const key = `${now.getTime()}:${seed}`;
+  if (!GENERATED.has(key)) GENERATED.set(key, generateReviews({ now, seed }));
+  return GENERATED.get(key);
+}
+
 export function createSeededGbpAdapter({ now = DEMO_NOW, seed = 'lokus-2026', clock = () => now } = {}) {
-  // Generated once: the dataset is a fixture, not a live feed, and reply state
-  // has to persist across calls within a process.
-  const reviews = generateReviews({ now, seed });
+  // Copied, not shared: reply state is per-adapter.
+  const reviews = generatedRows(now, seed).map((review) => ({ ...review }));
   const byId = new Map(reviews.map((review) => [review.id, review]));
 
   async function listReviews({ tenantId, outletId = null, since = null, limit = 500 } = {}) {

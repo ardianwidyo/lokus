@@ -84,17 +84,30 @@ export function createSeededPlacesAdapter({ now = () => DEMO_NOW, seed = 'lokus-
   const cache = new Map();
   const stats = { calls: 0, hits: 0, misses: 0 };
 
+  /**
+   * A query is "at" an outlet only if it is genuinely in that neighbourhood.
+   * Anchoring to the nearest outlet at any distance meant a candidate site
+   * 7 km away inherited that branch's competitors — the number looked
+   * plausible and was about somewhere else entirely.
+   */
+  const NEIGHBOURHOOD_M = 600;
+
   function generate(geo, radiusM) {
-    // Anchored to the nearest outlet so the same place is returned for the
-    // same neighbourhood however the caller phrased the coordinate.
-    const anchor = OUTLETS.map((outlet) => ({ outlet, d: distanceMetres(geo, outlet.geo) })).sort(
+    const nearest = OUTLETS.map((outlet) => ({ outlet, d: distanceMetres(geo, outlet.geo) })).sort(
       (a, b) => a.d - b.d,
     )[0];
 
-    const outletId = anchor.outlet.outletId;
-    const count = COMPETITOR_COUNTS[outletId] ?? 3;
-    const rng = createRng(`${seed}:${outletId}`);
-    const recent = RECENT_OPENINGS[outletId] ?? null;
+    const atOutlet = nearest && nearest.d <= NEIGHBOURHOOD_M ? nearest.outlet : null;
+
+    // Away from a known branch the neighbourhood is derived from the grid cell,
+    // so an arbitrary coordinate still gets a stable, plausible answer.
+    const anchorId = atOutlet?.outletId ?? `cell-${gridCell(geo)}`;
+    const anchorGeo = atOutlet?.geo ?? geo;
+
+    const rng = createRng(`${seed}:${anchorId}`);
+    const count = atOutlet ? COMPETITOR_COUNTS[atOutlet.outletId] : rng.int(1, 6);
+    const recent = atOutlet ? (RECENT_OPENINGS[atOutlet.outletId] ?? null) : null;
+    const outletId = anchorId;
 
     const pois = Array.from({ length: count }, (_, index) => {
       const distanceM = recent && index === 0 ? recent.distanceM : rng.int(180, radiusM);
@@ -102,11 +115,11 @@ export function createSeededPlacesAdapter({ now = () => DEMO_NOW, seed = 'lokus-
 
       return {
         placeId: `poi-${outletId}-${index + 1}`,
-        name: recent && index === 0 ? recent.name : `${rng.pick(POI_NAMES)} ${outletId.slice(0, 3)}`,
+        name: recent && index === 0 ? recent.name : `${rng.pick(POI_NAMES)} ${index + 1}`,
         category: rng.pick(COMPETING_CATEGORIES),
         distanceM,
         openedAt: recent && index === 0 ? recent.openedAt : null,
-        geo: offset(anchor.outlet.geo, distanceM, bearing),
+        geo: offset(anchorGeo, distanceM, bearing),
       };
     }).sort((a, b) => a.distanceM - b.distanceM);
 

@@ -45,3 +45,4 @@ export { CACHE_TTL_MS, COMPETING_CATEGORIES, GRID_DEGREES, PlacesError, createGo
 export { COMPETITOR_PENALTY, DEFAULT_WEIGHTS, FACTOR_LABELS, LocationScoreError, competitorFactor, locationScore, normaliseWeights, scoreFrom } from './location/locationScore.js';
 export { CANNIBALISATION_THRESHOLD_KM, cannibalisation } from './location/cannibalisation.js';
 export { createLocationService } from './services/locationService.js';
+export { CANDIDATE_FACTOR_LABELS, CANDIDATE_POOL, CANDIDATE_WEIGHTS, CLEAR_DISTANCE_KM, cannibalisationFactor, scoutSites } from './location/siteScout.js';

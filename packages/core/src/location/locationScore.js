@@ -57,8 +57,14 @@ export function competitorFactor(competitorCount) {
   return Math.max(0, 100 - competitorCount * COMPETITOR_PENALTY);
 }
 
-export function normaliseWeights(weights) {
-  const merged = { ...DEFAULT_WEIGHTS, ...weights };
+/**
+ * `merge: false` normalises exactly the keys given, without folding in the
+ * outlet defaults. Site Scout scores on cannibalisation where an outlet scores
+ * on parking access; merging would leave an `access` weight with no factor
+ * behind it, silently dragging every candidate's score down.
+ */
+export function normaliseWeights(weights, { merge = true } = {}) {
+  const merged = merge ? { ...DEFAULT_WEIGHTS, ...weights } : { ...weights };
   const total = Object.values(merged).reduce((sum, value) => sum + value, 0);
 
   if (total <= 0) {
