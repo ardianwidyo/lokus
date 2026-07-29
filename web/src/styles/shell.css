@@ -2133,3 +2133,64 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Screen 12 · Jawaban bersitasi ──────────────────────────────────────── */
+
+.answer-grid {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 22px;
+  align-items: start;
+}
+
+.answer-main {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.question-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+}
+
+.question-text {
+  margin: 0;
+  font-size: 16.5px;
+  line-height: 1.5;
+}
+
+.answer-text {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+/* Markers are the link between a claim and its page, so they read as accent
+   rather than as ordinary punctuation. */
+.answer-marker {
+  color: var(--color-accent-700);
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  font-size: 11px;
+  padding-left: 2px;
+}
+
+.source-marker {
+  color: var(--color-accent-700);
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+}
+
+.answer-foot {
+  max-width: 92ch;
+  line-height: 1.6;
+}
+
+@media (max-width: 1199px) {
+  .answer-grid {
+    grid-template-columns: 1fr;
+  }
+}

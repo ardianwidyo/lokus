@@ -183,7 +183,7 @@ test sehingga layar baru yang lupa satu state akan menggagalkan build.
 
 | Bukti | Di mana |
 |---|---|
-| **682 test** lulus di 4 workspace | `npm test` |
+| **768 test** lulus di 4 workspace | `npm test` |
 | **Eval agen**: 60 kasus, 5 ambang konstitusi, CI memblokir merge bila satu gagal | [`eval/`](eval/) · `npm run eval` |
 | **Terraform**: Cloud Run, Firestore, BigQuery, Storage, Secret Manager, Scheduler, WIF | [`infra/`](infra/) |
 | **CI**: lint, test + ambang cakupan, `terraform validate`, gerbang secret, eval | [`ci.yml`](.github/workflows/ci.yml) |
@@ -246,12 +246,13 @@ docs            deploy.md, demo-script.md
 
 ## Status build
 
-Fase **P0** (fondasi), **P1** (reputasi), **P4** (orkestrasi), sebagian besar
-**P5** (pengerasan), dan inti **P3** (lokasi) selesai. Sebelas layar berjalan:
-01, 02, 03, 05, 06, 07, 08, 09, 10, 13, 14.
+Fase **P0** (fondasi), **P1** (reputasi), **P2** (pengetahuan), **P3** (lokasi),
+**P4** (orkestrasi), dan **P5** (pengerasan) selesai. Tiga belas layar berjalan:
+01, 02, 03, 05, 06, 07, 08, 09, 10, 11, 12, 13, 14.
 
-Belum dibangun: **layar 04** (detail cabang) dan **layar P2** (11, 12 — mesin RAG-nya sudah ada dan terpakai,
-layarnya belum). Rincian per tugas di
+Belum dibangun: **layar 04** (detail cabang) — satu-satunya yang tersisa, dan
+ia menyajikan ulang data yang sudah tampil di layar 03 dan 07. Rincian per
+tugas di
 [`specs/001-lokus-core/tasks.md`](specs/001-lokus-core/tasks.md).
 
 ## Catatan tentang angka

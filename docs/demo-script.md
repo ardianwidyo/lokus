@@ -153,4 +153,4 @@ Tutup:
 
 - Konsol berjalan di atas **dataset contoh**, bukan review Google sungguhan.
   Adapternya sama; akses API tenant pilot masih menunggu (spec.md Q1).
-- Layar 04, 11, 12 masih placeholder yang menyebut fasenya.
+- Layar 04 masih placeholder yang menyebut fasenya.

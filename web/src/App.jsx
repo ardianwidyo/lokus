@@ -4,6 +4,7 @@ import { AdminScreen } from './screens/AdminScreen.jsx';
 import { ActionBoardScreen } from './screens/ActionBoardScreen.jsx';
 import { BriefingScreen } from './screens/BriefingScreen.jsx';
 import { ChatScreen } from './screens/ChatScreen.jsx';
+import { CitedAnswerScreen } from './screens/CitedAnswerScreen.jsx';
 import { KnowledgeScreen } from './screens/KnowledgeScreen.jsx';
 import { CompareSitesScreen } from './screens/CompareSitesScreen.jsx';
 import { SiteScoutScreen } from './screens/SiteScoutScreen.jsx';
@@ -56,6 +57,7 @@ const SCREEN_COMPONENTS = {
   'site-scout': SiteScoutScreen,
   bandingkan: CompareSitesScreen,
   pengetahuan: KnowledgeScreen,
+  jawaban: CitedAnswerScreen,
 };
 
 function Console() {
