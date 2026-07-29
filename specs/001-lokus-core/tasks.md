@@ -101,3 +101,7 @@ One commit per task, prefixed with the task id.
 - **T055** Four-state audit: every data panel in all 14 screens.
 - **T056** Accessibility pass: focus-visible ring 2px accent, touch targets
   ≥ 44px on mobile, contrast check for body copy on accent tints.
+- **T057** Deploy pipeline: container images for both Cloud Run services,
+  keyless auth from GitHub Actions via Workload Identity Federation, and a
+  `main`-triggered rollout gated behind CI. Constitution VII — every merge to
+  `main` deploys, and the demo runs on the deployed URL.
