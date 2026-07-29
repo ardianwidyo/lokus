@@ -1185,3 +1185,159 @@
     font-size: 10px;
   }
 }
+
+/* ── Screen 02 · Briefing Pagi ──────────────────────────────────────────── */
+
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding-left: 20px;
+  border-left: 1px solid var(--color-divider);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.timeline-node {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+/* Hollow square for a milestone; the decision block below uses a solid one. */
+.timeline-mark {
+  position: absolute;
+  left: -26px;
+  top: 4px;
+  width: 11px;
+  height: 11px;
+  border: 1px solid var(--color-accent);
+}
+
+.timeline-node.is-unavailable .timeline-mark {
+  border-color: var(--color-neutral-400);
+}
+
+.timeline-node.is-unavailable .timeline-title,
+.timeline-node.is-unavailable .timeline-detail {
+  color: var(--color-neutral-600);
+}
+
+.timeline-time {
+  font-size: 12px;
+  color: var(--color-neutral-600);
+}
+
+.timeline-title {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.timeline-detail {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-neutral-700);
+}
+
+.decision {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  padding: 18px 22px;
+  background: var(--color-accent-100);
+  border: 1px solid var(--color-accent-300);
+}
+
+.decision-mark {
+  position: absolute;
+  left: -47px;
+  top: 20px;
+  width: 11px;
+  height: 11px;
+  background: var(--color-accent);
+}
+
+.decision-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.decision-meta {
+  font-size: 12px;
+  color: var(--color-accent-700);
+}
+
+.decision-title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  font-size: 22px;
+  line-height: 1.15;
+  color: var(--color-accent-900);
+}
+
+.decision-body {
+  margin: 0;
+  max-width: 88ch;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--color-accent-900);
+}
+
+.decision-evidence {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 22px;
+}
+
+.metric-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+}
+
+.metric-value {
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  font-size: 40px;
+  line-height: 0.9;
+}
+
+.metric-note {
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--color-neutral-700);
+}
+
+@media (max-width: 1199px) {
+  .metric-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 899px) {
+  .metric-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .decision-mark {
+    display: none;
+  }
+}

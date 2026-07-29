@@ -1,5 +1,6 @@
 import { SessionProvider, useSession } from './app/SessionContext.jsx';
 import { useRoute } from './app/useRoute.js';
+import { BriefingScreen } from './screens/BriefingScreen.jsx';
 import { ChatScreen } from './screens/ChatScreen.jsx';
 import { MasukScreen } from './screens/MasukScreen.jsx';
 import { PlaceholderScreen } from './screens/PlaceholderScreen.jsx';
@@ -9,9 +10,14 @@ import { ThemeAnalysisScreen } from './screens/ThemeAnalysisScreen.jsx';
 import { AppShell } from './shell/AppShell.jsx';
 
 /** Sources are injectable so tests can drive every state of every panel. */
-export function App({ sessionSource = null, reputationSource = null, agentSource = null }) {
+export function App({ sessionSource = null, reputationSource = null, agentSource = null, briefingSource = null }) {
   return (
-    <SessionProvider source={sessionSource} reputationSource={reputationSource} agentSource={agentSource}>
+    <SessionProvider
+      source={sessionSource}
+      reputationSource={reputationSource}
+      agentSource={agentSource}
+      briefingSource={briefingSource}
+    >
       <Console />
     </SessionProvider>
   );
@@ -24,6 +30,7 @@ const SCREEN_COMPONENTS = {
   draft: ReplyDraftScreen,
   tema: ThemeAnalysisScreen,
   chat: ChatScreen,
+  briefing: BriefingScreen,
 };
 
 function Console() {

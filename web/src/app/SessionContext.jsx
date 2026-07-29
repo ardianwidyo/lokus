@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
 
 import { createSeededAgentSource } from '../data/agentSource.js';
+import { createSeededBriefingSource } from '../data/briefingSource.js';
 import { createSeededReputationSource } from '../data/reputationSource.js';
 import { resolveSessionSource } from '../data/sessionSource.js';
 import { readActiveTenant, writeActiveTenant } from '../data/tenantCache.js';
@@ -12,7 +13,7 @@ const SessionContext = createContext(null);
  * clears every tenant-scoped value the client is holding before writing the
  * new one — constitution IV: no cache is shared across tenants.
  */
-export function SessionProvider({ source, reputationSource, agentSource, children }) {
+export function SessionProvider({ source, reputationSource, agentSource, briefingSource: injectedBriefing, children }) {
   const sessionSource = useMemo(
     () => source ?? resolveSessionSource(import.meta.env),
     [source],
@@ -34,6 +35,11 @@ export function SessionProvider({ source, reputationSource, agentSource, childre
     [agentSource, tenant?.tenantId],
   );
 
+  const briefingSource = useMemo(
+    () => injectedBriefing ?? createSeededBriefingSource({ tenantId: tenant?.tenantId ?? 'nusa-retail' }),
+    [injectedBriefing, tenant?.tenantId],
+  );
+
   const selectTenant = useCallback(
     async (tenantId) => {
       const { tenant: selected } = await sessionSource.selectTenant(tenantId);
@@ -49,11 +55,12 @@ export function SessionProvider({ source, reputationSource, agentSource, childre
       source: sessionSource,
       reputation,
       agent,
+      briefingSource,
       tenant,
       role: tenant?.role ?? null,
       selectTenant,
     }),
-    [sessionSource, reputation, agent, tenant, selectTenant],
+    [sessionSource, reputation, agent, briefingSource, tenant, selectTenant],
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
