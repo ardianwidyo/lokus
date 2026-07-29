@@ -8,9 +8,9 @@ area manager.
 
 Submission EBCO AI Hackathon 2026 · Kategori A + B.
 
-> **Status build:** fase P0 (fondasi) dan P1 (reputasi) selesai. Layar 01, 05,
-> 06, dan 07 berjalan dengan data contoh. Layar lain masih menampilkan
-> placeholder yang menyebutkan fase pembangunnya. Rincian di
+> **Status build:** fase P0 (fondasi), P1 (reputasi), dan P4 (orkestrasi)
+> selesai. Tujuh layar berjalan dengan data contoh: 01, 02, 05, 06, 07, 10, 13.
+> Layar lain masih placeholder yang menyebutkan fase pembangunnya. Rincian di
 > [`specs/001-lokus-core/tasks.md`](specs/001-lokus-core/tasks.md).
 >
 > README lengkap untuk juri — tabel dampak, gambar arsitektur, URL demo — adalah
@@ -36,17 +36,26 @@ nyata.
 | Layar | Jalur | Yang bisa diuji |
 |---|---|---|
 | 01 Masuk & pilih tenant | `/masuk` | Tiga tenant dengan peran masing-masing. Pilih **Klinik Sehat Prima** (peran Viewer) lalu bandingkan dengan **Nusa Retail** (Area Manager) — tombol yang mengubah data hilang untuk viewer. |
-| 05 Kotak masuk review | `/review` | Daftar + pratinjau. Panah ↑ ↓ pindah baris, ⏎ setujui & kirim, E buka layar 06. Hitungan tiap tab dihitung dari data, bukan ditulis. |
+| 02 Briefing Pagi | `/briefing` | Garis waktu semalam dengan maksimal tiga keputusan. Tekan **Setujui & buat tiket** — tiketnya muncul di layar 13. |
+| 05 Kotak masuk review | `/review` | Daftar + pratinjau. Panah ↑ ↓ pindah baris, ⏎ setujui & kirim, E buka layar 06. |
 | 06 Draft balasan AI | `/draft` | Draft, kutipan SOP dengan nomor halaman dan skor, empat pemeriksaan guardrail. |
 | 07 Analisis tema | `/tema` | Matriks tema × cabang, sparkline 8 pekan, penanda sistemik dengan jumlah wilayahnya. |
+| 10 Chat agen | `/chat` | Tanya **"Kenapa rating cabang Bekasi Timur turun bulan ini?"** — jejak eksekusi muncul di dalam jawaban, lengkap dengan biaya. |
+| 13 Papan tindakan | `/tindakan` | Empat kolom. Setiap kartu menyebut insight asalnya; kartu selesai membawa dampaknya. |
 
-Coba juga: dari layar 05 tekan **E** — URL menjadi `/draft?review=...` dan bisa
-dibagikan.
+Dua alur yang paling layak dicoba:
+
+1. Layar 05, tekan **E** — URL jadi `/draft?review=...` dan bisa dibagikan.
+2. Layar 10, ajukan pertanyaan lalu tekan **Buat tiket** — buka layar 13 dan
+   tiket itu ada di kolom Baru, dengan id run yang melahirkannya.
+
+Coba juga tanya sesuatu yang tidak ada di SOP, misalnya **"resep rendang"**.
+Agen menolak menjawab, bukan mengarang.
 
 ### Perintah lain
 
 ```bash
-npm test              # 259 test di seluruh workspace
+npm test              # 382 test di seluruh workspace
 npm run test:coverage # dengan ambang cakupan
 npm run lint
 npm run build
@@ -55,7 +64,7 @@ npm run build
 ## Struktur
 
 ```
-packages/core   logika domain: klasterisasi tema, guardrail, draft, dataset contoh
+packages/core   logika domain: supervisor, klasterisasi tema, guardrail, draft, tiket
 api             Cloud Run + Fastify: Identity Platform, isolasi tenant, RBAC
 web             React + Vite: 14 layar di atas design/tokens.css
 infra           Terraform: Cloud Run, Firestore, BigQuery, Storage, Secret Manager
