@@ -56,6 +56,24 @@ npm run dev        # http://localhost:5173/masuk
 npm run eval       # 60 kasus golden set, 5 ambang kualitas
 ```
 
+Secara bawaan konsol berjalan di atas dataset contoh **di dalam browser**.
+Untuk menjalankannya lewat API sungguhan — sehingga lapisan auth, isolasi
+tenant, dan RBAC benar-benar dilewati — jalankan keduanya:
+
+```bash
+# terminal 1 — API
+GOOGLE_CLOUD_PROJECT=demo \
+LOKUS_AUTH_MODE=dev \
+LOKUS_ALLOWED_ORIGINS=http://localhost:5173 \
+npm run dev --workspace @lokus/api
+
+# terminal 2 — konsol
+VITE_LOKUS_API_URL=http://localhost:8080 npm run dev
+```
+
+`LOKUS_AUTH_MODE=dev` menerima identitas tanpa verifikasi dan **hanya untuk
+lokal** — server menolak start bila mode itu aktif saat `NODE_ENV=production`.
+
 **Demo URL:** belum ter-deploy. Pipeline-nya siap
 ([`docs/deploy.md`](docs/deploy.md)) dan menunggu satu project Google Cloud.
 
@@ -168,7 +186,7 @@ test sehingga layar baru yang lupa satu state akan menggagalkan build.
 
 | Bukti | Di mana |
 |---|---|
-| **476 test** lulus di 4 workspace | `npm test` |
+| **553 test** lulus di 4 workspace | `npm test` |
 | **Eval agen**: 60 kasus, 5 ambang konstitusi, CI memblokir merge bila satu gagal | [`eval/`](eval/) · `npm run eval` |
 | **Terraform**: Cloud Run, Firestore, BigQuery, Storage, Secret Manager, Scheduler, WIF | [`infra/`](infra/) |
 | **CI**: lint, test + ambang cakupan, `terraform validate`, gerbang secret, eval | [`ci.yml`](.github/workflows/ci.yml) |

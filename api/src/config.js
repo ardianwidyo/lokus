@@ -41,6 +41,16 @@ export function loadConfig(env = process.env) {
       clockToleranceSeconds: Number(env.LOKUS_CLOCK_TOLERANCE_SECONDS ?? 5),
     },
 
+    // Browsers block a cross-origin call unless the API says otherwise, and
+    // the console is served from a different origin than the API. This is an
+    // explicit allowlist rather than "*": every request carries an
+    // Authorization header, and "*" with credentials is exactly the mistake
+    // that turns a CORS policy into no policy at all.
+    allowedOrigins: (env.LOKUS_ALLOWED_ORIGINS ?? '')
+      .split(',')
+      .map((origin) => origin.trim())
+      .filter(Boolean),
+
     bigquery: {
       martsDataset: env.BQ_MARTS_DATASET ?? `lokus_marts_${env.LOKUS_ENVIRONMENT ?? 'dev'}`,
     },

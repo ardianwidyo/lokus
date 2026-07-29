@@ -1,4 +1,5 @@
 import Fastify from 'fastify';
+import cors from '@fastify/cors';
 
 import { createDevVerifier, isDevAuthEnabled } from './auth/devPrincipal.js';
 import { createTokenVerifier } from './auth/verifyIdToken.js';
@@ -47,6 +48,17 @@ export function buildServer({
   const verifier = verifyIdToken ?? buildVerifier(config, env, fastify.log);
   const directory = tenantDirectory ?? createSeededTenantDirectory();
   const runs = runStore ?? domain.runStore;
+
+  // Registered before the routes so preflight is answered for all of them.
+  // An empty allowlist means no cross-origin caller is permitted, which is the
+  // right default: same-origin deployments need nothing, and a misconfigured
+  // one should fail closed.
+  fastify.register(cors, {
+    origin: config?.allowedOrigins?.length ? config.allowedOrigins : false,
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['authorization', 'content-type', 'x-lokus-tenant'],
+    maxAge: 600,
+  });
 
   registerAuth(fastify, { verifyIdToken: verifier });
 

@@ -63,6 +63,19 @@ is the `attribute_condition`, not the obscurity of these strings.
 | `GCP_ENVIRONMENT` | `dev`, `staging` or `prod` — must match `terraform.tfvars` |
 | `LOKUS_API_URL` | the API's URL, once it exists. Leave unset to keep the console on seeded data. |
 
+The two services are on different origins, so the API must be told to accept
+the console's. After the first deploy, set `LOKUS_ALLOWED_ORIGINS` on the API
+service to the web service's URL:
+
+```bash
+web=$(gcloud run services describe lokus-web-dev --region asia-southeast2 --format='value(status.url)')
+gcloud run services update lokus-api-dev --region asia-southeast2   --update-env-vars "LOKUS_ALLOWED_ORIGINS=$web"
+```
+
+Empty means no cross-origin caller is permitted. It is never `*`: every request
+carries an Authorization header, and a wildcard with credentials is the mistake
+that turns a CORS policy into no policy.
+
 Until `GCP_PROJECT_ID` is set the deploy job **skips** rather than failing — an
 unconfigured repository should not paint every push red, because that teaches
 people to ignore red. Once it is set, a missing provider or deployer account

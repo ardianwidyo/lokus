@@ -18,6 +18,7 @@ export function App({
   agentSource = null,
   briefingSource = null,
   adminSource = null,
+  env = undefined,
 }) {
   return (
     <SessionProvider
@@ -26,6 +27,7 @@ export function App({
       agentSource={agentSource}
       briefingSource={briefingSource}
       adminSource={adminSource}
+      {...(env ? { env } : {})}
     >
       <Console />
     </SessionProvider>

@@ -97,45 +97,4 @@ export function createSeededSessionSource({ tenants = SEED_TENANTS, user = SEED_
   };
 }
 
-export function createHttpSessionSource({ baseUrl, getToken }) {
-  async function request(path, { method = 'GET', tenantId = null } = {}) {
-    const token = await getToken();
-    const response = await fetch(`${baseUrl}${path}`, {
-      method,
-      headers: {
-        ...(token ? { authorization: `Bearer ${token}` } : {}),
-        ...(tenantId ? { 'x-lokus-tenant': tenantId } : {}),
-      },
-    });
-
-    if (!response.ok) {
-      const body = await response.json().catch(() => ({}));
-      throw new SessionError(body?.error?.code ?? 'REQUEST_FAILED', body?.error?.message ?? '');
-    }
-    return response.json();
-  }
-
-  return {
-    isSeeded: false,
-    loadSession: () => request('/v1/session'),
-    selectTenant: (tenantId) => request('/v1/session/tenant', { method: 'POST', tenantId }),
-    signInWithGoogle: () => {
-      throw new SessionError('NOT_IMPLEMENTED', 'SSO belum tersambung');
-    },
-    sendSignInLink: () => {
-      throw new SessionError('NOT_IMPLEMENTED', 'Tautan masuk belum tersambung');
-    },
-  };
-}
-
-/**
- * Picks the implementation. Without VITE_LOKUS_API_URL the console runs on
- * seeded fixtures rather than failing — and says so on screen.
- */
-export function resolveSessionSource(env = {}, getToken = async () => null) {
-  return env.VITE_LOKUS_API_URL
-    ? createHttpSessionSource({ baseUrl: env.VITE_LOKUS_API_URL, getToken })
-    : createSeededSessionSource();
-}
-
 export { SEED_TENANTS, SEED_USER };
