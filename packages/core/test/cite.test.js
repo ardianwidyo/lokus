@@ -189,3 +189,73 @@ describe('tenant scoping', () => {
     expect(data.answered).toBe(false);
   });
 });
+
+describe('T022 · refusals are recorded wherever they happen', () => {
+  it('records a gap when the supervisor refuses', async () => {
+    const { createSupervisor } = await import('../src/agents/supervisor.js');
+    const gapLog = new KnowledgeGapLog();
+    const supervisor = createSupervisor({ agents: {}, gapLog });
+
+    const run = await supervisor.ask({
+      tenantId: TENANT,
+      question: 'Berapa lama masa garansi kulkas?',
+      context: { askedBy: 'Dwi Kurnia' },
+    });
+
+    expect(run.refused).toBe(true);
+    expect(run.knowledgeGap.question).toMatch(/garansi kulkas/);
+    expect(gapLog.list(TENANT)).toHaveLength(1);
+  });
+
+  it('records no gap when the supervisor could answer', async () => {
+    const { createSupervisor, createReputationAgent } = await import('../src/index.js');
+    const { createSeededGbpAdapter } = await import('../src/adapters/gbp.js');
+    const gapLog = new KnowledgeGapLog();
+    const supervisor = createSupervisor({
+      agents: { reputation: createReputationAgent({ gbp: createSeededGbpAdapter() }) },
+      gapLog,
+    });
+
+    const run = await supervisor.ask({ tenantId: TENANT, question: 'Ringkas keluhan pekan ini' });
+
+    expect(run.refused).toBe(false);
+    expect(run.knowledgeGap).toBeNull();
+    expect(gapLog.list(TENANT)).toHaveLength(0);
+  });
+
+  it('records a gap when the draft generator cannot ground a reply', async () => {
+    const { draftReply } = await import('../src/reputation/draftReply.js');
+    const gapLog = new KnowledgeGapLog();
+
+    const result = await draftReply({
+      tenantId: TENANT,
+      review: {
+        id: 'rev-x',
+        tenantId: TENANT,
+        outletId: 'BKS-02',
+        rating: 1,
+        author: 'Uji',
+        text: 'Antre lama sekali di kasir.',
+      },
+      // Empty corpus: nothing can ground the draft.
+      passages: [],
+      gapLog,
+    });
+
+    expect(result.data.drafted).toBe(false);
+    expect(gapLog.list(TENANT)).toHaveLength(1);
+    expect(gapLog.list(TENANT)[0].askedBy).toContain('Dwi Kurnia');
+  });
+
+  it('still refuses cleanly with no gap log attached', async () => {
+    const { createSupervisor } = await import('../src/agents/supervisor.js');
+
+    const run = await createSupervisor({ agents: {} }).ask({
+      tenantId: TENANT,
+      question: 'apa saja',
+    });
+
+    expect(run.refused).toBe(true);
+    expect(run.knowledgeGap).toBeNull();
+  });
+});

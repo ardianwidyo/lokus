@@ -111,6 +111,7 @@ export async function draftReply({
   review,
   passages = null,
   threshold = CONFIDENCE_THRESHOLD,
+  gapLog = null,
 } = {}) {
   const startedAt = Date.now();
   assertTenant(tenantId);
@@ -144,6 +145,14 @@ export async function draftReply({
   // Constitution I: no grounding, no draft. The reviewer gets a refusal and a
   // logged knowledge gap, not an invented apology.
   if (!sopPassage) {
+    // The gap was described but never recorded, so a draft the agent could not
+    // write left no trace of why. It does now.
+    const recorded = gapLog?.record({
+      tenantId,
+      question: framing?.query ?? review.text,
+      askedBy: outlet?.manager ?? null,
+    }) ?? null;
+
     return toolResult({
       data: {
         drafted: false,
@@ -153,12 +162,9 @@ export async function draftReply({
           ? `Tidak ada pasal SOP di atas ambang ${threshold} untuk tema "${classified.theme}".`
           : 'Tema keluhan tidak dikenali dari teks review.',
         theme: classified?.theme ?? null,
-        knowledgeGap: {
-          tenantId,
-          question: framing?.query ?? review.text,
-          reviewId: review.id,
-          theme: classified?.theme ?? null,
-        },
+        knowledgeGap: recorded
+          ? { ...recorded, reviewId: review.id, theme: classified?.theme ?? null }
+          : { tenantId, question: framing?.query ?? review.text, reviewId: review.id, theme: classified?.theme ?? null },
         rejectedCount,
       },
       sources: [],

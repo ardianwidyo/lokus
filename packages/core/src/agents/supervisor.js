@@ -24,7 +24,7 @@ export function estimateCostIdr({ stepCount, sourceCount }) {
   return Math.round(stepCount * COST_PER_STEP_IDR + sourceCount * COST_PER_SOURCE_IDR);
 }
 
-export function createSupervisor({ agents = {}, now = () => new Date(), idFactory = null } = {}) {
+export function createSupervisor({ agents = {}, gapLog = null, now = () => new Date(), idFactory = null } = {}) {
   let counter = 0;
   const nextId = idFactory ?? (() => `run-${(counter += 1)}`);
 
@@ -72,6 +72,18 @@ export function createSupervisor({ agents = {}, now = () => new Date(), idFactor
     const rejectedCount = results.reduce((sum, result) => sum + (result.rejectedCount ?? 0), 0);
 
     const refused = sources.length === 0;
+
+    // Constitution I says a refusal logs a knowledge gap. Refusing without
+    // recording it means the corpus never improves and nobody knows what it
+    // is failing to answer.
+    const knowledgeGap = refused
+      ? (gapLog?.record({
+          tenantId,
+          question,
+          askedBy: context.askedBy ?? null,
+          at: now(),
+        }) ?? null)
+      : null;
     const answer = refused
       ? buildRefusal(plan, unavailable)
       : buildAnswer({ plan, findings, unavailable });
@@ -101,6 +113,7 @@ export function createSupervisor({ agents = {}, now = () => new Date(), idFactor
       outletId: plan.outletId,
       answer,
       refused,
+      knowledgeGap,
       findings,
       sources,
       sourceSummary: summariseSources(sources),
