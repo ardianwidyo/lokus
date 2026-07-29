@@ -1,0 +1,50 @@
+{
+  "generatedAt": "2026-07-29T03:55:12.188Z",
+  "cases": 60,
+  "metrics": {
+    "theme_accuracy": 1,
+    "citation_correctness": 1,
+    "brand_voice_compliance": 1,
+    "hallucination_rate": 0,
+    "p95_latency_ms": 1.255899999999997,
+    "tenant_isolation": 1
+  },
+  "gates": [
+    {
+      "key": "theme_accuracy",
+      "label": "Ketepatan tema keluhan",
+      "value": 1,
+      "threshold": ">= 0.85",
+      "passed": true
+    },
+    {
+      "key": "citation_correctness",
+      "label": "Sitasi benar & relevan",
+      "value": 1,
+      "threshold": ">= 0.9",
+      "passed": true
+    },
+    {
+      "key": "brand_voice_compliance",
+      "label": "Kepatuhan nada brand",
+      "value": 1,
+      "threshold": ">= 0.8",
+      "passed": true
+    },
+    {
+      "key": "hallucination_rate",
+      "label": "Halusinasi terdeteksi",
+      "value": 0,
+      "threshold": "< 0.05",
+      "passed": true
+    },
+    {
+      "key": "p95_latency_ms",
+      "label": "Latensi p95",
+      "value": 1.255899999999997,
+      "threshold": "< 10000",
+      "passed": true
+    }
+  ],
+  "failures": []
+}

@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useMemo, useState } from 'react
 
 import { createMemoryTicketStore, seedTickets } from '@lokus/core';
 
+import { createSeededAdminSource } from '../data/adminSource.js';
 import { createSeededAgentSource } from '../data/agentSource.js';
 import { createSeededBriefingSource } from '../data/briefingSource.js';
 import { createSeededReputationSource } from '../data/reputationSource.js';
@@ -15,7 +16,14 @@ const SessionContext = createContext(null);
  * clears every tenant-scoped value the client is holding before writing the
  * new one — constitution IV: no cache is shared across tenants.
  */
-export function SessionProvider({ source, reputationSource, agentSource, briefingSource: injectedBriefing, children }) {
+export function SessionProvider({
+  source,
+  reputationSource,
+  agentSource,
+  briefingSource: injectedBriefing,
+  adminSource: injectedAdmin,
+  children,
+}) {
   const sessionSource = useMemo(
     () => source ?? resolveSessionSource(import.meta.env),
     [source],
@@ -45,6 +53,11 @@ export function SessionProvider({ source, reputationSource, agentSource, briefin
     [agentSource, tenant?.tenantId, ticketStore],
   );
 
+  const adminSource = useMemo(
+    () => injectedAdmin ?? createSeededAdminSource({ tenantId: tenant?.tenantId ?? 'nusa-retail' }),
+    [injectedAdmin, tenant?.tenantId],
+  );
+
   const briefingSource = useMemo(
     () =>
       injectedBriefing ??
@@ -68,12 +81,13 @@ export function SessionProvider({ source, reputationSource, agentSource, briefin
       reputation,
       agent,
       briefingSource,
+      adminSource,
       ticketStore,
       tenant,
       role: tenant?.role ?? null,
       selectTenant,
     }),
-    [sessionSource, reputation, agent, briefingSource, ticketStore, tenant, selectTenant],
+    [sessionSource, reputation, agent, briefingSource, adminSource, ticketStore, tenant, selectTenant],
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
