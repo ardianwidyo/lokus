@@ -4,6 +4,7 @@ import { MasukScreen } from './screens/MasukScreen.jsx';
 import { PlaceholderScreen } from './screens/PlaceholderScreen.jsx';
 import { ReplyDraftScreen } from './screens/ReplyDraftScreen.jsx';
 import { ReviewInboxScreen } from './screens/ReviewInboxScreen.jsx';
+import { ThemeAnalysisScreen } from './screens/ThemeAnalysisScreen.jsx';
 import { AppShell } from './shell/AppShell.jsx';
 
 /** Sources are injectable so tests can drive every state of every panel. */
@@ -20,6 +21,7 @@ const SCREEN_COMPONENTS = {
   masuk: MasukScreen,
   review: ReviewInboxScreen,
   draft: ReplyDraftScreen,
+  tema: ThemeAnalysisScreen,
 };
 
 function Console() {

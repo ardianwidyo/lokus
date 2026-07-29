@@ -764,6 +764,100 @@
   font-weight: var(--font-heading-weight);
 }
 
+/* ── Screen 07 · Analisis tema & sentimen ───────────────────────────────── */
+
+/* Wide tables scroll inside their own panel; the page never scrolls sideways. */
+.table-scroll {
+  overflow-x: auto;
+}
+
+.theme-matrix th[scope='row'] {
+  min-width: 160px;
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  font-size: 14px;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--color-text);
+}
+
+.matrix-cell {
+  text-align: center;
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  font-size: 14px;
+  min-width: 44px;
+}
+
+.sparkline {
+  display: block;
+}
+
+.theme-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.finding-headline {
+  margin: 0;
+  font-size: 19px;
+  line-height: 1.2;
+}
+
+.finding-tags {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+}
+
+/* Bars share the accent ramp with the matrix, so intensity reads the same way
+   in both. */
+.sentiment-bars {
+  list-style: none;
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-2);
+  height: 100px;
+  margin: 0;
+  padding: 0;
+}
+
+.sentiment-bars > li {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+}
+
+.sentiment-bar {
+  display: block;
+  width: 100%;
+  background: var(--color-accent-500);
+}
+
+.sentiment-bars > li:nth-child(n + 6) .sentiment-bar {
+  background: var(--color-accent-700);
+}
+
+.practice-note {
+  padding: var(--space-3);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 /* ── Bottom nav, below 900px ────────────────────────────────────────────── */
 
 .bottom-nav {
@@ -773,6 +867,11 @@
 @media (max-width: 1199px) {
   .screen-subtitle {
     max-width: 52ch;
+  }
+
+  /* design/UI-GUIDELINES.md "Responsif": grids drop to two columns here. */
+  .theme-cards {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
@@ -827,7 +926,8 @@
   }
 
   .inbox-grid,
-  .draft-grid {
+  .draft-grid,
+  .theme-cards {
     grid-template-columns: 1fr;
   }
 

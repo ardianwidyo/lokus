@@ -24,6 +24,9 @@ const renderInbox = async ({ role = 'manager', reputationSource = null } = {}) =
     />,
   );
   await screen.findByRole('listbox', { name: 'Daftar review' });
+  // The preview panel resolves its draft in a second pass; waiting for it here
+  // keeps every test asserting against a settled screen rather than a race.
+  await screen.findByRole('button', { name: /Setujui & kirim/ });
   return utils;
 };
 
