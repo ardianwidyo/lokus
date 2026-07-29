@@ -105,3 +105,11 @@ One commit per task, prefixed with the task id.
   keyless auth from GitHub Actions via Workload Identity Federation, and a
   `main`-triggered rollout gated behind CI. Constitution VII — every merge to
   `main` deploys, and the demo runs on the deployed URL.
+- **T058** API serves the domain over HTTP: reviews, themes, briefing, tickets,
+  agent ask and admin, each behind `authenticate → withTenant → requireRole`.
+  Plus the local dev auth mode recorded in `plan.md`, so the console is
+  runnable end to end before Identity Platform exists. [AC-6.1, AC-6.3]
+- **T059** Web talks to the API: HTTP implementations of every data source
+  behind the interfaces the seeded ones already satisfy, selected by
+  `VITE_LOKUS_API_URL`. Until this lands, the auth, tenant-isolation and RBAC
+  layers are tested but never exercised from a browser.
