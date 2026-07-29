@@ -2,6 +2,7 @@ import { SessionProvider, useSession } from './app/SessionContext.jsx';
 import { useRoute } from './app/useRoute.js';
 import { MasukScreen } from './screens/MasukScreen.jsx';
 import { PlaceholderScreen } from './screens/PlaceholderScreen.jsx';
+import { ReplyDraftScreen } from './screens/ReplyDraftScreen.jsx';
 import { ReviewInboxScreen } from './screens/ReviewInboxScreen.jsx';
 import { AppShell } from './shell/AppShell.jsx';
 
@@ -18,17 +19,22 @@ export function App({ sessionSource = null, reputationSource = null }) {
 const SCREEN_COMPONENTS = {
   masuk: MasukScreen,
   review: ReviewInboxScreen,
+  draft: ReplyDraftScreen,
 };
 
 function Console() {
-  const { screen, navigate } = useRoute();
+  const { screen, query, navigate } = useRoute();
   const { tenant, role } = useSession();
 
   const Screen = SCREEN_COMPONENTS[screen.id];
 
   return (
     <AppShell screen={screen} onNavigate={navigate} tenant={tenant} role={role}>
-      {Screen ? <Screen onNavigate={navigate} screen={screen} /> : <PlaceholderScreen screen={screen} />}
+      {Screen ? (
+        <Screen onNavigate={navigate} screen={screen} reviewId={query.get('review')} />
+      ) : (
+        <PlaceholderScreen screen={screen} />
+      )}
     </AppShell>
   );
 }

@@ -19,7 +19,7 @@ const BUCKETS = [
  * 320px list beside a preview panel. Every count in the segmented control is
  * computed from the review rows, not written into the markup.
  */
-export function ReviewInboxScreen() {
+export function ReviewInboxScreen({ onNavigate }) {
   const { reputation, role, tenant } = useSession();
   const [bucket, setBucket] = useState('perlu-tindakan');
   const [selectedId, setSelectedId] = useState(null);
@@ -118,7 +118,7 @@ export function ReviewInboxScreen() {
             selectedId={selectedId}
             onSelect={setSelectedId}
             onApprove={approve}
-            onEdit={() => setNotice('Ubah teks tersedia di layar 06.')}
+            onEdit={(id) => onNavigate?.(`/draft?review=${id}`)}
           />
           <p className="inbox-hint">↑ ↓ pindah · ⏎ setujui &amp; lanjut · E ubah</p>
         </DataPanel>
@@ -150,7 +150,12 @@ export function ReviewInboxScreen() {
                 >
                   {detail.state === 'sent' ? 'Sudah terkirim' : 'Setujui & kirim ⏎'}
                 </button>
-                <button type="button" className="btn btn-secondary" disabled={!mayAct}>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  disabled={!mayAct}
+                  onClick={() => onNavigate?.(`/draft?review=${selectedId}`)}
+                >
                   Ubah teks
                 </button>
                 <button type="button" className="btn btn-secondary" disabled={!mayAct}>
