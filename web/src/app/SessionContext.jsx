@@ -6,6 +6,7 @@ import { createSeededAdminSource } from '../data/adminSource.js';
 import { createSeededAgentSource } from '../data/agentSource.js';
 import { createSeededBriefingSource } from '../data/briefingSource.js';
 import { createHttpSources } from '../data/httpSources.js';
+import { createSeededKnowledgeSource } from '../data/knowledgeSource.js';
 import { createSeededLocationSource } from '../data/locationSource.js';
 import { createSeededReputationSource } from '../data/reputationSource.js';
 import { createSeededSessionSource } from '../data/sessionSource.js';
@@ -30,6 +31,7 @@ export function SessionProvider({
   briefingSource: injectedBriefing,
   adminSource: injectedAdmin,
   locationSource: injectedLocation,
+  knowledgeSource: injectedKnowledge,
   env = import.meta.env,
   children,
 }) {
@@ -90,6 +92,11 @@ export function SessionProvider({
     [injectedLocation, remote, tenantId],
   );
 
+  const knowledgeSource = useMemo(
+    () => injectedKnowledge ?? remote?.knowledge ?? createSeededKnowledgeSource({ tenantId }),
+    [injectedKnowledge, remote, tenantId],
+  );
+
   const briefingSource = useMemo(
     () => injectedBriefing ?? remote?.briefing ?? createSeededBriefingSource({ tenantId, ticketStore }),
     [injectedBriefing, remote, tenantId, ticketStore],
@@ -113,13 +120,14 @@ export function SessionProvider({
       briefingSource,
       adminSource,
       locationSource,
+      knowledgeSource,
       ticketStore,
       tenant,
       role: tenant?.role ?? null,
       isRemote: Boolean(remote),
       selectTenant,
     }),
-    [sessionSource, reputation, agent, briefingSource, adminSource, locationSource, ticketStore, tenant, remote, selectTenant],
+    [sessionSource, reputation, agent, briefingSource, adminSource, locationSource, knowledgeSource, ticketStore, tenant, remote, selectTenant],
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

@@ -85,6 +85,13 @@ export function createHttpSources({ baseUrl, getTenant, user = 'demo', fetchImpl
       api.get(ids?.length === 2 ? `/v1/compare?a=${encodeURIComponent(ids[0])}&b=${encodeURIComponent(ids[1])}` : '/v1/compare'),
   };
 
+  const knowledge = {
+    isSeeded: false,
+    overview: () => api.get('/v1/knowledge'),
+    ask: (tenantId, question) => api.post('/v1/knowledge/ask', { question }),
+    ingest: (tenantId, document) => api.post('/v1/knowledge/documents', document),
+  };
+
   const admin = {
     isSeeded: false,
     overview: () => api.get('/v1/admin/overview'),
@@ -111,5 +118,5 @@ export function createHttpSources({ baseUrl, getTenant, user = 'demo', fetchImpl
     create: (tenantId, payload) => api.post('/v1/tickets', payload).then((body) => body.ticket),
   };
 
-  return { session, reputation, agent, briefing, admin, location, ticketStore };
+  return { session, reputation, agent, briefing, admin, location, knowledge, ticketStore };
 }

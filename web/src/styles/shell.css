@@ -2051,3 +2051,85 @@
   max-width: 92ch;
   line-height: 1.6;
 }
+
+/* ── Screen 11 · Pusat pengetahuan ──────────────────────────────────────── */
+
+.kb-grid {
+  display: grid;
+  grid-template-columns: 1fr 330px;
+  gap: 22px;
+  align-items: start;
+}
+
+.kb-side {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.metric-value-sm {
+  font-size: 20px;
+  line-height: 1.1;
+  word-break: break-word;
+}
+
+/* The gap card is the one panel that reports absence, so it carries the
+   accent tint the decision blocks use. */
+.gap-panel {
+  background: var(--color-accent-100);
+  border-color: var(--color-accent-300);
+}
+
+.gap-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.gap-item:last-of-type {
+  border-bottom: 0;
+}
+
+.gap-question,
+.gap-clause {
+  margin: 0;
+  padding-left: 13px;
+  border-left: 2px solid var(--color-accent-400);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.gap-clause {
+  font-style: italic;
+}
+
+.upload-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--space-6) var(--space-4);
+  border: 1px dashed var(--color-neutral-400);
+  text-align: center;
+  font-size: 13px;
+  color: var(--color-neutral-700);
+}
+
+.dropzone-note {
+  font-size: 11.5px;
+  color: var(--color-neutral-600);
+}
+
+@media (max-width: 1199px) {
+  .kb-grid {
+    grid-template-columns: 1fr;
+  }
+}

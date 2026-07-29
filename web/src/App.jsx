@@ -4,6 +4,7 @@ import { AdminScreen } from './screens/AdminScreen.jsx';
 import { ActionBoardScreen } from './screens/ActionBoardScreen.jsx';
 import { BriefingScreen } from './screens/BriefingScreen.jsx';
 import { ChatScreen } from './screens/ChatScreen.jsx';
+import { KnowledgeScreen } from './screens/KnowledgeScreen.jsx';
 import { CompareSitesScreen } from './screens/CompareSitesScreen.jsx';
 import { SiteScoutScreen } from './screens/SiteScoutScreen.jsx';
 import { NetworkMapScreen } from './screens/NetworkMapScreen.jsx';
@@ -22,6 +23,7 @@ export function App({
   briefingSource = null,
   adminSource = null,
   locationSource = null,
+  knowledgeSource = null,
   env = undefined,
 }) {
   return (
@@ -32,6 +34,7 @@ export function App({
       briefingSource={briefingSource}
       adminSource={adminSource}
       locationSource={locationSource}
+      knowledgeSource={knowledgeSource}
       {...(env ? { env } : {})}
     >
       <Console />
@@ -52,6 +55,7 @@ const SCREEN_COMPONENTS = {
   peta: NetworkMapScreen,
   'site-scout': SiteScoutScreen,
   bandingkan: CompareSitesScreen,
+  pengetahuan: KnowledgeScreen,
 };
 
 function Console() {

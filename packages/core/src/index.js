@@ -50,3 +50,4 @@ export { COMPETITOR_SHARE_WEIGHT, CompareError, VISITS_BAND, VISITS_PER_TRAFFIC_
 export { CHUNK_OVERLAP_TOKENS, CHUNK_TOKENS, EMBEDDING_DIMENSIONS, EMBEDDING_MODEL, INDEX_STATE, IngestError, RETRIEVABLE_STATES, chunkText, createSeededKnowledgeStore, createVertexKnowledgeStore, estimateTokens } from './knowledge/ingest.js';
 export { KnowledgeGapLog, REFUSAL_TEXT, ragCite } from './knowledge/cite.js';
 export { CLAUSE_PROPOSAL_THRESHOLD, classifyGap, gapReport } from './knowledge/gapReport.js';
+export { createKnowledgeService } from './services/knowledgeService.js';

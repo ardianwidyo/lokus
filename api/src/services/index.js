@@ -2,6 +2,7 @@ import {
   createBriefingService,
   createBudgetGuard,
   createKnowledgeAgent,
+  createKnowledgeService,
   createLocationAgent,
   createLocationService,
   createMemoryRunStore,
@@ -28,6 +29,7 @@ import {
 export function createServices({ evaluationReport, budgets = {}, onBudgetAlert = null } = {}) {
   const gbp = createSeededGbpAdapter();
   const places = createSeededPlacesAdapter();
+  const knowledge = createKnowledgeService();
   const runStore = createMemoryRunStore();
   const ticketStore = createMemoryTicketStore({ seed: seedTickets({ tenantId: 'nusa-retail' }) });
 
@@ -37,6 +39,7 @@ export function createServices({ evaluationReport, budgets = {}, onBudgetAlert =
 
   const supervisor = withRunPersistence(
     createSupervisor({
+      gapLog: knowledge.gapLog,
       agents: {
         reputation: createReputationAgent({ gbp }),
         knowledge: createKnowledgeAgent(),
@@ -57,5 +60,6 @@ export function createServices({ evaluationReport, budgets = {}, onBudgetAlert =
     briefing: createBriefingService({ gbp, places, ticketStore }),
     admin: createAdminService({ budget, evaluationReport }),
     location: createLocationService({ places }),
+    knowledge,
   };
 }
