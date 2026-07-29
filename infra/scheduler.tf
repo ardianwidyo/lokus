@@ -130,3 +130,41 @@ resource "google_monitoring_alert_policy" "nightly_cycle_dead_letter" {
 
   depends_on = [google_project_service.required]
 }
+
+# Constitution V: above 90% of budget the system degrades to the cheaper model
+# tier and raises an alert. The degrade itself happens in code
+# (packages/core/src/cost/budget.js); this is the alert reaching a human.
+resource "google_monitoring_alert_policy" "tenant_budget_degraded" {
+  project      = var.project_id
+  display_name = "LOKUS tenant budget above 90% (${var.environment})"
+  combiner     = "OR"
+
+  conditions {
+    display_name = "A tenant crossed its monthly budget degrade point"
+
+    condition_matched_log {
+      filter = join(" AND ", [
+        "resource.type = \"cloud_run_revision\"",
+        "resource.labels.service_name = \"${google_cloud_run_v2_service.api.name}\"",
+        "jsonPayload.event = \"budget_degraded\"",
+      ])
+
+      label_extractors = {
+        tenant_id = "EXTRACT(jsonPayload.tenantId)"
+      }
+    }
+  }
+
+  alert_strategy {
+    notification_rate_limit {
+      period = "3600s"
+    }
+    auto_close = "604800s"
+  }
+
+  documentation {
+    content = "A tenant passed 90% of its monthly budget. Agents have dropped to the Flash tier for the rest of the month and the hard ceiling will refuse calls entirely. Raise the budget in Admin or accept the degraded tier."
+  }
+
+  depends_on = [google_project_service.required]
+}
