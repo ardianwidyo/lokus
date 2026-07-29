@@ -42,3 +42,4 @@ export { createBriefingService } from './services/briefingService.js';
 export { createAdminService } from './services/adminService.js';
 
 export { CACHE_TTL_MS, COMPETING_CATEGORIES, GRID_DEGREES, PlacesError, createGooglePlacesAdapter, createSeededPlacesAdapter, distanceMetres, gridCell } from './adapters/places.js';
+export { COMPETITOR_PENALTY, DEFAULT_WEIGHTS, FACTOR_LABELS, LocationScoreError, competitorFactor, locationScore, normaliseWeights, scoreFrom } from './location/locationScore.js';
