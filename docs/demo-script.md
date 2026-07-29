@@ -153,4 +153,9 @@ Tutup:
 
 - Konsol berjalan di atas **dataset contoh**, bukan review Google sungguhan.
   Adapternya sama; akses API tenant pilot masih menunggu (spec.md Q1).
-- Layar 04 masih placeholder yang menyebut fasenya.
+- Grafik layar 04 menggambar 8 pekan, bukan 12 seperti di `design/SCREENS.md`:
+  8 pekan adalah seluruh rentang review yang ada. Layarnya mengatakan itu.
+- Garis "pesaing baru buka" hanya muncul di **Depok Margonda** — di sanalah
+  Places mencatat pembukaan. Kalau juri membuka Bekasi Timur dan bertanya di
+  mana garisnya, jawabannya ada di layar: tidak ada pembukaan tercatat, jadi
+  tidak ada garis.

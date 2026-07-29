@@ -271,6 +271,43 @@ describe('domain routes over HTTP (T058)', () => {
     });
   });
 
+  describe('outlets (T034)', () => {
+    it('lists the branches with the weakest score first', async () => {
+      const response = await call('GET', '/v1/outlets', await asViewer());
+      const { outlets } = response.json();
+
+      expect(response.statusCode).toBe(200);
+      expect(outlets[0].outletId).toBe('DPK-01');
+    });
+
+    it('serves one branch joined across the agents', async () => {
+      const body = (await call('GET', '/v1/outlets/BKS-02', await asViewer())).json();
+
+      expect(body.outlet.name).toBe('Bekasi Timur');
+      expect(body.rating.mean).toBe(3.8);
+      expect(body.location.score).toBe(71);
+      expect(body.themes[0].theme).toBe('antrean-kasir');
+      expect(body.nearby.total).toBe(5);
+    });
+
+    it('404s an unknown branch', async () => {
+      const response = await call('GET', '/v1/outlets/TIDAK-ADA', await asViewer());
+
+      expect(response.statusCode).toBe(404);
+      expect(response.json().error.code).toBe('OUTLET_NOT_FOUND');
+    });
+
+    it('gives another tenant the same 404, not a 403 that confirms it exists', async () => {
+      // dealer-arta-motor has no BKS-02; a different status would say so.
+      const response = await call('GET', '/v1/outlets/BKS-02', await token({ [OTHER]: ROLES.MANAGER }), {
+        tenantId: OTHER,
+      });
+
+      expect(response.statusCode).toBe(404);
+      expect(response.json().error.code).toBe('OUTLET_NOT_FOUND');
+    });
+  });
+
   describe('every domain route is behind auth and a tenant', () => {
     it.each([
       ['GET', '/v1/reviews'],
@@ -282,6 +319,8 @@ describe('domain routes over HTTP (T058)', () => {
       ['POST', '/v1/tickets'],
       ['POST', '/v1/agent/ask'],
       ['GET', '/v1/admin/overview'],
+      ['GET', '/v1/outlets'],
+      ['GET', '/v1/outlets/BKS-02'],
     ])('%s %s rejects an anonymous caller', async (method, url) => {
       expect((await call(method, url, null)).statusCode).toBe(401);
     });
@@ -292,6 +331,8 @@ describe('domain routes over HTTP (T058)', () => {
       ['GET', '/v1/briefing'],
       ['GET', '/v1/tickets'],
       ['POST', '/v1/agent/ask'],
+      ['GET', '/v1/outlets'],
+      ['GET', '/v1/outlets/BKS-02'],
     ])('%s %s rejects a request naming no tenant', async (method, url) => {
       const response = await call(method, url, await asViewer(), { tenantId: null });
 

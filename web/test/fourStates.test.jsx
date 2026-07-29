@@ -7,6 +7,7 @@ import { SCREENS } from '../src/app/screens.js';
 import { createSeededAdminSource } from '../src/data/adminSource.js';
 import { createSeededAgentSource } from '../src/data/agentSource.js';
 import { createSeededBriefingSource } from '../src/data/briefingSource.js';
+import { createSeededOutletSource } from '../src/data/outletSource.js';
 import { createSeededReputationSource } from '../src/data/reputationSource.js';
 import { createSeededSessionSource } from '../src/data/sessionSource.js';
 import { ACTIVE_TENANT_KEY } from '../src/data/tenantCache.js';
@@ -40,6 +41,7 @@ beforeAll(() => {
     agentSource: createSeededAgentSource(),
     briefingSource: createSeededBriefingSource(),
     adminSource: createSeededAdminSource(),
+    outletSource: createSeededOutletSource(),
   };
 });
 
@@ -86,6 +88,7 @@ describe('T055 · four-state audit', () => {
     ['draft', 'reputationSource', ['inbox', 'reviewDetail']],
     ['tema', 'reputationSource', ['themeMatrix']],
     ['admin', 'adminSource', ['overview']],
+    ['cabang', 'outletSource', ['list', 'detail']],
   ])('screen %s surfaces a failure as an error state, not silence', async (id, key, methods) => {
     signIn();
     renderScreen(SCREENS.find((s) => s.id === id).path, {

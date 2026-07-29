@@ -51,3 +51,4 @@ export { CHUNK_OVERLAP_TOKENS, CHUNK_TOKENS, EMBEDDING_DIMENSIONS, EMBEDDING_MOD
 export { KnowledgeGapLog, REFUSAL_TEXT, ragCite } from './knowledge/cite.js';
 export { CLAUSE_PROPOSAL_THRESHOLD, classifyGap, gapReport } from './knowledge/gapReport.js';
 export { createKnowledgeService } from './services/knowledgeService.js';
+export { BLOCK_WEEKS, RADIUS_M, createOutletService } from './services/outletService.js';

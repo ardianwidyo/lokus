@@ -2194,3 +2194,180 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Screen 04 · Detail cabang ──────────────────────────────────────────── */
+
+.outlet-headline {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.outlet-name {
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  font-size: 30px;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.outlet-meta {
+  font-size: 13px;
+  color: var(--color-neutral-700);
+  margin: var(--space-1) 0 0;
+}
+
+.outlet-figures {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.figure {
+  padding: var(--space-3);
+  min-width: 132px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.figure-value {
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  font-size: 34px;
+  line-height: 1;
+}
+
+.figure-note {
+  font-size: 11px;
+  color: var(--color-neutral-600);
+}
+
+.outlet-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.outlet-grid {
+  display: grid;
+  grid-template-columns: minmax(420px, 1fr) 320px;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+  align-items: start;
+}
+
+.outlet-main,
+.outlet-side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.rating-chart,
+.radius-map {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.chart-grid line {
+  stroke: var(--color-neutral-300);
+  stroke-width: 1;
+}
+
+.chart-axis {
+  fill: var(--color-neutral-600);
+  font-size: 10px;
+}
+
+.chart-line {
+  fill: none;
+  stroke: var(--color-accent);
+  stroke-width: 2;
+}
+
+.chart-point {
+  fill: var(--color-bg);
+  stroke: var(--color-accent);
+  stroke-width: 1.5;
+}
+
+/* A detected change point, drawn from the series itself. */
+.chart-point.is-change {
+  fill: var(--color-accent-800);
+  stroke: var(--color-accent-800);
+}
+
+/* An event from Places — dashed, so it never reads as part of the series. */
+.chart-event line {
+  stroke: var(--color-neutral-700);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+.chart-event-label {
+  fill: var(--color-neutral-700);
+  font-size: 11px;
+}
+
+.radius-map {
+  max-width: 200px;
+  margin: 0 auto;
+}
+
+.radius-map .map-radius.is-inner {
+  opacity: 0.25;
+}
+
+.radius-map .map-self {
+  fill: none;
+  stroke: var(--color-bg);
+  stroke-width: 1.5;
+}
+
+.theme-bars {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.theme-bars > li {
+  display: grid;
+  grid-template-columns: 130px 1fr 40px 28px;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 12.5px;
+}
+
+.theme-bars .factor-track {
+  height: 14px;
+}
+
+.theme-bar-share {
+  color: var(--color-neutral-600);
+  font-size: 11px;
+  text-align: right;
+}
+
+.theme-bar-count {
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  text-align: right;
+}
+
+@media (max-width: 1199px) {
+  .outlet-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .outlet-figures {
+    width: 100%;
+  }
+}

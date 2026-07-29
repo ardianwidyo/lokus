@@ -10,6 +10,7 @@ import { CompareSitesScreen } from './screens/CompareSitesScreen.jsx';
 import { SiteScoutScreen } from './screens/SiteScoutScreen.jsx';
 import { NetworkMapScreen } from './screens/NetworkMapScreen.jsx';
 import { MasukScreen } from './screens/MasukScreen.jsx';
+import { OutletDetailScreen } from './screens/OutletDetailScreen.jsx';
 import { PlaceholderScreen } from './screens/PlaceholderScreen.jsx';
 import { ReplyDraftScreen } from './screens/ReplyDraftScreen.jsx';
 import { ReviewInboxScreen } from './screens/ReviewInboxScreen.jsx';
@@ -24,6 +25,7 @@ export function App({
   briefingSource = null,
   adminSource = null,
   locationSource = null,
+  outletSource = null,
   knowledgeSource = null,
   env = undefined,
 }) {
@@ -35,6 +37,7 @@ export function App({
       briefingSource={briefingSource}
       adminSource={adminSource}
       locationSource={locationSource}
+      outletSource={outletSource}
       knowledgeSource={knowledgeSource}
       {...(env ? { env } : {})}
     >
@@ -54,6 +57,7 @@ const SCREEN_COMPONENTS = {
   tindakan: ActionBoardScreen,
   admin: AdminScreen,
   peta: NetworkMapScreen,
+  cabang: OutletDetailScreen,
   'site-scout': SiteScoutScreen,
   bandingkan: CompareSitesScreen,
   pengetahuan: KnowledgeScreen,

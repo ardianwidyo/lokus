@@ -13,6 +13,7 @@ import { briefingRoutes } from './routes/briefing.js';
 import { healthRoutes } from './routes/health.js';
 import { knowledgeRoutes } from './routes/knowledge.js';
 import { locationRoutes } from './routes/location.js';
+import { outletRoutes } from './routes/outlets.js';
 import { reputationRoutes } from './routes/reputation.js';
 import { runRoutes } from './routes/runs.js';
 import { sessionRoutes } from './routes/session.js';
@@ -96,6 +97,7 @@ export function buildServer({
   adminRoutes(fastify, { admin: domain.admin });
   locationRoutes(fastify, { location: domain.location });
   knowledgeRoutes(fastify, { knowledge: domain.knowledge });
+  outletRoutes(fastify, { outlets: domain.outlets });
 
   return fastify;
 }

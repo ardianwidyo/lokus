@@ -183,7 +183,7 @@ test sehingga layar baru yang lupa satu state akan menggagalkan build.
 
 | Bukti | Di mana |
 |---|---|
-| **768 test** lulus di 4 workspace | `npm test` |
+| **821 test** lulus di 4 workspace | `npm test` |
 | **Eval agen**: 60 kasus, 5 ambang konstitusi, CI memblokir merge bila satu gagal | [`eval/`](eval/) · `npm run eval` |
 | **Terraform**: Cloud Run, Firestore, BigQuery, Storage, Secret Manager, Scheduler, WIF | [`infra/`](infra/) |
 | **CI**: lint, test + ambang cakupan, `terraform validate`, gerbang secret, eval | [`ci.yml`](.github/workflows/ci.yml) |
@@ -210,13 +210,14 @@ yang bisa ditelusuri:
 | [`3a8d580`](https://github.com/ardianwidyo/lokus/commit/3a8d580) `packages/core` + mode auth lokal | [`a30f3ec`](https://github.com/ardianwidyo/lokus/commit/a30f3ec) T010 adapter + dataset |
 | [`3cecc5f`](https://github.com/ardianwidyo/lokus/commit/3cecc5f) runner eval Node, bukan Python | [`420bf45`](https://github.com/ardianwidyo/lokus/commit/420bf45) T050 golden set |
 | [`1eaf36d`](https://github.com/ardianwidyo/lokus/commit/1eaf36d) T057 pipeline deploy | [`5256bc4`](https://github.com/ardianwidyo/lokus/commit/5256bc4) T057 implementasi |
+| [`7acf6c7`](https://github.com/ardianwidyo/lokus/commit/7acf6c7) T034 apa yang tidak boleh digambar layar 04 | [`T034`](specs/001-lokus-core/tasks.md) implementasi layar 04 |
 
 Setiap penyimpangan dari rencana dicatat di
 [`plan.md`](specs/001-lokus-core/plan.md) bagian *Recorded deviations*, dengan
 alasan dan tanggalnya — termasuk keputusan menulis runner eval dalam Node
 padahal `tasks.md` menyebut Python.
 
-Satu tugas = satu commit dengan prefix id-nya. 30 tugas sudah ter-commit.
+Satu tugas = satu commit dengan prefix id-nya. 46 tugas sudah ter-commit.
 
 ---
 
@@ -247,12 +248,8 @@ docs            deploy.md, demo-script.md
 ## Status build
 
 Fase **P0** (fondasi), **P1** (reputasi), **P2** (pengetahuan), **P3** (lokasi),
-**P4** (orkestrasi), dan **P5** (pengerasan) selesai. Tiga belas layar berjalan:
-01, 02, 03, 05, 06, 07, 08, 09, 10, 11, 12, 13, 14.
-
-Belum dibangun: **layar 04** (detail cabang) — satu-satunya yang tersisa, dan
-ia menyajikan ulang data yang sudah tampil di layar 03 dan 07. Rincian per
-tugas di
+**P4** (orkestrasi), dan **P5** (pengerasan) selesai. **Keempat belas layar
+berjalan** — tidak ada lagi placeholder. Rincian per tugas di
 [`specs/001-lokus-core/tasks.md`](specs/001-lokus-core/tasks.md).
 
 ## Catatan tentang angka
@@ -261,6 +258,17 @@ Angka di layar **dihitung dari dataset**, bukan disalin dari mockup. Di
 beberapa tempat hasilnya berbeda tipis dari angka ilustratif di
 `design/SCREENS.md` — yang dihitung yang dipakai, karena konstitusi menuntut
 setiap angka bisa ditelusuri ke baris yang menghasilkannya.
+
+Dua tempat di mana ini terlihat paling jelas, keduanya di layar 04:
+
+- Grafiknya menggambar **8 pekan**, bukan 12 seperti label di mockup, karena
+  8 pekan adalah seluruh rentang review yang ada. Empat pekan tambahan pada
+  grafik penurunan tidak akan bisa dibedakan dari data asli oleh pembacanya.
+- Garis putus-putus "28 Jun · pesaing baru buka" digambar dari respons Places,
+  bukan dari deret ratingnya. Di dataset ini pembukaan itu ada di **Depok
+  Margonda**, bukan Bekasi Timur; cabang tanpa pembukaan tercatat tidak
+  mendapat garis dan mengatakannya. Layar melaporkan rating bergerak berapa di
+  pekan yang sama, lalu berhenti di situ — sebabnya belum diuji.
 
 ## Tim
 

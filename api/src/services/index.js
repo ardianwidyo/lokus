@@ -7,6 +7,7 @@ import {
   createLocationService,
   createMemoryRunStore,
   createMemoryTicketStore,
+  createOutletService,
   createReputationAgent,
   createReputationService,
   createSeededGbpAdapter,
@@ -60,6 +61,7 @@ export function createServices({ evaluationReport, budgets = {}, onBudgetAlert =
     briefing: createBriefingService({ gbp, places, ticketStore }),
     admin: createAdminService({ budget, evaluationReport }),
     location: createLocationService({ places }),
+    outlets: createOutletService({ gbp, places }),
     knowledge,
   };
 }
