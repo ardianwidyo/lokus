@@ -19,3 +19,4 @@ export { CONFIDENCE_THRESHOLD, ragSearch, searchPassages } from './knowledge/ret
 export { DOCUMENTS, PASSAGES, findDocument, retrievablePassages } from './seed/documents.js';
 export { addressFor, draftReply } from './reputation/draftReply.js';
 export { APPROVAL_REQUIRED_MAX_RATING, ApprovalError, REPLY_STATES, approveDraft, createMemoryApprovalStore, replyQueueSummary, requiresApproval, saveDraft, sendReply } from './reputation/approvals.js';
+export { GUARDRAIL_CHECKS, guardrailCheck } from './reputation/guardrails.js';
