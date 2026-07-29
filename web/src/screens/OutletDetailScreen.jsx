@@ -284,6 +284,18 @@ export function OutletDetailScreen({ onNavigate, query }) {
 }
 
 /**
+ * The only factor that has a complaint theme meaning the same thing. Foot
+ * traffic and surrounding category mix have no complaint that corresponds to
+ * them, and inventing a correspondence — "category mix" as an explanation for
+ * price complaints — would be the unearned inference this screen exists to
+ * avoid. One honest pair beats four plausible ones.
+ */
+const THEME_FOR_FACTOR = { access: 'parkir' };
+
+/** How far down the theme list still counts as the same signal. */
+const CORROBORATION_RANK = 3;
+
+/**
  * The sentence design/SCREENS.md writes by hand — "parking is the biggest drag
  * and also the second complaint theme" — derived instead of asserted, so it
  * only appears on a branch where it is true.
@@ -296,12 +308,13 @@ function crossSignal(data) {
     .sort((a, b) => a[1] - b[1])[0] ?? [];
   if (!weakestKey) return null;
 
-  const themeForFactor = { access: 'parkir', traffic: null, mix: 'harga-vs-pesaing' };
-  const themeId = themeForFactor[weakestKey];
+  const themeId = THEME_FOR_FACTOR[weakestKey];
   if (!themeId) return null;
 
   const rank = data.themes.findIndex((theme) => theme.theme === themeId);
-  if (rank < 0) return null;
+  // Outside the leading themes the pair is a coincidence, not corroboration:
+  // "sixth complaint theme, two mentions" does not confirm anything.
+  if (rank < 0 || rank >= CORROBORATION_RANK) return null;
 
   const factorLabel = data.location.factorLabels[weakestKey].toLowerCase();
   const theme = data.themes[rank];

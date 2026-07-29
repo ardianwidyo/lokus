@@ -110,6 +110,21 @@ describe('Screen 04 · Detail cabang (T034)', () => {
     expect(screen.getByText(/tema keluhan nomor 2 \(13 keluhan\)/)).toBeInTheDocument();
   });
 
+  it('withholds the cross-signal sentence when the pair is a coincidence', async () => {
+    // Cikarang's weakest factor is parking too, but parking is its sixth
+    // complaint theme with two mentions — that corroborates nothing.
+    await renderOutlet({ outlet: 'CKR-01' });
+
+    expect(screen.queryByText(/dua sinyal berbeda menunjuk hal yang sama/)).toBeNull();
+  });
+
+  it('still writes it where the theme genuinely leads', async () => {
+    // Serpong: parking is the weakest factor and the top complaint theme.
+    await renderOutlet({ outlet: 'SRP-03' });
+
+    expect(screen.getByText(/tema keluhan nomor 1 \(19 keluhan\)/)).toBeInTheDocument();
+  });
+
   it('counts the waiting work on the button rather than rounding it', async () => {
     await renderOutlet({ outlet: 'BKS-02' });
 
