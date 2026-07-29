@@ -75,7 +75,10 @@ VITE_LOKUS_API_URL=http://localhost:8080 npm run dev
 lokal** — server menolak start bila mode itu aktif saat `NODE_ENV=production`.
 
 **Demo URL:** belum ter-deploy. Pipeline-nya siap
-([`docs/deploy.md`](docs/deploy.md)) dan menunggu satu project Google Cloud.
+([`docs/deploy.md`](docs/deploy.md)) dan menunggu satu project Google Cloud —
+bukan menunggu Identity Platform: dengan `LOKUS_API_URL` dibiarkan kosong,
+konsol berjalan di atas dataset contoh di browser dan keempat belas layar bisa
+diklik tanpa perlu login.
 
 **Akun demo:** tidak perlu. Layar 01 menampilkan tiga tenant contoh; pilih
 **Nusa Retail** (Area Manager) untuk akses penuh, atau **Klinik Sehat Prima**

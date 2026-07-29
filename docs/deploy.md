@@ -30,7 +30,7 @@ If your repository is not `ardianwidyo/lokus`, set `github_repository` in
 `terraform.tfvars` — otherwise the condition will refuse your workflow, which
 is the intended behaviour.
 
-### 2. Fill the secrets
+### 2. Give every secret a version
 
 Terraform creates the Secret Manager containers empty and never writes a
 version, so no credential passes through Terraform state:
@@ -41,7 +41,30 @@ printf '%s' "$SESSION_KEY"  | gcloud secrets versions add lokus-session-signing-
 printf '%s' "$IDP_CONFIG"   | gcloud secrets versions add lokus-identity-platform-config-dev --data-file=-
 ```
 
-The API refuses to start without them rather than falling back to a default.
+This step is **not optional**, but not for the reason it looks. `infra/cloud_run.tf`
+mounts `identity-platform-config` and `session-signing-key` at `version = "latest"`,
+and Cloud Run refuses to start a revision whose mounted secret has no version at
+all. The failure is in the platform, not the application.
+
+The *values* are a different matter. Nothing in `api/src` reads either variable
+yet — Identity Platform is still spec.md Q1 — so a placeholder is enough to get
+a running deployment:
+
+```bash
+printf 'placeholder' | gcloud secrets versions add lokus-session-signing-key-dev --data-file=-
+printf 'placeholder' | gcloud secrets versions add lokus-identity-platform-config-dev --data-file=-
+```
+
+That is worth knowing because it means **a clickable demo URL does not wait on
+Q1**. Leave `LOKUS_API_URL` unset and the console runs the seeded dataset in the
+browser: all fourteen screens work, tenant selection works, and no sign-in is
+required. Wire the API and real Identity Platform config later, when the pilot
+tenant exists. The only rule is that a placeholder must never survive into a
+deployment that actually verifies tokens — at that point these two secrets carry
+real values or the deployment is not real either.
+
+The API itself requires exactly one variable to boot, `GOOGLE_CLOUD_PROJECT`,
+and Terraform always sets it.
 
 ### 3. Point GitHub at the project
 
