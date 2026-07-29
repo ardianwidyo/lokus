@@ -3,9 +3,11 @@ import {
   createMemoryRunStore,
   createReputationAgent,
   createSeededGbpAdapter,
+  createMemoryTicketStore,
   createSupervisor,
   createUnavailableAgent,
   withRunPersistence,
+  answerActions,
 } from '@lokus/core';
 
 /**
@@ -18,8 +20,9 @@ import {
  * That matters for the demo: the execution trace on screen is a record of work
  * that actually happened, not a scripted animation.
  */
-export function createSeededAgentSource({ tenantId = 'nusa-retail' } = {}) {
+export function createSeededAgentSource({ tenantId = 'nusa-retail', ticketStore = null } = {}) {
   const runStore = createMemoryRunStore();
+  const tickets = ticketStore ?? createMemoryTicketStore();
 
   const supervisor = withRunPersistence(
     createSupervisor({
@@ -50,7 +53,16 @@ export function createSeededAgentSource({ tenantId = 'nusa-retail' } = {}) {
     return runStore.list(tenantId, { limit });
   }
 
-  return { isSeeded: true, ask, getRun, recentRuns };
+  /** AC-7.3: what this particular answer makes possible. */
+  function actionsFor(run) {
+    return answerActions(run);
+  }
+
+  async function createTicket(payload) {
+    return tickets.create(tenantId, { ...payload, createdBy: 'agen' });
+  }
+
+  return { isSeeded: true, ask, getRun, recentRuns, actionsFor, createTicket, tickets };
 }
 
 /** The three prompts screen 10 offers below the composer. */

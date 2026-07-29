@@ -78,8 +78,10 @@ describe('Screen 10 · Chat agen (AC-7.2, AC-7.4)', () => {
     renderChat();
 
     const answer = await ask('Ringkas keluhan pekan ini');
+    // Scoped to the chips: the "Lihat N review" action matches the same words.
+    const chips = answer.querySelector('.citation-chips');
 
-    expect(within(answer).getByText(/\d+ review/)).toBeInTheDocument();
+    expect(within(chips).getByText(/\d+ review/)).toBeInTheDocument();
   });
 
   it('renders the full numbered trace panel below the conversation', async () => {

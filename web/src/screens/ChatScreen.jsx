@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { Bot, Send } from 'lucide-react';
 
+import { canWrite } from '../app/roles.js';
 import { useSession } from '../app/SessionContext.jsx';
 import { Blueprint } from '../components/Blueprint.jsx';
 import { DataPanel, PANEL_STATUS } from '../components/states/index.js';
@@ -18,11 +19,31 @@ import { TraceChips, TraceTable } from './chat/TraceChips.jsx';
  * persisted agent run (`GET /v1/runs/:id` serves the same object).
  */
 export function ChatScreen({ onNavigate }) {
-  const { agent } = useSession();
+  const { agent, role } = useSession();
   const [turns, setTurns] = useState([]);
   const [pending, setPending] = useState(null);
   const [failure, setFailure] = useState(null);
+  const [receipts, setReceipts] = useState({});
   const inputRef = useRef(null);
+
+  // Creating a ticket writes data, so a viewer gets the answer without the
+  // actions that change anything (AC-6.3).
+  const mayAct = canWrite(role);
+
+  const createTicket = async (run, payload) => {
+    try {
+      const ticket = await agent.createTicket(payload);
+      setReceipts((previous) => ({
+        ...previous,
+        [run.id]: `Tiket ${ticket.id} dibuat untuk ${ticket.owner ?? 'tim ops'} · tenggat ${formatDate(ticket.dueAt)}.`,
+      }));
+    } catch (error) {
+      setReceipts((previous) => ({
+        ...previous,
+        [run.id]: error?.message ?? 'Tiket gagal dibuat.',
+      }));
+    }
+  };
 
   const submit = async (question) => {
     const asked = question.trim();
@@ -92,6 +113,20 @@ export function ChatScreen({ onNavigate }) {
                     Tidak ada sumber yang menopang jawaban ini, jadi agen menolak menjawab.
                   </p>
                 )}
+
+                <AnswerActions
+                  run={turn.run}
+                  actions={agent.actionsFor(turn.run)}
+                  canAct={mayAct}
+                  onNavigate={onNavigate}
+                  onTicket={createTicket}
+                />
+
+                {receipts[turn.run.id] ? (
+                  <p className="state-note" role="status">
+                    {receipts[turn.run.id]}
+                  </p>
+                ) : null}
               </article>
             </li>
           ))}
@@ -198,4 +233,37 @@ export function ChatScreen({ onNavigate }) {
       </div>
     </>
   );
+}
+
+/**
+ * AC-7.3: at least one action on every answer, derived from what the run
+ * actually found rather than from a fixed menu. A refused answer still offers
+ * the knowledge-gap route, so a dead end leads somewhere.
+ */
+function AnswerActions({ run, actions, canAct, onNavigate, onTicket }) {
+  if (!actions.length) return null;
+
+  return (
+    <div className="state-actions" role="group" aria-label="Tindakan untuk jawaban ini">
+      {actions.map((action) => (
+        <button
+          key={action.id}
+          type="button"
+          className={`btn btn-${action.variant}`}
+          disabled={action.kind !== 'navigate' && !canAct}
+          onClick={() => {
+            if (action.kind === 'navigate') return onNavigate?.(action.href);
+            if (action.kind === 'ticket') return onTicket(run, action.payload);
+            return onNavigate?.('/pengetahuan');
+          }}
+        >
+          {action.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function formatDate(iso) {
+  return new Date(iso).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
 }
