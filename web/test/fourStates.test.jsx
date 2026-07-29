@@ -31,9 +31,6 @@ const signIn = (role = 'manager') =>
     JSON.stringify({ tenantId: 'nusa-retail', name: 'Nusa Retail', outletCount: 42, area: 'Jabodetabek', role }),
   );
 
-/** Screens with a real implementation today; the rest are placeholders. */
-const BUILT = ['masuk', 'briefing', 'peta', 'site-scout', 'review', 'draft', 'tema', 'chat', 'tindakan', 'admin'];
-
 let shared;
 
 beforeAll(() => {
@@ -65,7 +62,9 @@ describe('T055 · four-state audit', () => {
     window.sessionStorage.clear();
   });
 
-  it.each(BUILT)('screen %s renders its data through DataPanel', async (id) => {
+  // Every screen, not only the built ones: a placeholder must render through
+  // DataPanel too, or it is a blank page pretending to be a state.
+  it.each(SCREENS.map((s) => s.id))('screen %s renders its data through DataPanel', async (id) => {
     signIn();
     renderScreen(SCREENS.find((s) => s.id === id).path);
 

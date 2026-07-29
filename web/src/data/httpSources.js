@@ -81,6 +81,8 @@ export function createHttpSources({ baseUrl, getTenant, user = 'demo', fetchImpl
     isSeeded: false,
     networkMap: () => api.get('/v1/map'),
     siteScout: () => api.get('/v1/scout'),
+    compareSites: (tenantId, ids) =>
+      api.get(ids?.length === 2 ? `/v1/compare?a=${encodeURIComponent(ids[0])}&b=${encodeURIComponent(ids[1])}` : '/v1/compare'),
   };
 
   const admin = {

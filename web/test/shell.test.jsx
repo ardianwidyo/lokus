@@ -140,16 +140,4 @@ describe('AppShell', () => {
     expect(screen.getByText('Belum ada tenant')).toBeInTheDocument();
   });
 
-  it('gives every screen a data panel with a declared state', async () => {
-    // The four-state rule, checked across all 14 screens rather than trusted.
-    for (const target of SCREENS) {
-      window.history.pushState({}, '', target.path);
-      const { container, unmount } = await renderApp();
-
-      const panels = container.querySelectorAll('.panel[data-status]');
-      expect(panels.length, `${target.path} has no data panel`).toBeGreaterThan(0);
-
-      unmount();
-    }
-  });
 });

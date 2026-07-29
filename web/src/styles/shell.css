@@ -1998,3 +1998,56 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Screen 09 · Bandingkan lokasi ──────────────────────────────────────── */
+
+.compare-table th[scope='col'] {
+  vertical-align: bottom;
+}
+
+.compare-table th[scope='col'] .kicker,
+.compare-table .compare-name {
+  display: block;
+}
+
+.compare-name {
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  font-size: 16px;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--color-text);
+  padding-top: 2px;
+}
+
+.compare-table th[scope='row'] {
+  width: 200px;
+  text-align: left;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 13px;
+  color: var(--color-text);
+}
+
+/* The recommended column is tinted, not coloured differently per value. */
+.compare-col-a {
+  background: var(--color-accent-100);
+}
+
+/* The better figure is marked by weight, not by a second hue. */
+.is-better {
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+}
+
+.compare-conclusion th,
+.compare-conclusion td {
+  vertical-align: top;
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+.compare-foot {
+  max-width: 92ch;
+  line-height: 1.6;
+}

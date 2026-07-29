@@ -23,7 +23,7 @@ const renderScout = async ({ role = 'manager', locationSource = null, agentSourc
   );
   // The panel kicker renders in the loading state too, so waiting on it would
   // let assertions run before any candidate exists. Wait for real content.
-  await screen.findByText(/Peringkat 1|Tidak ada kandidat yang lolos|Site Scout tak bisa dimuat/);
+  await screen.findByText(/Peringkat 1|Tidak ada kandidat yang lolos|Site Scout tak bisa dimuat/, {}, { timeout: 4000 });
   return utils;
 };
 

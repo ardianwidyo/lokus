@@ -46,3 +46,4 @@ export { COMPETITOR_PENALTY, DEFAULT_WEIGHTS, FACTOR_LABELS, LocationScoreError,
 export { CANNIBALISATION_THRESHOLD_KM, cannibalisation } from './location/cannibalisation.js';
 export { createLocationService } from './services/locationService.js';
 export { CANDIDATE_FACTOR_LABELS, CANDIDATE_POOL, CANDIDATE_WEIGHTS, CLEAR_DISTANCE_KM, cannibalisationFactor, scoutSites } from './location/siteScout.js';
+export { COMPETITOR_SHARE_WEIGHT, CompareError, VISITS_BAND, VISITS_PER_TRAFFIC_POINT, compareSites, estimateDailyVisits } from './location/compareSites.js';

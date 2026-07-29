@@ -1,5 +1,6 @@
 import { cannibalisation } from '../location/cannibalisation.js';
 import { locationScore } from '../location/locationScore.js';
+import { compareSites } from '../location/compareSites.js';
 import { scoutSites } from '../location/siteScout.js';
 import { outletsForTenant } from '../domain/outlets.js';
 import { assertTenant } from '../lib/tenantScope.js';
@@ -65,7 +66,13 @@ export function createLocationService({ places, weights = undefined } = {}) {
     return data;
   }
 
-  return { networkMap, siteScout };
+  async function compare(tenantId, ids = null) {
+    assertTenant(tenantId);
+    const { data } = await compareSites({ tenantId, places, ids, weights });
+    return data;
+  }
+
+  return { networkMap, siteScout, compare };
 }
 
 /**

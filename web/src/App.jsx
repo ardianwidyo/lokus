@@ -4,6 +4,7 @@ import { AdminScreen } from './screens/AdminScreen.jsx';
 import { ActionBoardScreen } from './screens/ActionBoardScreen.jsx';
 import { BriefingScreen } from './screens/BriefingScreen.jsx';
 import { ChatScreen } from './screens/ChatScreen.jsx';
+import { CompareSitesScreen } from './screens/CompareSitesScreen.jsx';
 import { SiteScoutScreen } from './screens/SiteScoutScreen.jsx';
 import { NetworkMapScreen } from './screens/NetworkMapScreen.jsx';
 import { MasukScreen } from './screens/MasukScreen.jsx';
@@ -50,6 +51,7 @@ const SCREEN_COMPONENTS = {
   admin: AdminScreen,
   peta: NetworkMapScreen,
   'site-scout': SiteScoutScreen,
+  bandingkan: CompareSitesScreen,
 };
 
 function Console() {
@@ -61,7 +63,7 @@ function Console() {
   return (
     <AppShell screen={screen} onNavigate={navigate} tenant={tenant} role={role}>
       {Screen ? (
-        <Screen onNavigate={navigate} screen={screen} reviewId={query.get('review')} />
+        <Screen onNavigate={navigate} screen={screen} reviewId={query.get('review')} query={query} />
       ) : (
         <PlaceholderScreen screen={screen} />
       )}
