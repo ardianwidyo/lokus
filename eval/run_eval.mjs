@@ -194,13 +194,34 @@ function formatValue(key, value) {
   return value.toFixed(3);
 }
 
+/**
+ * `run_eval.mjs [golden-set-path] [--report out.json]`
+ *
+ * The value after `--report` is a flag's argument, not a positional one.
+ * Scanning for "the first token that does not start with --" mistook it for the
+ * golden set path and the runner tried to parse the report as JSONL.
+ */
+export function parseArgs(argv) {
+  const positional = [];
+  let reportPath = null;
+
+  for (let i = 0; i < argv.length; i += 1) {
+    if (argv[i] === '--report') {
+      reportPath = argv[i + 1] ?? null;
+      i += 1;
+      continue;
+    }
+    if (!argv[i].startsWith('--')) positional.push(argv[i]);
+  }
+
+  return { goldenPath: positional[0] ?? null, reportPath };
+}
+
 export async function main(argv = process.argv.slice(2)) {
+  const parsed = parseArgs(argv);
   const goldenPath =
-    argv.find((arg) => !arg.startsWith('--')) ??
-    fileURLToPath(new URL('golden_set.jsonl', import.meta.url));
-  const reportPath = argv.includes('--report')
-    ? argv[argv.indexOf('--report') + 1]
-    : null;
+    parsed.goldenPath ?? fileURLToPath(new URL('golden_set.jsonl', import.meta.url));
+  const reportPath = parsed.reportPath;
 
   const goldenSet = await loadGoldenSet(goldenPath);
   const gbp = createSeededGbpAdapter();

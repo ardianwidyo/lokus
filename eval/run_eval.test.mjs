@@ -2,7 +2,7 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
-import { THRESHOLDS, checkGates, loadGoldenSet, scoreResults } from './run_eval.mjs';
+import { THRESHOLDS, checkGates, loadGoldenSet, parseArgs, scoreResults } from './run_eval.mjs';
 
 // fileURLToPath, not `.pathname`: a Windows path containing a space comes back
 // percent-encoded from `.pathname` and the file is never found.
@@ -137,5 +137,39 @@ describe('gates', () => {
     const [gate] = checkGates({ theme_accuracy: 0.1 });
 
     expect(gate).toMatchObject({ label: expect.any(String), threshold: '>= 0.85', passed: false });
+  });
+});
+
+describe('argument parsing', () => {
+  it('defaults to the bundled golden set and writes no report', () => {
+    expect(parseArgs([])).toEqual({ goldenPath: null, reportPath: null });
+  });
+
+  it('takes a golden set path positionally', () => {
+    expect(parseArgs(['other.jsonl']).goldenPath).toBe('other.jsonl');
+  });
+
+  it('does not mistake the --report value for the golden set path', () => {
+    // CI runs exactly this. Treating the report path as positional made the
+    // runner try to parse its own output file as JSONL.
+    const parsed = parseArgs(['--report', 'eval-report.json']);
+
+    expect(parsed.goldenPath).toBeNull();
+    expect(parsed.reportPath).toBe('eval-report.json');
+  });
+
+  it('accepts both together, in either order', () => {
+    expect(parseArgs(['golden.jsonl', '--report', 'out.json'])).toEqual({
+      goldenPath: 'golden.jsonl',
+      reportPath: 'out.json',
+    });
+    expect(parseArgs(['--report', 'out.json', 'golden.jsonl'])).toEqual({
+      goldenPath: 'golden.jsonl',
+      reportPath: 'out.json',
+    });
+  });
+
+  it('tolerates a trailing --report with no value', () => {
+    expect(parseArgs(['--report']).reportPath).toBeNull();
   });
 });
