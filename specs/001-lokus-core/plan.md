@@ -86,6 +86,15 @@ folded in continuously rather than left to the end.
   API and by the web console when it runs on the seeded dataset (Q1). A shared
   plain-JS workspace keeps one implementation and one test suite instead of
   two. No new external dependency; it is repository structure, not stack.
+- **2026-07-29 · eval runner is `eval/run_eval.mjs`, not `run_eval.py`.**
+  `tasks.md` T050 names a Python runner, but Python appears nowhere in the
+  stack table above and the entire system under test is JavaScript. A Python
+  harness would have to shell out to Node for every case, and CI would carry a
+  second language runtime and a second dependency manager to run assertions on
+  a JS library. The runner is written in Node, imports `@lokus/core` directly,
+  and keeps the golden set in the JSONL format T050 specifies. Thresholds are
+  unchanged: they come from the constitution's quality gates, not from the
+  runner's language.
 - **2026-07-29 · local development auth mode.** `LOKUS_AUTH_MODE=dev` lets the
   API mint a local principal so the console is runnable end to end before
   Identity Platform is provisioned for the pilot tenant (Q1 still open). The
