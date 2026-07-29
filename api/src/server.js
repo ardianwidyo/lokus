@@ -11,6 +11,7 @@ import { adminRoutes } from './routes/admin.js';
 import { agentRoutes } from './routes/agent.js';
 import { briefingRoutes } from './routes/briefing.js';
 import { healthRoutes } from './routes/health.js';
+import { locationRoutes } from './routes/location.js';
 import { reputationRoutes } from './routes/reputation.js';
 import { runRoutes } from './routes/runs.js';
 import { sessionRoutes } from './routes/session.js';
@@ -92,6 +93,7 @@ export function buildServer({
   briefingRoutes(fastify, { briefing: domain.briefing, tickets: domain.ticketStore });
   agentRoutes(fastify, { supervisor: domain.supervisor, budget: domain.budget });
   adminRoutes(fastify, { admin: domain.admin });
+  locationRoutes(fastify, { location: domain.location });
 
   return fastify;
 }

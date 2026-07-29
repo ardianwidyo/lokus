@@ -4,6 +4,7 @@ import { AdminScreen } from './screens/AdminScreen.jsx';
 import { ActionBoardScreen } from './screens/ActionBoardScreen.jsx';
 import { BriefingScreen } from './screens/BriefingScreen.jsx';
 import { ChatScreen } from './screens/ChatScreen.jsx';
+import { NetworkMapScreen } from './screens/NetworkMapScreen.jsx';
 import { MasukScreen } from './screens/MasukScreen.jsx';
 import { PlaceholderScreen } from './screens/PlaceholderScreen.jsx';
 import { ReplyDraftScreen } from './screens/ReplyDraftScreen.jsx';
@@ -18,6 +19,7 @@ export function App({
   agentSource = null,
   briefingSource = null,
   adminSource = null,
+  locationSource = null,
   env = undefined,
 }) {
   return (
@@ -27,6 +29,7 @@ export function App({
       agentSource={agentSource}
       briefingSource={briefingSource}
       adminSource={adminSource}
+      locationSource={locationSource}
       {...(env ? { env } : {})}
     >
       <Console />
@@ -44,6 +47,7 @@ const SCREEN_COMPONENTS = {
   briefing: BriefingScreen,
   tindakan: ActionBoardScreen,
   admin: AdminScreen,
+  peta: NetworkMapScreen,
 };
 
 function Console() {

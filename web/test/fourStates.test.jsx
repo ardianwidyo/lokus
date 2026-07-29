@@ -32,7 +32,7 @@ const signIn = (role = 'manager') =>
   );
 
 /** Screens with a real implementation today; the rest are placeholders. */
-const BUILT = ['masuk', 'briefing', 'review', 'draft', 'tema', 'chat', 'tindakan', 'admin'];
+const BUILT = ['masuk', 'briefing', 'peta', 'review', 'draft', 'tema', 'chat', 'tindakan', 'admin'];
 
 let shared;
 

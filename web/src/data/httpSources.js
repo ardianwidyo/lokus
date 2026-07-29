@@ -77,6 +77,11 @@ export function createHttpSources({ baseUrl, getTenant, user = 'demo', fetchImpl
         .then((body) => body.ticket),
   };
 
+  const location = {
+    isSeeded: false,
+    networkMap: () => api.get('/v1/map'),
+  };
+
   const admin = {
     isSeeded: false,
     overview: () => api.get('/v1/admin/overview'),
@@ -103,5 +108,5 @@ export function createHttpSources({ baseUrl, getTenant, user = 'demo', fetchImpl
     create: (tenantId, payload) => api.post('/v1/tickets', payload).then((body) => body.ticket),
   };
 
-  return { session, reputation, agent, briefing, admin, ticketStore };
+  return { session, reputation, agent, briefing, admin, location, ticketStore };
 }

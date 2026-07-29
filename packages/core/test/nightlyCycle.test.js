@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { createSeededGbpAdapter } from '../src/adapters/gbp.js';
+import { createSeededPlacesAdapter } from '../src/adapters/places.js';
 import { MAX_DECISIONS, runNightlyCycle } from '../src/briefing/nightlyCycle.js';
 import { TenantScopeError } from '../src/lib/tenantScope.js';
 import { createMemoryWarehouse } from '../src/pipeline/warehouse.js';
@@ -11,6 +12,7 @@ const run = (overrides = {}) =>
   runNightlyCycle({
     tenantId: TENANT,
     gbp: createSeededGbpAdapter(),
+    places: createSeededPlacesAdapter(),
     warehouse: createMemoryWarehouse(),
     ...overrides,
   });
@@ -33,12 +35,22 @@ describe('nightly cycle (AC-1.1, AC-1.4)', () => {
     expect(read.detail).toMatch(/\d+ cabang · \d+ tema terdeteksi/);
   });
 
-  it('puts the agent that did not run on the timeline rather than skipping the slot', async () => {
+  it('reports the location scan with the counts it actually found', async () => {
     const briefing = await run();
+    const scan = briefing.timeline.find((node) => node.agent === 'location');
 
-    const skipped = briefing.timeline.find((node) => node.unavailable);
-    expect(skipped.agent).toBe('location');
-    expect(skipped.detail).toMatch(/belum aktif/);
+    expect(scan.unavailable).toBe(false);
+    expect(scan.title).toMatch(/memindai \d+ area cabang/);
+    expect(scan.detail).toMatch(/\d+ POI · \d+ pesaing baru/);
+  });
+
+  it('says the scan did not happen rather than reporting zero competitors', async () => {
+    // Without an adapter, "0 pesaing baru" would read as "none found".
+    const briefing = await run({ places: null });
+    const scan = briefing.timeline.find((node) => node.agent === 'location');
+
+    expect(scan.unavailable).toBe(true);
+    expect(scan.detail).toMatch(/tidak dipindai/);
   });
 
   it('produces at most three decisions', async () => {

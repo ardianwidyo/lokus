@@ -1,7 +1,8 @@
 import { flagSystemicThemes, systemicFinding } from '../analytics/systemic.js';
 import { themeCluster } from '../analytics/themeCluster.js';
 import { DEMO_NOW } from '../domain/clock.js';
-import { findOutlet } from '../domain/outlets.js';
+import { findOutlet, outletsForTenant } from '../domain/outlets.js';
+import { cannibalisation } from '../location/cannibalisation.js';
 import { themeLabel } from '../domain/themes.js';
 import { assertTenant } from '../lib/tenantScope.js';
 import { searchPassages } from '../knowledge/retrieval.js';
@@ -31,6 +32,7 @@ const MILESTONE_TIMES = Object.freeze({
 export async function runNightlyCycle({
   tenantId,
   gbp,
+  places,
   warehouse,
   now = DEMO_NOW,
   logger = null,
@@ -71,13 +73,17 @@ export async function runNightlyCycle({
     { agent: 'reputation' },
   );
 
-  // The location agent is not built yet (P3). The cycle records the gap on the
-  // timeline rather than skipping the slot silently.
+  const scan = await scanLocations({ tenantId, places });
   milestone(
     MILESTONE_TIMES.locationScan,
-    'Agen Lokasi tidak dijalankan',
-    'Agen Lokasi belum aktif pada build ini (fase P3), jadi tidak ada pemindaian area cabang malam ini.',
-    { agent: 'location', unavailable: true },
+    scan.skipped
+      ? 'Agen Lokasi tidak dijalankan'
+      : `Agen Lokasi memindai ${scan.outletCount} area cabang`,
+    scan.skipped
+      ? 'Tidak ada adapter Places pada siklus ini, jadi area cabang tidak dipindai.'
+      : `${scan.poiCount} POI · ${scan.newCompetitorCount} pesaing baru ditemukan · ` +
+        `${scan.cannibalPairs} cabang berisiko kanibalisasi`,
+    { agent: 'location', unavailable: scan.skipped },
   );
 
   const coverage = knowledgeCoverage(tenantId);
@@ -265,6 +271,55 @@ function knowledgeCoverage(tenantId) {
   }
 
   return { rate: answered / probes.length, gaps, probed: probes.length };
+}
+
+/**
+ * The overnight Places sweep. Every outlet's neighbourhood is scanned and the
+ * pairs of own branches close enough to compete are counted.
+ *
+ * Without a Places adapter the cycle says so on the timeline rather than
+ * pretending the scan happened and reporting zeroes, which would read as "no
+ * competitors found".
+ */
+async function scanLocations({ tenantId, places }) {
+  const outlets = outletsForTenant(tenantId);
+
+  if (!places || outlets.length === 0) {
+    return {
+      skipped: true,
+      outletCount: outlets.length,
+      poiCount: 0,
+      newCompetitorCount: 0,
+      cannibalPairs: 0,
+    };
+  }
+
+  let poiCount = 0;
+  let newCompetitorCount = 0;
+  const flagged = new Set();
+
+  for (const outlet of outlets) {
+    const nearby = await places.nearbyCompetitors({ geo: outlet.geo });
+    poiCount += nearby.data.total;
+    newCompetitorCount += nearby.data.newSinceCount;
+
+    const { data } = await cannibalisation({
+      tenantId,
+      geo: outlet.geo,
+      excludeOutletId: outlet.outletId,
+    });
+    if (data.flagged && data.nearestOwn) {
+      flagged.add([outlet.outletId, data.nearestOwn.outletId].sort().join('|'));
+    }
+  }
+
+  return {
+    skipped: false,
+    outletCount: outlets.length,
+    poiCount,
+    newCompetitorCount,
+    cannibalPairs: flagged.size,
+  };
 }
 
 function estimateCycleCost({ reviews, decisions }) {

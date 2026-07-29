@@ -110,7 +110,7 @@ flowchart TB
   subgraph agen["Vertex AI Agent Engine"]
     sup["<b>supervisor</b><br/>route · delegasi paralel · merge · guardrail"]
     rep["Agen Reputasi"]
-    loc["Agen Lokasi<br/><i>fase P3</i>"]
+    loc["Agen Lokasi"]
     kno["Agen Pengetahuan"]
   end
 
@@ -138,14 +138,11 @@ flowchart TB
   api --> fs
 
   sched["Cloud Scheduler 23.00 WIB"] --> pubsub["Pub/Sub"] --> api
-
-  classDef pending stroke-dasharray: 5 5
-  class loc pending
 ```
 
-Garis putus-putus pada Agen Lokasi bukan hiasan: agen itu **belum dibangun**,
-dan sistem mengatakannya sendiri — di jejak eksekusi, di jawaban chat, dan di
-garis waktu Briefing Pagi.
+Ketiga agen berjalan. Setiap tool yang mereka panggil muncul sebagai langkah
+bernomor di jejak eksekusi layar 10, dan setiap angka yang dihasilkannya
+menempel pada sumber yang bisa dibuka.
 
 ---
 
@@ -186,7 +183,7 @@ test sehingga layar baru yang lupa satu state akan menggagalkan build.
 
 | Bukti | Di mana |
 |---|---|
-| **553 test** lulus di 4 workspace | `npm test` |
+| **611 test** lulus di 4 workspace | `npm test` |
 | **Eval agen**: 60 kasus, 5 ambang konstitusi, CI memblokir merge bila satu gagal | [`eval/`](eval/) · `npm run eval` |
 | **Terraform**: Cloud Run, Firestore, BigQuery, Storage, Secret Manager, Scheduler, WIF | [`infra/`](infra/) |
 | **CI**: lint, test + ambang cakupan, `terraform validate`, gerbang secret, eval | [`ci.yml`](.github/workflows/ci.yml) |
@@ -249,12 +246,12 @@ docs            deploy.md, demo-script.md
 
 ## Status build
 
-Fase **P0** (fondasi), **P1** (reputasi), **P4** (orkestrasi), dan sebagian
-besar **P5** (pengerasan) selesai. Delapan layar berjalan: 01, 02, 05, 06, 07,
-10, 13, 14.
+Fase **P0** (fondasi), **P1** (reputasi), **P4** (orkestrasi), sebagian besar
+**P5** (pengerasan), dan inti **P3** (lokasi) selesai. Sembilan layar berjalan:
+01, 02, 03, 05, 06, 07, 10, 13, 14.
 
-Belum dibangun, dan sistem mengatakannya sendiri di UI: **P3 Lokasi** (layar 03,
-04, 08, 09) dan **layar P2** (11, 12 — mesin RAG-nya sudah ada dan terpakai,
+Belum dibangun: **layar P3 lanjutan** (04 detail cabang, 08 Site Scout, 09
+bandingkan) dan **layar P2** (11, 12 — mesin RAG-nya sudah ada dan terpakai,
 layarnya belum). Rincian per tugas di
 [`specs/001-lokus-core/tasks.md`](specs/001-lokus-core/tasks.md).
 

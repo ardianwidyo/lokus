@@ -36,9 +36,9 @@ Tunjuk garis waktunya, dari atas ke bawah:
 
 Berhenti di simpul **02.30**:
 
-> "Perhatikan yang ini: *Agen Lokasi tidak dijalankan.* Agen itu belum kami
-> bangun. Sistemnya mengatakannya, bukan diam-diam melewatkan satu langkah.
-> Itu keputusan desain, bukan bug."
+> "Jam 02.30 Agen Lokasi memindai area setiap cabang lewat Places, menghitung
+> ulang skor lokasinya, dan mencari cabang sendiri yang terlalu berdekatan.
+> Angka POI di sini adalah jumlah yang benar-benar dikembalikan API."
 
 Klik **Setujui & buat tiket** pada Keputusan 1. Tunjukkan tanda terimanya:
 
@@ -151,8 +151,6 @@ Tutup:
 
 ## Yang jangan dijanjikan
 
-- Agen Lokasi **belum** ada. Kalau ditanya, katakan itu fase P3 dan tunjukkan
-  bahwa sistem sudah mengatakannya sendiri di garis waktu.
 - Konsol berjalan di atas **dataset contoh**, bukan review Google sungguhan.
   Adapternya sama; akses API tenant pilot masih menunggu (spec.md Q1).
-- Layar 03, 04, 08, 09, 11, 12 masih placeholder yang menyebut fasenya.
+- Layar 04, 08, 09, 11, 12 masih placeholder yang menyebut fasenya.

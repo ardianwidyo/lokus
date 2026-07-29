@@ -3,6 +3,7 @@ import {
   createMemoryTicketStore,
   createMemoryWarehouse,
   createSeededGbpAdapter,
+  createSeededPlacesAdapter,
   runNightlyCycle,
 } from '@lokus/core';
 
@@ -18,6 +19,7 @@ import {
  */
 export function createSeededBriefingSource({ tenantId = 'nusa-retail', ticketStore = null } = {}) {
   const gbp = createSeededGbpAdapter();
+  const places = createSeededPlacesAdapter();
   const tickets = ticketStore ?? createMemoryTicketStore();
 
   let briefingPromise = null;
@@ -25,6 +27,7 @@ export function createSeededBriefingSource({ tenantId = 'nusa-retail', ticketSto
     briefingPromise ??= runNightlyCycle({
       tenantId,
       gbp,
+      places,
       warehouse: createMemoryWarehouse(),
     });
     return briefingPromise;

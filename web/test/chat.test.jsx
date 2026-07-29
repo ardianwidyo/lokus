@@ -121,12 +121,14 @@ describe('Screen 10 · Chat agen (AC-7.2, AC-7.4)', () => {
     expect(within(answer).getByText(/agen menolak menjawab/)).toBeInTheDocument();
   });
 
-  it('states which agent perspective is missing rather than hiding it', async () => {
+  it('merges the location agent findings into the answer', async () => {
     renderChat();
 
     const answer = await ask('Kenapa rating cabang Bekasi Timur turun bulan ini?');
 
-    expect(answer.textContent).toMatch(/Agen Lokasi belum aktif/);
+    // All three agents now contribute; the location one scores the site.
+    expect(answer.textContent).toMatch(/Skor lokasi Bekasi Timur/);
+    expect(within(answer).getByText(/bq.locationScore/)).toBeInTheDocument();
   });
 
   it('offers the suggested questions and asks one on click', async () => {

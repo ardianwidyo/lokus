@@ -1,11 +1,12 @@
 import {
   createKnowledgeAgent,
+  createLocationAgent,
   createMemoryRunStore,
   createReputationAgent,
   createSeededGbpAdapter,
+  createSeededPlacesAdapter,
   createMemoryTicketStore,
   createSupervisor,
-  createUnavailableAgent,
   withRunPersistence,
   answerActions,
 } from '@lokus/core';
@@ -22,6 +23,7 @@ import {
  */
 export function createSeededAgentSource({ tenantId = 'nusa-retail', ticketStore = null } = {}) {
   const runStore = createMemoryRunStore();
+  const places = createSeededPlacesAdapter();
   const tickets = ticketStore ?? createMemoryTicketStore();
 
   const supervisor = withRunPersistence(
@@ -29,13 +31,7 @@ export function createSeededAgentSource({ tenantId = 'nusa-retail', ticketStore 
       agents: {
         reputation: createReputationAgent({ gbp: createSeededGbpAdapter() }),
         knowledge: createKnowledgeAgent(),
-        // Registered, and honest about being unbuilt: the trace records the
-        // step and the answer says the perspective is missing (fase P3).
-        location: createUnavailableAgent(
-          'location',
-          'Agen Lokasi',
-          'Agen Lokasi belum aktif pada build ini (fase P3).',
-        ),
+        location: createLocationAgent({ places }),
       },
     }),
     runStore,

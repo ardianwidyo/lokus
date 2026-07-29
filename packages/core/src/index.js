@@ -23,7 +23,7 @@ export { GUARDRAIL_CHECKS, guardrailCheck } from './reputation/guardrails.js';
 
 export { CHANGE_THRESHOLD, ratingTrend } from './analytics/ratingTrend.js';
 export { INTENTS, detectOutlet, route } from './agents/intent.js';
-export { createKnowledgeAgent, createReputationAgent, createUnavailableAgent } from './agents/specialists.js';
+export { createKnowledgeAgent, createLocationAgent, createReputationAgent, createUnavailableAgent } from './agents/specialists.js';
 export { createSupervisor, estimateCostIdr } from './agents/supervisor.js';
 export { MIN_ANSWERABLE_TERMS } from './knowledge/retrieval.js';
 export { createMemoryRunStore, withRunPersistence } from './agents/runStore.js';
@@ -44,3 +44,4 @@ export { createAdminService } from './services/adminService.js';
 export { CACHE_TTL_MS, COMPETING_CATEGORIES, GRID_DEGREES, PlacesError, createGooglePlacesAdapter, createSeededPlacesAdapter, distanceMetres, gridCell } from './adapters/places.js';
 export { COMPETITOR_PENALTY, DEFAULT_WEIGHTS, FACTOR_LABELS, LocationScoreError, competitorFactor, locationScore, normaliseWeights, scoreFrom } from './location/locationScore.js';
 export { CANNIBALISATION_THRESHOLD_KM, cannibalisation } from './location/cannibalisation.js';
+export { createLocationService } from './services/locationService.js';

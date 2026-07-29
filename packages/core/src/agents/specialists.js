@@ -4,6 +4,8 @@ import { themeCluster } from '../analytics/themeCluster.js';
 import { findOutlet } from '../domain/outlets.js';
 import { themeLabel } from '../domain/themes.js';
 import { ragSearch } from '../knowledge/retrieval.js';
+import { cannibalisation } from '../location/cannibalisation.js';
+import { locationScore } from '../location/locationScore.js';
 
 /**
  * The specialised agents. Each exposes `run(task)` and returns
@@ -141,8 +143,67 @@ export function createKnowledgeAgent({ passages = null } = {}) {
   };
 }
 
+export function createLocationAgent({ places, weights = undefined } = {}) {
+  return {
+    name: 'location',
+    label: 'Agen Lokasi',
+
+    async run({ tenantId, outletId = null, startStep = 1 }) {
+      const steps = [];
+      const findings = [];
+      const sources = [];
+      let n = startStep;
+
+      // Without a branch in the question there is no point to score. The agent
+      // says so rather than scoring an arbitrary one.
+      if (!outletId) {
+        return {
+          agent: 'location',
+          findings: [],
+          sources: [],
+          steps: [{ n, tool: 'location.skip', resultSize: 0, ms: 0, note: 'tidak ada cabang yang disebut' }],
+          nextStep: n + 1,
+        };
+      }
+
+      const scored = await locationScore({ tenantId, outletId, places, weights });
+      steps.push(step(n++, 'bq.locationScore', scored, `skor ${scored.data.total}`));
+      sources.push(...scored.sources);
+
+      const outlet = findOutlet(outletId);
+      const weakest = Object.entries(scored.data.factors).sort((a, b) => a[1] - b[1])[0];
+
+      findings.push({
+        agent: 'location',
+        text:
+          `Skor lokasi ${outlet?.name ?? outletId} adalah ${scored.data.total} dari 100. ` +
+          `Penahan terbesar: ${scored.data.labels[weakest[0]].toLowerCase()} di angka ${weakest[1]}, ` +
+          `dengan ${scored.data.competitorCount} pesaing dalam radius ${scored.data.radiusM} m` +
+          (scored.data.newCompetitorCount > 0
+            ? `, ${scored.data.newCompetitorCount} di antaranya baru.`
+            : '.'),
+        sourceCount: scored.sources.length,
+      });
+
+      const cannibal = await cannibalisation({
+        tenantId,
+        geo: scored.data.geo,
+        excludeOutletId: outletId,
+      });
+      steps.push(step(n++, 'bq.cannibalisation', cannibal, cannibal.data.verdict));
+
+      if (cannibal.data.flagged) {
+        findings.push({ agent: 'location', text: cannibal.data.verdict, sourceCount: cannibal.sources.length });
+        sources.push(...cannibal.sources);
+      }
+
+      return { agent: 'location', findings, sources, steps, nextStep: n };
+    },
+  };
+}
+
 /**
- * The location agent is not built yet (P3). It is registered so routing and the
+ * Kept for agents that genuinely are not built yet. It is registered so routing and the
  * trace stay honest: the step is recorded, it returns no findings and no
  * sources, and the answer says the perspective is missing rather than quietly
  * omitting it.

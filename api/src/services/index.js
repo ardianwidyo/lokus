@@ -2,13 +2,15 @@ import {
   createBriefingService,
   createBudgetGuard,
   createKnowledgeAgent,
+  createLocationAgent,
+  createLocationService,
   createMemoryRunStore,
   createMemoryTicketStore,
   createReputationAgent,
   createReputationService,
   createSeededGbpAdapter,
+  createSeededPlacesAdapter,
   createSupervisor,
-  createUnavailableAgent,
   createAdminService,
   seedTickets,
   withRunPersistence,
@@ -25,6 +27,7 @@ import {
  */
 export function createServices({ evaluationReport, budgets = {}, onBudgetAlert = null } = {}) {
   const gbp = createSeededGbpAdapter();
+  const places = createSeededPlacesAdapter();
   const runStore = createMemoryRunStore();
   const ticketStore = createMemoryTicketStore({ seed: seedTickets({ tenantId: 'nusa-retail' }) });
 
@@ -37,13 +40,7 @@ export function createServices({ evaluationReport, budgets = {}, onBudgetAlert =
       agents: {
         reputation: createReputationAgent({ gbp }),
         knowledge: createKnowledgeAgent(),
-        // Registered and honest: the trace records the step, and the answer
-        // says which perspective is missing (fase P3).
-        location: createUnavailableAgent(
-          'location',
-          'Agen Lokasi',
-          'Agen Lokasi belum aktif pada build ini (fase P3).',
-        ),
+        location: createLocationAgent({ places }),
       },
     }),
     runStore,
@@ -51,12 +48,14 @@ export function createServices({ evaluationReport, budgets = {}, onBudgetAlert =
 
   return {
     gbp,
+    places,
     runStore,
     ticketStore,
     budget,
     supervisor,
     reputation: createReputationService({ gbp }),
-    briefing: createBriefingService({ gbp, ticketStore }),
+    briefing: createBriefingService({ gbp, places, ticketStore }),
     admin: createAdminService({ budget, evaluationReport }),
+    location: createLocationService({ places }),
   };
 }

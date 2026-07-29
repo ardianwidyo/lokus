@@ -11,7 +11,7 @@ import { createMemoryWarehouse } from '../pipeline/warehouse.js';
  * briefing overnight and this reads it; here it is computed on first request,
  * which is the same output by the same code.
  */
-export function createBriefingService({ gbp, ticketStore, warehouse = null } = {}) {
+export function createBriefingService({ gbp, places = null, ticketStore, warehouse = null } = {}) {
   const cache = new Map();
 
   async function briefing(tenantId) {
@@ -20,7 +20,7 @@ export function createBriefingService({ gbp, ticketStore, warehouse = null } = {
     if (!cache.has(tenantId)) {
       cache.set(
         tenantId,
-        runNightlyCycle({ tenantId, gbp, warehouse: warehouse ?? createMemoryWarehouse() }),
+        runNightlyCycle({ tenantId, gbp, places, warehouse: warehouse ?? createMemoryWarehouse() }),
       );
     }
 

@@ -45,10 +45,11 @@ describe('Screen 02 · Briefing Pagi (AC-1.2, AC-1.3, AC-1.4)', () => {
     expect(screen.getByText(/\d+ cabang · \d+ tema terdeteksi/)).toBeInTheDocument();
   });
 
-  it('says on the timeline which agent did not run', async () => {
+  it('reports the location scan on the timeline with what it found', async () => {
     await renderBriefing();
 
-    expect(screen.getByText('Agen Lokasi tidak dijalankan')).toBeInTheDocument();
+    expect(screen.getByText(/Agen Lokasi memindai \d+ area cabang/)).toBeInTheDocument();
+    expect(screen.getByText(/\d+ POI · \d+ pesaing baru ditemukan/)).toBeInTheDocument();
   });
 
   it('surfaces at most three decisions', async () => {
