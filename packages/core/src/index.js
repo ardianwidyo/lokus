@@ -18,3 +18,4 @@ export { SYSTEMIC_REGION_THRESHOLD, flagSystemicThemes, systemicFinding } from '
 export { CONFIDENCE_THRESHOLD, ragSearch, searchPassages } from './knowledge/retrieval.js';
 export { DOCUMENTS, PASSAGES, findDocument, retrievablePassages } from './seed/documents.js';
 export { addressFor, draftReply } from './reputation/draftReply.js';
+export { APPROVAL_REQUIRED_MAX_RATING, ApprovalError, REPLY_STATES, approveDraft, createMemoryApprovalStore, replyQueueSummary, requiresApproval, saveDraft, sendReply } from './reputation/approvals.js';
