@@ -448,6 +448,199 @@
   color: var(--color-neutral-600);
 }
 
+/* ── Screen 05 · Kotak masuk review ─────────────────────────────────────── */
+
+.inbox-filters {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+/* Two panels that read as one drawing: the seam between them is a single
+   hairline, not two touching borders. */
+.inbox-grid {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  align-items: start;
+}
+
+.inbox-list-panel {
+  padding: 0;
+}
+
+.inbox-preview-panel {
+  border-left: 0;
+  padding: 18px 20px;
+}
+
+.inbox-list-panel .panel-head {
+  padding: 14px 16px 0;
+}
+
+.inbox-list-panel .panel-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.review-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 520px;
+  overflow-y: auto;
+}
+
+.review-list:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+.review-row {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 16px;
+  border: 0;
+  border-left: 2px solid transparent;
+  border-top: 1px solid var(--color-divider);
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.review-row:hover {
+  background: color-mix(in srgb, var(--color-text) 4%, transparent);
+}
+
+.review-row.is-active {
+  background: var(--color-accent-100);
+  border-left-color: var(--color-accent);
+}
+
+/* A five-star row is already handled; it recedes rather than disappears. */
+.review-row.is-resolved {
+  opacity: 0.6;
+}
+
+.review-row-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.stars {
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: var(--color-accent);
+}
+
+.review-row-time {
+  font-size: 11px;
+  color: var(--color-neutral-600);
+}
+
+.review-row-outlet {
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  font-size: 15px;
+}
+
+.review-row-snippet {
+  font-size: 12.5px;
+  color: var(--color-neutral-700);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.inbox-hint,
+.inbox-foot {
+  display: flex;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 10px 16px;
+  border-top: 1px solid var(--color-divider);
+  font-size: 12px;
+  color: var(--color-neutral-600);
+}
+
+.inbox-foot-right {
+  margin-left: auto;
+}
+
+.review-meta {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-neutral-600);
+}
+
+.review-quote {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+/* ── AI draft block ─────────────────────────────────────────────────────── */
+
+.draft-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-accent-100);
+}
+
+.draft-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.draft-tone {
+  font-size: 11.5px;
+  color: var(--color-accent-700);
+}
+
+.draft-text {
+  margin: 0;
+  padding-left: 13px;
+  border-left: 2px solid var(--color-accent-400);
+  font-size: 14.5px;
+  line-height: 1.6;
+}
+
+.draft-refused {
+  background: transparent;
+  padding-left: 13px;
+  border-left: 2px solid var(--color-accent-400);
+}
+
+.draft-refusal {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  font-size: 17px;
+}
+
+.citation-chips {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+}
+
+.citation-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
 /* ── Bottom nav, below 900px ────────────────────────────────────────────── */
 
 .bottom-nav {
@@ -507,6 +700,19 @@
   }
 
   .tenant-row {
+    min-height: 44px;
+  }
+
+  .inbox-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .inbox-preview-panel {
+    border-left: 1px solid var(--color-divider);
+    border-top: 0;
+  }
+
+  .review-row {
     min-height: 44px;
   }
 

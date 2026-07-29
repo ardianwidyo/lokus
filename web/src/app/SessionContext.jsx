@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
 
+import { createSeededReputationSource } from '../data/reputationSource.js';
 import { resolveSessionSource } from '../data/sessionSource.js';
 import { readActiveTenant, writeActiveTenant } from '../data/tenantCache.js';
 
@@ -10,13 +11,20 @@ const SessionContext = createContext(null);
  * clears every tenant-scoped value the client is holding before writing the
  * new one — constitution IV: no cache is shared across tenants.
  */
-export function SessionProvider({ source, children }) {
+export function SessionProvider({ source, reputationSource, children }) {
   const sessionSource = useMemo(
     () => source ?? resolveSessionSource(import.meta.env),
     [source],
   );
 
   const [tenant, setTenant] = useState(() => readActiveTenant());
+
+  // Rebuilt whenever the tenant changes: the reputation source holds review and
+  // draft state, and none of it may survive a tenant switch (constitution IV).
+  const reputation = useMemo(
+    () => reputationSource ?? createSeededReputationSource({ tenantId: tenant?.tenantId ?? 'nusa-retail' }),
+    [reputationSource, tenant?.tenantId],
+  );
 
   const selectTenant = useCallback(
     async (tenantId) => {
@@ -31,11 +39,12 @@ export function SessionProvider({ source, children }) {
   const value = useMemo(
     () => ({
       source: sessionSource,
+      reputation,
       tenant,
       role: tenant?.role ?? null,
       selectTenant,
     }),
-    [sessionSource, tenant, selectTenant],
+    [sessionSource, reputation, tenant, selectTenant],
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

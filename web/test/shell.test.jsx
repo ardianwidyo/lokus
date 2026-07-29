@@ -86,7 +86,7 @@ describe('AppShell', () => {
     await userEvent.click(screen.getByRole('link', { name: /Kotak masuk review/ }));
 
     expect(window.location.pathname).toBe('/review');
-    expect(screen.getByText('Layar 05')).toBeInTheDocument();
+    expect(await screen.findByText('Layar 05')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Kotak masuk review');
   });
 
