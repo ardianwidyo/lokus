@@ -1,0 +1,39 @@
+# The build context is the repository root, because the npm workspace links
+# packages/core into both services. Everything that cannot affect an image
+# stays out, so the context stays small and a doc edit does not bust the cache.
+
+.git
+.github
+node_modules
+**/node_modules
+**/dist
+**/coverage
+
+# Infrastructure and specs are not part of any runtime image.
+infra
+specs
+docs
+.specify
+.claude
+
+# Tests and fixtures: the runtime images must not carry them.
+**/test
+**/*.test.js
+**/*.test.jsx
+**/*.test.mjs
+**/vitest.config.js
+
+# Design references are large prototypes; only design/tokens.css is imported,
+# and the web build copies the design directory for it.
+design/reference
+
+# Local secrets and state, which must never enter a layer.
+.env
+**/.env
+*.tfstate*
+terraform.tfvars
+backend.hcl
+eval-report.json
+
+README.md
+**/README.md

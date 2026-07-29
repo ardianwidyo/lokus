@@ -64,3 +64,20 @@ variable "labels" {
     managed = "terraform"
   }
 }
+
+variable "web_image" {
+  description = "Container image for the web console service. CI overrides this per deploy."
+  type        = string
+  default     = "asia-southeast2-docker.pkg.dev/cloudrun/container/hello"
+}
+
+variable "github_repository" {
+  description = "owner/repo allowed to federate into the deployer account. This is the security boundary on keyless CI auth."
+  type        = string
+  default     = "ardianwidyo/lokus"
+
+  validation {
+    condition     = can(regex("^[^/]+/[^/]+$", var.github_repository))
+    error_message = "github_repository must be in owner/repo form."
+  }
+}

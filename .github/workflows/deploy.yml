@@ -1,0 +1,121 @@
+name: Deploy
+
+# Constitution VII: every merge to main deploys, and the demo runs on the
+# deployed URL. This workflow only starts once CI has gone green — a red eval
+# gate or a failing test must never reach a revision.
+on:
+  workflow_run:
+    workflows: [CI]
+    branches: [main]
+    types: [completed]
+  workflow_dispatch:
+
+# id-token is what makes the keyless federation work; nothing here needs write
+# access to the repository.
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: deploy-main
+  cancel-in-progress: false
+
+env:
+  REGION: asia-southeast2
+
+jobs:
+  deploy:
+    name: Build and roll out
+    runs-on: ubuntu-latest
+    # workflow_dispatch has no upstream conclusion, so accept it explicitly
+    # rather than deploying whenever the field happens to be empty.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.ref }}
+
+      - name: Fail fast if the deploy is not configured
+        run: |
+          missing=""
+          [ -z "${{ vars.GCP_PROJECT_ID }}" ] && missing="$missing GCP_PROJECT_ID"
+          [ -z "${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}" ] && missing="$missing GCP_WORKLOAD_IDENTITY_PROVIDER"
+          [ -z "${{ vars.GCP_DEPLOYER_SA }}" ] && missing="$missing GCP_DEPLOYER_SA"
+          if [ -n "$missing" ]; then
+            echo "::error::Deploy is not configured. Missing repository variables:$missing"
+            echo "::error::See docs/deploy.md. Terraform outputs the values."
+            exit 1
+          fi
+
+      # Keyless: a short-lived federated token, not a downloaded JSON key.
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOYER_SA }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Resolve image tags
+        id: tags
+        run: |
+          repo="${{ env.REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/lokus-${{ vars.GCP_ENVIRONMENT || 'dev' }}"
+          sha="${{ github.event.workflow_run.head_sha || github.sha }}"
+          echo "api=$repo/api:${sha::12}" >> "$GITHUB_OUTPUT"
+          echo "web=$repo/web:${sha::12}" >> "$GITHUB_OUTPUT"
+
+      # Both images build from the repository root: the workspace links
+      # packages/core into api and web, so a narrower context would not resolve.
+      - name: Build and push the API image
+        run: |
+          docker build -f api/Dockerfile -t "${{ steps.tags.outputs.api }}" .
+          docker push "${{ steps.tags.outputs.api }}"
+
+      - name: Build and push the web image
+        run: |
+          docker build -f web/Dockerfile \
+            --build-arg VITE_LOKUS_API_URL="${{ vars.LOKUS_API_URL }}" \
+            -t "${{ steps.tags.outputs.web }}" .
+          docker push "${{ steps.tags.outputs.web }}"
+
+      - name: Roll out the API
+        run: |
+          gcloud run deploy lokus-api-${{ vars.GCP_ENVIRONMENT || 'dev' }} \
+            --image "${{ steps.tags.outputs.api }}" \
+            --region "${{ env.REGION }}" \
+            --project "${{ vars.GCP_PROJECT_ID }}" \
+            --quiet
+
+      - name: Roll out the web console
+        run: |
+          gcloud run deploy lokus-web-${{ vars.GCP_ENVIRONMENT || 'dev' }} \
+            --image "${{ steps.tags.outputs.web }}" \
+            --region "${{ env.REGION }}" \
+            --project "${{ vars.GCP_PROJECT_ID }}" \
+            --quiet
+
+      # A revision that serves 500s is not a deploy. Check both before claiming
+      # success, and fail the run if either is unhealthy.
+      - name: Verify both services answer
+        run: |
+          api=$(gcloud run services describe lokus-api-${{ vars.GCP_ENVIRONMENT || 'dev' }} \
+            --region "${{ env.REGION }}" --project "${{ vars.GCP_PROJECT_ID }}" --format='value(status.url)')
+          web=$(gcloud run services describe lokus-web-${{ vars.GCP_ENVIRONMENT || 'dev' }} \
+            --region "${{ env.REGION }}" --project "${{ vars.GCP_PROJECT_ID }}" --format='value(status.url)')
+
+          for url in "$api/healthz" "$web/healthz"; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --retry 5 --retry-delay 3 --retry-all-errors "$url")
+            echo "$code $url"
+            [ "$code" = "200" ] || { echo "::error::$url returned $code"; exit 1; }
+          done
+
+          echo "### LOKUS deployed" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Konsol: $web" >> "$GITHUB_STEP_SUMMARY"
+          echo "- API: $api" >> "$GITHUB_STEP_SUMMARY"
