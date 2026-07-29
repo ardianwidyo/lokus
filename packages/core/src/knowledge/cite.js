@@ -1,3 +1,4 @@
+import { idNumber } from '../lib/format.js';
 import { assertTenant, scopeToTenant } from '../lib/tenantScope.js';
 import { toolResult } from '../lib/toolResult.js';
 import { CONFIDENCE_THRESHOLD, firstSentence, searchPassages } from './retrieval.js';
@@ -118,8 +119,8 @@ export async function ragCite({
         answered: false,
         text: REFUSAL_TEXT,
         reason:
-          `Tidak ada kutipan yang mencapai ambang keyakinan ${threshold}. ` +
-          `Kutipan terdekat hanya ${(rejected[0]?.score ?? 0).toFixed(2)}.`,
+          `Tidak ada kutipan yang mencapai ambang keyakinan ${idNumber(threshold)}. ` +
+          `Kutipan terdekat hanya ${idNumber(rejected[0]?.score ?? 0)}.`,
         citations: [],
         confidence: rejected[0]?.score ?? 0,
         rejectedCount,

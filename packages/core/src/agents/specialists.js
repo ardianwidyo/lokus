@@ -4,6 +4,7 @@ import { themeCluster } from '../analytics/themeCluster.js';
 import { findOutlet } from '../domain/outlets.js';
 import { themeLabel } from '../domain/themes.js';
 import { ragSearch } from '../knowledge/retrieval.js';
+import { idFactor, idNumber } from '../lib/format.js';
 import { cannibalisation } from '../location/cannibalisation.js';
 import { locationScore } from '../location/locationScore.js';
 
@@ -60,7 +61,7 @@ export function createReputationAgent({ gbp }) {
           text:
             `Tema keluhan terbesar${where} adalah ${themeLabel(leading.theme)}: ` +
             `${leading.count} keluhan dalam 8 pekan, ${thisWeek} di antaranya pekan ini` +
-            (leading.delta ? `, naik ${leading.delta}× dibanding sebulan lalu.` : '.'),
+            (leading.delta ? `, naik ${idFactor(leading.delta)}× dibanding sebulan lalu.` : '.'),
           sourceCount: clustered.sources.length,
         });
         sources.push(...clustered.sources.slice(0, 20));
@@ -86,9 +87,9 @@ export function createReputationAgent({ gbp }) {
           findings.push({
             agent: 'reputation',
             text:
-              `Rating berjalan ${trend.data.current.toFixed(2)}` +
+              `Rating berjalan ${idNumber(trend.data.current)}` +
               (drop !== null
-                ? `, ${drop < 0 ? 'turun' : 'naik'} ${Math.abs(drop).toFixed(2)} poin selama 8 pekan.`
+                ? `, ${drop < 0 ? 'turun' : 'naik'} ${idNumber(Math.abs(drop))} poin selama 8 pekan.`
                 : '.'),
             sourceCount: trend.sources.length,
           });

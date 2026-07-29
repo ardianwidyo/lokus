@@ -87,7 +87,7 @@ describe('the refusal path (AC-4.1)', () => {
   it('says how close it got, rather than only that it failed', async () => {
     const { data } = await cite({ question: 'Bagaimana resep rendang padang?' });
 
-    expect(data.reason).toMatch(/ambang keyakinan 0\.7/);
+    expect(data.reason).toMatch(/ambang keyakinan 0,70/);
     expect(data.reason).toMatch(/Kutipan terdekat hanya/);
   });
 

@@ -83,6 +83,19 @@ export default [
   },
 
   {
+    // Documentation tooling: a Node CLI that also evaluates code inside a
+    // browser page, so it needs both sets of globals. It reports progress on
+    // stdout, which is the whole point of a CLI.
+    files: ['scripts/**/*.mjs'],
+    languageOptions: {
+      globals: { ...globals.node, ...globals.browser },
+    },
+    rules: {
+      'no-console': 'off',
+    },
+  },
+
+  {
     files: ['**/*.test.js', '**/*.test.jsx', '**/test/**'],
     languageOptions: {
       globals: { ...globals.node },

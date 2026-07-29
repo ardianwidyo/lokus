@@ -1,0 +1,162 @@
+[
+  {
+    "number": "01",
+    "id": "masuk",
+    "path": "/masuk",
+    "role": "viewer",
+    "file": "01-masuk.png",
+    "panels": [
+      "ready"
+    ]
+  },
+  {
+    "number": "02",
+    "id": "briefing",
+    "path": "/briefing",
+    "role": "manager",
+    "file": "02-briefing.png",
+    "panels": [
+      "ready"
+    ]
+  },
+  {
+    "number": "03",
+    "id": "peta",
+    "path": "/peta",
+    "role": "manager",
+    "file": "03-peta.png",
+    "panels": [
+      "ready",
+      "ready",
+      "ready"
+    ]
+  },
+  {
+    "number": "04",
+    "id": "cabang",
+    "path": "/cabang?outlet=DPK-01",
+    "role": "manager",
+    "file": "04-cabang.png",
+    "panels": [
+      "ready",
+      "ready",
+      "ready",
+      "ready",
+      "ready"
+    ]
+  },
+  {
+    "number": "05",
+    "id": "review",
+    "path": "/review",
+    "role": "manager",
+    "file": "05-review.png",
+    "panels": [
+      "ready",
+      "ready"
+    ]
+  },
+  {
+    "number": "06",
+    "id": "draft",
+    "path": "/draft",
+    "role": "manager",
+    "file": "06-draft.png",
+    "panels": [
+      "ready",
+      "ready",
+      "ready"
+    ]
+  },
+  {
+    "number": "07",
+    "id": "tema",
+    "path": "/tema",
+    "role": "manager",
+    "file": "07-tema.png",
+    "panels": [
+      "ready",
+      "ready",
+      "ready",
+      "ready"
+    ]
+  },
+  {
+    "number": "08",
+    "id": "site-scout",
+    "path": "/site-scout",
+    "role": "manager",
+    "file": "08-site-scout.png",
+    "panels": [
+      "ready",
+      "ready"
+    ]
+  },
+  {
+    "number": "09",
+    "id": "bandingkan",
+    "path": "/bandingkan",
+    "role": "manager",
+    "file": "09-bandingkan.png",
+    "panels": [
+      "ready"
+    ]
+  },
+  {
+    "number": "10",
+    "id": "chat",
+    "path": "/chat",
+    "role": "manager",
+    "file": "10-chat.png",
+    "panels": [
+      "ready",
+      "ready"
+    ]
+  },
+  {
+    "number": "11",
+    "id": "pengetahuan",
+    "path": "/pengetahuan",
+    "role": "manager",
+    "file": "11-pengetahuan.png",
+    "panels": [
+      "ready",
+      "empty"
+    ]
+  },
+  {
+    "number": "12",
+    "id": "jawaban",
+    "path": "/jawaban",
+    "role": "manager",
+    "file": "12-jawaban.png",
+    "panels": [
+      "ready",
+      "ready"
+    ]
+  },
+  {
+    "number": "13",
+    "id": "tindakan",
+    "path": "/tindakan",
+    "role": "manager",
+    "file": "13-tindakan.png",
+    "panels": [
+      "ready"
+    ]
+  },
+  {
+    "number": "14",
+    "id": "admin",
+    "path": "/admin",
+    "role": "admin",
+    "file": "14-admin.png",
+    "panels": [
+      "ready",
+      "ready",
+      "ready",
+      "ready",
+      "ready"
+    ]
+  }
+]

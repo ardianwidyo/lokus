@@ -6,6 +6,7 @@ export { GBP_TOOL_NAMES, GbpError, createGoogleGbpAdapter, createSeededGbpAdapte
 
 export { COMPLAINT_MATRIX, TARGET_RATING, generateReviews } from './seed/reviews.js';
 
+export { idFactor, idInteger, idNumber } from './lib/format.js';
 export { isGrounded, toolResult } from './lib/toolResult.js';
 export { TenantScopeError, assertTenant, scopeToTenant } from './lib/tenantScope.js';
 

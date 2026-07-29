@@ -95,6 +95,30 @@ lokal** — server menolak start bila mode itu aktif saat `NODE_ENV=production`.
 
 ---
 
+## Empat belas layar
+
+Semuanya ditangkap dari aplikasi yang benar-benar berjalan oleh
+[`scripts/screenshots.mjs`](scripts/screenshots.mjs) — skrip itu gagal bila
+satu saja layar melempar error konsol, jadi gambar-gambar di bawah sekaligus
+bukti bahwa konsolnya bersih. Regenerasi: `node scripts/screenshots.mjs`.
+
+| | | |
+|---|---|---|
+| **02 · Briefing Pagi**<br>[![Briefing Pagi](docs/screenshots/02-briefing.png)](docs/screenshots/02-briefing.png)<br>Maksimal tiga keputusan, masing-masing dengan buktinya. | **10 · Chat agen**<br>[![Chat agen](docs/screenshots/10-chat.png)](docs/screenshots/10-chat.png)<br>Satu pertanyaan, tiga agen, 8 langkah tool yang tampil. | **04 · Detail cabang**<br>[![Detail cabang](docs/screenshots/04-cabang.png)](docs/screenshots/04-cabang.png)<br>Garis pembukaan pesaing dari Places, bukan dari deret rating. |
+| **03 · Peta jaringan**<br>[![Peta jaringan](docs/screenshots/03-peta.png)](docs/screenshots/03-peta.png)<br>Penanda berbeda bentuk, bukan berbeda warna. | **12 · Jawaban bersitasi**<br>[![Jawaban bersitasi](docs/screenshots/12-jawaban.png)](docs/screenshots/12-jawaban.png)<br>Tiap klaim menempel ke halaman SOP-nya. | **14 · Admin & biaya**<br>[![Admin dan biaya](docs/screenshots/14-admin.png)](docs/screenshots/14-admin.png)<br>Ambang eval, guardrail, dan batas biaya. |
+
+Delapan sisanya ada di [`docs/screenshots/`](docs/screenshots/):
+[01 masuk](docs/screenshots/01-masuk.png) ·
+[05 kotak masuk review](docs/screenshots/05-review.png) ·
+[06 draft balasan](docs/screenshots/06-draft.png) ·
+[07 analisis tema](docs/screenshots/07-tema.png) ·
+[08 Site Scout](docs/screenshots/08-site-scout.png) ·
+[09 bandingkan lokasi](docs/screenshots/09-bandingkan.png) ·
+[11 pusat pengetahuan](docs/screenshots/11-pengetahuan.png) ·
+[13 papan tindakan](docs/screenshots/13-tindakan.png).
+
+---
+
 ## Arsitektur
 
 ```mermaid
@@ -183,13 +207,14 @@ test sehingga layar baru yang lupa satu state akan menggagalkan build.
 
 | Bukti | Di mana |
 |---|---|
-| **824 test** lulus di 4 workspace | `npm test` |
+| **831 test** lulus di 4 workspace | `npm test` |
 | **24 dari 24 acceptance criteria** di spec.md punya test yang menyebutnya per nama | `grep -r AC- */test eval` |
 | **Eval agen**: 60 kasus, 5 ambang konstitusi, CI memblokir merge bila satu gagal | [`eval/`](eval/) · `npm run eval` |
 | **Terraform**: Cloud Run, Firestore, BigQuery, Storage, Secret Manager, Scheduler, WIF | [`infra/`](infra/) |
 | **CI**: lint, test + ambang cakupan, `terraform validate`, gerbang secret, eval | [`ci.yml`](.github/workflows/ci.yml) |
 | **CD**: dua image, auth tanpa kunci (WIF), rollout hanya setelah CI hijau | [`deploy.yml`](.github/workflows/deploy.yml) · [`docs/deploy.md`](docs/deploy.md) |
 | **Batas biaya**: turun ke Flash di 90%, alert, batas keras menolak | [`budget.js`](packages/core/src/cost/budget.js) |
+| **14/14 layar tertangkap tanpa satu pun error konsol** | [`scripts/screenshots.mjs`](scripts/screenshots.mjs) |
 | **Aksesibilitas**: struktur, keyboard, kontras palet dihitung | [`accessibility.test.jsx`](web/test/accessibility.test.jsx) |
 
 Kualitas jejak audit yang paling layak diperiksa: **klasterisasi tema
