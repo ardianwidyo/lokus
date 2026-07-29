@@ -40,3 +40,5 @@ export { BudgetExceededError, DEFAULT_BUDGET_IDR, DEGRADE_AT, MODEL_TIER, create
 export { createReputationService } from './services/reputationService.js';
 export { createBriefingService } from './services/briefingService.js';
 export { createAdminService } from './services/adminService.js';
+
+export { CACHE_TTL_MS, COMPETING_CATEGORIES, GRID_DEGREES, PlacesError, createGooglePlacesAdapter, createSeededPlacesAdapter, distanceMetres, gridCell } from './adapters/places.js';
