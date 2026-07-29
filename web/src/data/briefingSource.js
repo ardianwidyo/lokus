@@ -1,4 +1,5 @@
 import {
+  approveBriefingDecision,
   createMemoryTicketStore,
   createMemoryWarehouse,
   createSeededGbpAdapter,
@@ -37,18 +38,17 @@ export function createSeededBriefingSource({ tenantId = 'nusa-retail', ticketSto
   }
 
   /**
-   * AC-1.3: approving a decision creates a ticket with an owner and a due date,
-   * linked back to the decision that produced it.
+   * AC-1.3: approving a decision creates a ticket with an owner and a due date.
+   * The owner is the person who can act — the branch manager, or Ops Excellence
+   * for a network-level finding — while the approver is recorded separately.
    */
-  async function approveDecision(decision, { approvedBy }) {
-    return tickets.create(tenantId, {
-      title: decision.title,
-      outletId: decision.outletId,
-      owner: decision.owner ?? approvedBy,
-      theme: decision.theme,
-      sourceInsightId: decision.id,
-      sourceKind: 'briefing_decision',
-      createdBy: approvedBy,
+  async function approveDecision(decision, { approvedBy, role = 'manager' }) {
+    return approveBriefingDecision({
+      tenantId,
+      decision,
+      approvedBy,
+      role,
+      ticketStore: tickets,
     });
   }
 

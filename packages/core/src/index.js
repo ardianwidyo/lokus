@@ -30,3 +30,4 @@ export { createMemoryRunStore, withRunPersistence } from './agents/runStore.js';
 export { SLA_DAYS, TICKET_STATUS, TICKET_STATUS_LABEL, TICKET_STATUS_ORDER, TicketError, createMemoryTicketStore } from './tickets/ticketStore.js';
 export { answerActions } from './agents/answerActions.js';
 export { MAX_DECISIONS, runNightlyCycle } from './briefing/nightlyCycle.js';
+export { DecisionApprovalError, NETWORK_OWNER, approveBriefingDecision, dueDateFor, ownerFor } from './briefing/approveDecision.js';

@@ -27,6 +27,7 @@ export function BriefingScreen({ onNavigate }) {
     try {
       const ticket = await briefingSource.approveDecision(decision, {
         approvedBy: 'manajer@nusaretail.co.id',
+        role,
       });
       setReceipts((previous) => ({
         ...previous,
