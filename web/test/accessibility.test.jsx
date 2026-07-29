@@ -120,20 +120,33 @@ describe('T056 · accessibility', () => {
     renderScreen('/review');
 
     const list = await screen.findByRole('listbox', { name: 'Daftar review' });
-    const options = within(list).getAllByRole('option');
 
-    expect(options.length).toBeGreaterThan(0);
-    expect(options.filter((o) => o.getAttribute('aria-selected') === 'true')).toHaveLength(1);
+    // The rows render before the effect that selects the first one, so there
+    // is a real frame with no selection. Wait for it to settle rather than
+    // asserting into the gap.
+    await waitFor(() =>
+      expect(
+        within(list)
+          .getAllByRole('option')
+          .filter((o) => o.getAttribute('aria-selected') === 'true'),
+      ).toHaveLength(1),
+    );
+    expect(within(list).getAllByRole('option').length).toBeGreaterThan(0);
   });
 
   it('reaches the review list by keyboard alone', async () => {
     signIn();
     renderScreen('/review');
-    await screen.findByRole('listbox', { name: 'Daftar review' });
+    const list = await screen.findByRole('listbox', { name: 'Daftar review' });
+
+    // Same settling wait: without it the first arrow press lands on index 0
+    // instead of moving from it.
+    await waitFor(() =>
+      expect(within(list).getAllByRole('option')[0]).toHaveAttribute('aria-selected', 'true'),
+    );
 
     // The list is a single tab stop; arrows move within it, which is the
     // pattern a listbox is supposed to follow.
-    const list = screen.getByRole('listbox', { name: 'Daftar review' });
     expect(list).toHaveAttribute('tabIndex', '0');
 
     list.focus();
