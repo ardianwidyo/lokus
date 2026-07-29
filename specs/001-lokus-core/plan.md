@@ -101,6 +101,23 @@ folded in continuously rather than left to the end.
   server refuses to start if this mode is set while `NODE_ENV=production`, and
   every request served under it is logged as such. Production is unaffected:
   the default mode remains Identity Platform token verification.
+- **2026-07-29 · screen 04 charts 8 weeks, not 12.** `design/SCREENS.md` labels
+  the chart "RATING 12 PEKAN", but the seeded review window is `TREND_WEEKS`
+  (8) — the same window screens 05 and 07 read. Drawing twelve would mean
+  inventing four weeks of ratings for a chart whose entire job is to show a
+  real decline, and the number of weeks is the one thing on that chart nobody
+  would think to verify. The chart draws the weeks that exist and labels itself
+  with that count.
+- **2026-07-29 · the change-point line marks an event, not a cause.**
+  `design/SCREENS.md` puts "28 Jun · pesaing baru buka" on the Bekasi Timur
+  chart. In the Places response the only opening in the window is at Depok
+  Margonda (Mitra Mart Margonda, 28 Jun, 400 m); Bekasi Timur has no recent
+  opening. So screen 04 draws the dashed line from the Places response rather
+  than from the rating series: a branch with no recorded opening gets no line
+  and says so, and where a line does appear the screen reports what the rating
+  did that week without asserting the opening caused it. Detected change points
+  are drawn separately, as points on the series. Correlation stays visible;
+  causation stays unclaimed.
 
 ## Definition of done (per phase)
 
