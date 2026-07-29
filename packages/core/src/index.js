@@ -32,3 +32,6 @@ export { answerActions } from './agents/answerActions.js';
 export { MAX_DECISIONS, runNightlyCycle } from './briefing/nightlyCycle.js';
 export { DecisionApprovalError, NETWORK_OWNER, approveBriefingDecision, dueDateFor, ownerFor } from './briefing/approveDecision.js';
 export { seedTickets } from './seed/tickets.js';
+
+// Exported so the eval can assert its golden set does not quote them.
+export { COMPLAINT_TEMPLATES, POSITIVE_TEMPLATES } from './seed/reviewTemplates.js';

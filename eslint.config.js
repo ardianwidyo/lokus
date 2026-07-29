@@ -75,6 +75,14 @@ export default [
   },
 
   {
+    // The eval runner is a Node CLI, not isomorphic like packages/core.
+    files: ['eval/**/*.mjs'],
+    languageOptions: {
+      globals: { ...globals.node },
+    },
+  },
+
+  {
     files: ['**/*.test.js', '**/*.test.jsx', '**/test/**'],
     languageOptions: {
       globals: { ...globals.node },

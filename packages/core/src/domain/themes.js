@@ -35,6 +35,12 @@ export const THEMES = Object.freeze([
       { term: 'bau', weight: 2 },
       { term: 'lantai', weight: 1 },
       { term: 'debu', weight: 2 },
+      // Found by the eval: sticky tables and un-wiped surfaces are ordinary
+      // cleanliness complaints that the original table had no word for.
+      { term: 'lengket', weight: 3 },
+      { term: 'dilap', weight: 2 },
+      { term: 'tumpahan', weight: 2 },
+      { term: 'genangan', weight: 2 },
     ],
   },
   {
@@ -78,6 +84,9 @@ export const THEMES = Object.freeze([
       { term: 'judes', weight: 3 },
       { term: 'kasar', weight: 3 },
       { term: 'tidak ramah', weight: 3 },
+      // "kurang ramah" is the softer and more common way Indonesians phrase
+      // this; matching only the blunt form missed it entirely.
+      { term: 'kurang ramah', weight: 3 },
       { term: 'cuek', weight: 2 },
       { term: 'pelayanan', weight: 1 },
     ],

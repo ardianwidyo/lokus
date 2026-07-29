@@ -1,0 +1,17 @@
+{
+  "name": "@lokus/eval",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "LOKUS agent evaluation: golden set and the runner that gates deploys.",
+  "scripts": {
+    "eval": "node run_eval.mjs",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@lokus/core": "*"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.8"
+  }
+}

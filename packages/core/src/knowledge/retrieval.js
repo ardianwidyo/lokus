@@ -36,6 +36,12 @@ const STOPWORDS = new Set([
   'apakah', 'kenapa', 'mengapa', 'gimana', 'soal', 'tentang', 'mengenai',
   'kata', 'berapa', 'kapan', 'siapa', 'mana', 'kalau', 'saat', 'agar',
   'sedang', 'masih', 'lagi', 'saja', 'sih', 'dong', 'nih',
+  // Conjunctions and comparatives. They occur in the corpus, so they are
+  // "in vocabulary" and were being normalised against — diluting a correct
+  // match exactly the way the question words did, only less visibly.
+  'karena', 'lebih', 'paling', 'sangat', 'cukup', 'sekali', 'banget',
+  'tapi', 'tetapi', 'namun', 'sehingga', 'supaya', 'seperti', 'hanya',
+  'setiap', 'antara', 'sampai', 'serta', 'maupun', 'yaitu',
 ]);
 
 export function tokenise(text) {

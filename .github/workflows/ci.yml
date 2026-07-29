@@ -44,6 +44,36 @@ jobs:
       - name: Build every workspace that has a build
         run: npm run build
 
+  eval:
+    name: Agent eval thresholds
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      # Constitution quality gate: the eval suite must pass its thresholds
+      # before a deploy. The runner exits non-zero when any gate fails, so this
+      # blocks the merge rather than printing a number nobody reads.
+      - name: Run the golden set
+        run: node eval/run_eval.mjs --report eval-report.json
+
+      # Uploaded on failure too — the report names the cases that failed, which
+      # is the thing you actually need when the gate goes red.
+      - name: Upload the eval report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-report
+          path: eval-report.json
+          if-no-files-found: error
+
   terraform:
     name: Terraform validate
     runs-on: ubuntu-latest
