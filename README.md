@@ -35,7 +35,7 @@ dengan sengaja, karena mengklaim dampak lapangan dari sebuah demo tidak jujur.
 | Metrik | Sebelum | Target | Yang sudah terbukti di repo ini |
 |---|---|---|---|
 | Median respons pertama ke review | 9 hari | < 8 jam | Draft dihasilkan seketika untuk 6 tema keluhan; 4/4 guardrail lolos pada 80 keluhan contoh yang diuji |
-| Review dibalas dalam 48 jam | 31% | > 90% | 592 dari 713 dibalas otomatis (bintang 3–5); 26 ditahan untuk persetujuan manusia |
+| Review dibalas dalam 48 jam | 31% | > 90% | 592 dari 713 (bintang 3–5) boleh dibalas tanpa persetujuan; **seluruh 121 review bintang 1–2 ditahan** — 95 sudah disetujui manusia bernama lalu terkirim, 26 masih menunggu di antrean |
 | Tema naik terdeteksi sebelum rating turun 0,2 | tidak pernah | 7–10 hari lebih awal | Klasterisasi menemukan 36 sel matriks tema **dari teks saja**, dengan delta mingguan per cabang |
 | Waktu tutup tiket | tidak diukur | < 5 hari (SLA) | Papan tindakan mengukurnya; tiket contoh yang ditutup membawa dampaknya |
 | Biaya per tenant per bulan | — | < Rp 5,4 juta | Ditegakkan di kode: turun ke Flash di 90%, batas keras menolak panggilan |
@@ -183,7 +183,8 @@ test sehingga layar baru yang lupa satu state akan menggagalkan build.
 
 | Bukti | Di mana |
 |---|---|
-| **823 test** lulus di 4 workspace | `npm test` |
+| **824 test** lulus di 4 workspace | `npm test` |
+| **24 dari 24 acceptance criteria** di spec.md punya test yang menyebutnya per nama | `grep -r AC- */test eval` |
 | **Eval agen**: 60 kasus, 5 ambang konstitusi, CI memblokir merge bila satu gagal | [`eval/`](eval/) · `npm run eval` |
 | **Terraform**: Cloud Run, Firestore, BigQuery, Storage, Secret Manager, Scheduler, WIF | [`infra/`](infra/) |
 | **CI**: lint, test + ambang cakupan, `terraform validate`, gerbang secret, eval | [`ci.yml`](.github/workflows/ci.yml) |
@@ -259,7 +260,13 @@ beberapa tempat hasilnya berbeda tipis dari angka ilustratif di
 `design/SCREENS.md` — yang dihitung yang dipakai, karena konstitusi menuntut
 setiap angka bisa ditelusuri ke baris yang menghasilkannya.
 
-Dua tempat di mana ini terlihat paling jelas, keduanya di layar 04:
+**"42 cabang" di rail vs 6 di peta.** Keduanya benar dan artinya berbeda: 42
+adalah ukuran jaringan Nusa Retail seperti tercatat di direktori tenant, 6
+adalah cabang yang benar-benar tercakup dataset contoh 713 review. Panel peta
+mengatakannya sendiri — *"6 dari 42 cabang ada di dataset contoh"* — supaya
+tidak ada yang perlu menebak angka mana yang sedang dilihat.
+
+Dua tempat lain di mana ini terlihat jelas, keduanya di layar 04:
 
 - Grafiknya menggambar **8 pekan**, bukan 12 seperti label di mockup, karena
   8 pekan adalah seluruh rentang review yang ada. Empat pekan tambahan pada

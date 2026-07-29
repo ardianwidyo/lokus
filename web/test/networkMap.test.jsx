@@ -29,6 +29,14 @@ describe('Screen 03 · Peta jaringan cabang (T033)', () => {
     window.sessionStorage.clear();
   });
 
+  it('says how much of the estate the dataset actually covers', async () => {
+    await renderMap();
+
+    // The rail says "42 cabang" from the tenant record while the map draws 6.
+    // Both are true; leaving the reader to reconcile them is what is not.
+    expect(screen.getByText(/6 dari 42 cabang ada di dataset contoh/)).toBeInTheDocument();
+  });
+
   it('draws every outlet and the competitors around them', async () => {
     await renderMap();
 

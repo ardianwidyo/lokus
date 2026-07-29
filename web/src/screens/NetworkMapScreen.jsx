@@ -26,6 +26,10 @@ const LAYERS = [
  */
 export function NetworkMapScreen({ onNavigate }) {
   const { locationSource, tenant } = useSession();
+  // The rail shows the tenant's whole estate; this map shows the branches the
+  // dataset actually covers. Both numbers are true and they differ, so the
+  // panel says which is which rather than leaving the reader to guess.
+  const declared = tenant?.outletCount ?? null;
   const [layer, setLayer] = useState('skor');
   const [selectedId, setSelectedId] = useState(null);
 
@@ -47,7 +51,10 @@ export function NetworkMapScreen({ onNavigate }) {
         meta={
           data ? (
             <span className="panel-meta">
-              {outlets.length} cabang · {data.sourceCount} POI dianalisis
+              {declared && declared > outlets.length
+                ? `${outlets.length} dari ${declared} cabang ada di dataset contoh`
+                : `${outlets.length} cabang`}{' '}
+              · {data.sourceCount} POI dianalisis
             </span>
           ) : null
         }

@@ -18,7 +18,7 @@ Ini submission EBCO AI Hackathon 2026, Kategori A + B. Tenggat submission
 1. `.specify/memory/constitution.md` — prinsip yang tidak boleh dilanggar
 2. `specs/001-lokus-core/spec.md` — user story + acceptance criteria
 3. `specs/001-lokus-core/plan.md` — stack, kontrak agen, data model, fase
-4. `specs/001-lokus-core/tasks.md` — T001–T054 (setiap tugas menunjuk AC)
+4. `specs/001-lokus-core/tasks.md` — T001–T059, 46 tugas (setiap tugas menunjuk AC)
 5. `design/UI-GUIDELINES.md` + `design/SCREENS.md` — aturan visual + 14 layar
 6. `design/tokens.css` — satu-satunya sumber nilai warna/tipografi/spacing
 
