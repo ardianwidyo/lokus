@@ -63,9 +63,11 @@ is the `attribute_condition`, not the obscurity of these strings.
 | `GCP_ENVIRONMENT` | `dev`, `staging` or `prod` — must match `terraform.tfvars` |
 | `LOKUS_API_URL` | the API's URL, once it exists. Leave unset to keep the console on seeded data. |
 
-The deploy workflow fails on the first step with a named list when any of the
-first three is missing, rather than failing later inside `gcloud` with
-something unreadable.
+Until `GCP_PROJECT_ID` is set the deploy job **skips** rather than failing — an
+unconfigured repository should not paint every push red, because that teaches
+people to ignore red. Once it is set, a missing provider or deployer account
+fails on the first step with a named list, because a half-finished
+configuration is a real misconfiguration and should look like one.
 
 ## What a deploy does
 

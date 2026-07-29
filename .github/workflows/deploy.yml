@@ -27,11 +27,20 @@ jobs:
   deploy:
     name: Build and roll out
     runs-on: ubuntu-latest
-    # workflow_dispatch has no upstream conclusion, so accept it explicitly
-    # rather than deploying whenever the field happens to be empty.
+    # Two conditions, and the second one matters as much as the first.
+    #
+    # workflow_dispatch has no upstream conclusion, so it is accepted
+    # explicitly rather than deploying whenever that field happens to be empty.
+    #
+    # GCP_PROJECT_ID gates the whole job so an unconfigured repository *skips*
+    # instead of failing. A red X on every push until someone provisions a
+    # project is noise, and noise teaches people to ignore red. A half-finished
+    # configuration is different — that is a real misconfiguration, and the
+    # step below fails loudly on it.
     if: >-
-      github.event_name == 'workflow_dispatch' ||
-      github.event.workflow_run.conclusion == 'success'
+      (github.event_name == 'workflow_dispatch' ||
+       github.event.workflow_run.conclusion == 'success') &&
+      vars.GCP_PROJECT_ID != ''
     environment: production
 
     steps:
@@ -39,15 +48,14 @@ jobs:
         with:
           ref: ${{ github.event.workflow_run.head_sha || github.ref }}
 
-      - name: Fail fast if the deploy is not configured
+      - name: Fail fast if the deploy is only half configured
         run: |
           missing=""
-          [ -z "${{ vars.GCP_PROJECT_ID }}" ] && missing="$missing GCP_PROJECT_ID"
           [ -z "${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}" ] && missing="$missing GCP_WORKLOAD_IDENTITY_PROVIDER"
           [ -z "${{ vars.GCP_DEPLOYER_SA }}" ] && missing="$missing GCP_DEPLOYER_SA"
           if [ -n "$missing" ]; then
-            echo "::error::Deploy is not configured. Missing repository variables:$missing"
-            echo "::error::See docs/deploy.md. Terraform outputs the values."
+            echo "::error::GCP_PROJECT_ID is set but the deploy is incomplete. Missing:$missing"
+            echo "::error::See docs/deploy.md. Terraform outputs both values."
             exit 1
           fi
 
