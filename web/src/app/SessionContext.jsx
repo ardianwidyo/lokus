@@ -1,5 +1,7 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
 
+import { createMemoryTicketStore, seedTickets } from '@lokus/core';
+
 import { createSeededAgentSource } from '../data/agentSource.js';
 import { createSeededBriefingSource } from '../data/briefingSource.js';
 import { createSeededReputationSource } from '../data/reputationSource.js';
@@ -28,16 +30,26 @@ export function SessionProvider({ source, reputationSource, agentSource, briefin
     [reputationSource, tenant?.tenantId],
   );
 
+  // One ticket store for the whole console: a ticket raised from a briefing
+  // decision and one raised from a chat answer must land on the same board.
+  // Rebuilt on a tenant switch like everything else holding tenant data.
+  const ticketStore = useMemo(() => {
+    const tenantId = tenant?.tenantId ?? 'nusa-retail';
+    return createMemoryTicketStore({ seed: seedTickets({ tenantId }) });
+  }, [tenant?.tenantId]);
+
   // Same rule as the reputation source: agent runs hold tenant data, so the
   // whole source is rebuilt on a tenant switch rather than filtered.
   const agent = useMemo(
-    () => agentSource ?? createSeededAgentSource({ tenantId: tenant?.tenantId ?? 'nusa-retail' }),
-    [agentSource, tenant?.tenantId],
+    () => agentSource ?? createSeededAgentSource({ tenantId: tenant?.tenantId ?? 'nusa-retail', ticketStore }),
+    [agentSource, tenant?.tenantId, ticketStore],
   );
 
   const briefingSource = useMemo(
-    () => injectedBriefing ?? createSeededBriefingSource({ tenantId: tenant?.tenantId ?? 'nusa-retail' }),
-    [injectedBriefing, tenant?.tenantId],
+    () =>
+      injectedBriefing ??
+      createSeededBriefingSource({ tenantId: tenant?.tenantId ?? 'nusa-retail', ticketStore }),
+    [injectedBriefing, tenant?.tenantId, ticketStore],
   );
 
   const selectTenant = useCallback(
@@ -56,11 +68,12 @@ export function SessionProvider({ source, reputationSource, agentSource, briefin
       reputation,
       agent,
       briefingSource,
+      ticketStore,
       tenant,
       role: tenant?.role ?? null,
       selectTenant,
     }),
-    [sessionSource, reputation, agent, briefingSource, tenant, selectTenant],
+    [sessionSource, reputation, agent, briefingSource, ticketStore, tenant, selectTenant],
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

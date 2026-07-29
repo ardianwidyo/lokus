@@ -1,5 +1,6 @@
 import { SessionProvider, useSession } from './app/SessionContext.jsx';
 import { useRoute } from './app/useRoute.js';
+import { ActionBoardScreen } from './screens/ActionBoardScreen.jsx';
 import { BriefingScreen } from './screens/BriefingScreen.jsx';
 import { ChatScreen } from './screens/ChatScreen.jsx';
 import { MasukScreen } from './screens/MasukScreen.jsx';
@@ -31,6 +32,7 @@ const SCREEN_COMPONENTS = {
   tema: ThemeAnalysisScreen,
   chat: ChatScreen,
   briefing: BriefingScreen,
+  tindakan: ActionBoardScreen,
 };
 
 function Console() {
