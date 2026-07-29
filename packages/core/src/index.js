@@ -26,3 +26,4 @@ export { INTENTS, detectOutlet, route } from './agents/intent.js';
 export { createKnowledgeAgent, createReputationAgent, createUnavailableAgent } from './agents/specialists.js';
 export { createSupervisor, estimateCostIdr } from './agents/supervisor.js';
 export { MIN_ANSWERABLE_TERMS } from './knowledge/retrieval.js';
+export { createMemoryRunStore, withRunPersistence } from './agents/runStore.js';

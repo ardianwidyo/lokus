@@ -34,6 +34,21 @@ export default [
   },
 
   {
+    // packages/core runs in both the API process and the browser, so it may
+    // only use globals both provide.
+    files: ['packages/**/*.js'],
+    languageOptions: {
+      globals: {
+        structuredClone: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        URL: 'readonly',
+        console: 'readonly',
+      },
+    },
+  },
+
+  {
     files: ['web/**/*.{js,jsx}'],
     languageOptions: {
       globals: { ...globals.browser },
