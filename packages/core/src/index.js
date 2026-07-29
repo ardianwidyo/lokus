@@ -20,3 +20,9 @@ export { DOCUMENTS, PASSAGES, findDocument, retrievablePassages } from './seed/d
 export { addressFor, draftReply } from './reputation/draftReply.js';
 export { APPROVAL_REQUIRED_MAX_RATING, ApprovalError, REPLY_STATES, approveDraft, createMemoryApprovalStore, replyQueueSummary, requiresApproval, saveDraft, sendReply } from './reputation/approvals.js';
 export { GUARDRAIL_CHECKS, guardrailCheck } from './reputation/guardrails.js';
+
+export { CHANGE_THRESHOLD, ratingTrend } from './analytics/ratingTrend.js';
+export { INTENTS, detectOutlet, route } from './agents/intent.js';
+export { createKnowledgeAgent, createReputationAgent, createUnavailableAgent } from './agents/specialists.js';
+export { createSupervisor, estimateCostIdr } from './agents/supervisor.js';
+export { MIN_ANSWERABLE_TERMS } from './knowledge/retrieval.js';

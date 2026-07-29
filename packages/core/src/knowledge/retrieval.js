@@ -16,12 +16,26 @@ import { toolResult } from '../lib/toolResult.js';
  */
 export const CONFIDENCE_THRESHOLD = 0.7;
 
-/** Words too common in Indonesian SOP prose to carry meaning. */
+/** Distinct in-vocabulary query terms needed before any passage can score. */
+export const MIN_ANSWERABLE_TERMS = 2;
+
+/**
+ * Words too common in Indonesian SOP prose to carry meaning, plus the
+ * interrogative scaffolding of a spoken question ("apa kata SOP soal…").
+ *
+ * The question words matter: scores are normalised by the query's own weight,
+ * so every filler token in a natural question dilutes the match and can push a
+ * genuinely relevant passage below the refusal floor. Dropping them keeps the
+ * 0.70 threshold a statement about relevance rather than about phrasing.
+ */
 const STOPWORDS = new Set([
   'yang', 'dan', 'di', 'ke', 'dari', 'untuk', 'pada', 'dengan', 'atau', 'itu',
   'ini', 'tidak', 'ada', 'akan', 'sudah', 'juga', 'bisa', 'dapat', 'saya',
   'kami', 'anda', 'apa', 'bagaimana', 'boleh', 'jika', 'bila', 'oleh', 'dalam',
   'sebagai', 'adalah', 'harus', 'wajib', 'nya', 'nya.', 'per', 'ya',
+  'apakah', 'kenapa', 'mengapa', 'gimana', 'soal', 'tentang', 'mengenai',
+  'kata', 'berapa', 'kapan', 'siapa', 'mana', 'kalau', 'saat', 'agar',
+  'sedang', 'masih', 'lagi', 'saja', 'sih', 'dong', 'nih',
 ]);
 
 export function tokenise(text) {
@@ -40,17 +54,29 @@ function stem(token) {
     .replace(/(kan|an|i)$/u, '');
 }
 
+/**
+ * A passage is searchable by its own text *and* its document title, the way an
+ * indexed chunk carries its document metadata. Without it, "apa kata SOP soal
+ * antrean" cannot match a clause that never says the word "SOP".
+ */
+function searchableText(passage) {
+  return `${passage.title ?? ''} ${passage.text}`;
+}
+
 function buildIdf(passages) {
   const documentFrequency = new Map();
 
   for (const passage of passages) {
-    for (const token of new Set(tokenise(passage.text).map(stem))) {
+    for (const token of new Set(tokenise(searchableText(passage)).map(stem))) {
       documentFrequency.set(token, (documentFrequency.get(token) ?? 0) + 1);
     }
   }
 
   const total = passages.length;
-  return (token) => Math.log((total + 1) / ((documentFrequency.get(token) ?? 0) + 1)) + 1;
+  return {
+    idf: (token) => Math.log((total + 1) / ((documentFrequency.get(token) ?? 0) + 1)) + 1,
+    isKnown: (token) => documentFrequency.has(token),
+  };
 }
 
 /**
@@ -70,14 +96,39 @@ export function searchPassages({
   const corpus = passages ?? retrievablePassages(tenantId);
   if (corpus.length === 0) return { chunks: [], rejected: [], rejectedCount: 0 };
 
-  const idf = buildIdf(corpus);
+  const { idf, isKnown } = buildIdf(corpus);
   const queryTokens = [...new Set(tokenise(query).map(stem))];
-  const queryWeight = queryTokens.reduce((sum, token) => sum + idf(token), 0);
+
+  /**
+   * Only terms the corpus actually contains are normalised against. A word
+   * that appears in no passage cannot discriminate between passages, so
+   * letting it into the denominator would punish every candidate equally and
+   * push good matches below the refusal floor — the question's phrasing would
+   * decide the verdict instead of its meaning.
+   *
+   * When *no* query term is known, the weight is zero, every score is zero,
+   * and the search refuses. That is the honest outcome for a question the
+   * corpus has no vocabulary for at all.
+   */
+  const answerable = queryTokens.filter(isKnown);
+  const outOfVocabulary = queryTokens.filter((token) => !isKnown(token));
+
+  /**
+   * One shared word is not evidence. "Kenapa rating cabang Bekasi turun?" has
+   * exactly one term the SOP corpus knows ("cabang"), and normalising against
+   * that single term would score an unrelated clause a confident 1.00. The SOP
+   * genuinely has nothing to say about ratings, and the honest answer is to
+   * refuse rather than to cite the nearest paragraph.
+   */
+  const hasEnoughEvidence = answerable.length >= MIN_ANSWERABLE_TERMS;
+  const queryWeight = hasEnoughEvidence
+    ? answerable.reduce((sum, token) => sum + idf(token), 0)
+    : 0;
 
   const scored = corpus
     .map((passage) => {
-      const passageTokens = new Set(tokenise(passage.text).map(stem));
-      const matched = queryTokens.filter((token) => passageTokens.has(token));
+      const passageTokens = new Set(tokenise(searchableText(passage)).map(stem));
+      const matched = answerable.filter((token) => passageTokens.has(token));
       const score = queryWeight === 0
         ? 0
         : matched.reduce((sum, token) => sum + idf(token), 0) / queryWeight;
@@ -89,7 +140,9 @@ export function searchPassages({
   const chunks = scored.filter((entry) => entry.score >= threshold).slice(0, topK);
   const rejected = scored.filter((entry) => !chunks.includes(entry));
 
-  return { chunks, rejected, rejectedCount: rejected.length };
+  // `outOfVocabulary` is what a knowledge-gap report is built from: the words a
+  // question used that the corpus has never seen.
+  return { chunks, rejected, rejectedCount: rejected.length, outOfVocabulary };
 }
 
 /** `rag.search` in the tool contract. */
