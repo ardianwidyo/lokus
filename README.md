@@ -263,7 +263,7 @@ test sehingga layar baru yang lupa satu state akan menggagalkan build.
 
 | Bukti | Di mana |
 |---|---|
-| **983 test** lulus di 4 workspace | `npm test` |
+| **995 test** lulus di 4 workspace | `npm test` |
 | **24 dari 24 acceptance criteria** di spec.md punya test yang menyebutnya per nama | `grep -r AC- */test eval` |
 | **Eval agen**: 60 kasus, 5 ambang konstitusi, CI memblokir merge bila satu gagal | [`eval/`](eval/) · `npm run eval` |
 | **Terraform**: Cloud Run, Firestore, BigQuery, Storage, Secret Manager, Scheduler, WIF | [`infra/`](infra/) |

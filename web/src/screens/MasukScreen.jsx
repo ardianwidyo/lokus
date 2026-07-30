@@ -4,6 +4,7 @@ import { useSession } from '../app/SessionContext.jsx';
 import { useAsyncData } from '../app/useAsyncData.js';
 import { DataPanel, PANEL_STATUS } from '../components/states/index.js';
 import { useLocale } from '../i18n/index.js';
+import { findScreenByPath } from '../app/screens.js';
 import { SignInCard } from './masuk/SignInCard.jsx';
 import { TenantRow } from './masuk/TenantRow.jsx';
 
@@ -17,7 +18,7 @@ import { TenantRow } from './masuk/TenantRow.jsx';
  * Behaviour from design/SCREENS.md: choosing a tenant stores tenantId + role,
  * drops the client cache, and opens screen 02.
  */
-export function MasukScreen({ onNavigate }) {
+export function MasukScreen({ onNavigate, query = null }) {
   const { source, selectTenant } = useSession();
   const { t, errorText } = useLocale();
   const [selecting, setSelecting] = useState(null);
@@ -34,7 +35,8 @@ export function MasukScreen({ onNavigate }) {
     setSelectError(null);
     try {
       await selectTenant(tenantId);
-      onNavigate('/briefing');
+      // Back to wherever they were heading before being asked to choose.
+      onNavigate(safeNext(query?.get('next')) ?? '/briefing');
     } catch (failure) {
       setSelectError(errorText(failure, 'masuk.tenantOpenFailed'));
     } finally {
@@ -110,4 +112,24 @@ function mostRecentlyOpenedId(tenants) {
       .filter((tenant) => tenant.lastOpenedAt)
       .sort((a, b) => b.lastOpenedAt.localeCompare(a.lastOpenedAt))[0]?.tenantId ?? null
   );
+}
+
+/**
+ * The destination to continue to after a tenant is chosen.
+ *
+ * `next` arrives in the URL, so it is resolved against the fourteen known
+ * screen paths and discarded otherwise. A redirect target read from a URL and
+ * used unchecked is an open redirect; `findScreenByPath` is the allowlist that
+ * already exists, and the query string is carried through so a deep link like
+ * `/cabang?outlet=DPK-01` survives the detour.
+ */
+function safeNext(next) {
+  if (!next) return null;
+
+  const [path, search = ''] = String(next).split('?');
+  if (!findScreenByPath(path)) return null;
+  // Screen 01 as a destination would be a loop back to where we already are.
+  if (path === '/masuk') return null;
+
+  return search ? `${path}?${search}` : path;
 }

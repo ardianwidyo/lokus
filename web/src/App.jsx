@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+
 import { SessionProvider, useSession } from './app/SessionContext.jsx';
 import { useRoute } from './app/useRoute.js';
 import { LocaleProvider } from './i18n/index.js';
@@ -81,14 +83,30 @@ const SCREEN_COMPONENTS = {
 };
 
 function Console() {
-  const { screen, query, navigate } = useRoute();
+  const { screen, path, query, navigate } = useRoute();
   const { tenant, role } = useSession();
+
+  // Arriving without a tenant is not a fault, it is someone who has not chosen
+  // yet — so the console asks, instead of rendering every panel's error state.
+  // Where they were heading travels in the URL so it survives a reload.
+  useEffect(() => {
+    if (tenant || screen.id === 'masuk') return;
+
+    const search = query.toString();
+    const intended = search ? `${path}?${search}` : path;
+    navigate(`/masuk?next=${encodeURIComponent(intended)}`);
+  }, [tenant, screen.id, path, query, navigate]);
 
   const Screen = SCREEN_COMPONENTS[screen.id];
 
+  // Mounting the screen while the redirect above is still pending would let it
+  // fire its first request without a tenant — one guaranteed 400 and a console
+  // error on every deep link. The shell stays so nothing flashes.
+  const redirecting = !tenant && screen.id !== 'masuk';
+
   return (
     <AppShell screen={screen} onNavigate={navigate} tenant={tenant} role={role}>
-      {Screen ? (
+      {redirecting ? null : Screen ? (
         <Screen onNavigate={navigate} screen={screen} reviewId={query.get('review')} query={query} />
       ) : (
         <PlaceholderScreen screen={screen} />
