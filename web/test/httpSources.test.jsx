@@ -41,10 +41,15 @@ describe('api client', () => {
     expect(calls[0].headers['x-lokus-tenant']).toBe('nusa-retail');
   });
 
-  it('sends no token before a tenant is chosen, rather than inventing one', () => {
+  it('names no tenant before one is chosen, but still authenticates (T062)', () => {
+    // Sending nothing here is what made screen 01 unreachable over HTTP: the
+    // tenant list comes from an authenticated route, so the console has to be
+    // able to sign in before it knows which tenant it is signing into. The
+    // token claims no tenant, and the API grants it none.
     const provider = createDevTokenProvider({ getTenant: () => null });
 
-    expect(provider()).toBeNull();
+    expect(provider()).toBe('dev:demo');
+    expect(provider()).not.toMatch(/nusa-retail|manager|admin/);
   });
 
   it('builds a token carrying the role the session actually granted', () => {

@@ -20,6 +20,14 @@ import { ROLES, isRole } from './roles.js';
  *
  * The token format is `dev:<userId>:<tenantId>:<role>` — deliberately not a
  * JWT, so nothing produced here could ever be mistaken for a real credential.
+ *
+ * `dev:<userId>` alone is also valid, and screen 01 depends on it. The tenant
+ * list comes from an authenticated route, so a token that requires a tenant
+ * cannot be minted until a tenant has been chosen from the list that token is
+ * needed to read. A tenant-less token carries the memberships the identity
+ * provider would carry for the demo account instead; standing in for that
+ * provider is the point of this mode. Tenant scoping is unaffected — every
+ * tenant-scoped route still checks the header against these memberships.
  */
 
 export const DEV_TOKEN_PREFIX = 'dev:';
@@ -46,7 +54,14 @@ export function assertDevAuthAllowed(env = process.env) {
  * verifier returns, so every downstream check — membership, role, tenant
  * scoping — behaves identically and is genuinely exercised.
  */
-export function createDevVerifier({ env = process.env, logger = null } = {}) {
+export function createDevVerifier({
+  env = process.env,
+  logger = null,
+  // What a tenant-less token is a member of. Injected rather than imported so
+  // the verifier does not reach into the tenant directory, and so a test can
+  // hand it an empty set and watch screen 01 legitimately show nothing.
+  demoMemberships = () => new Map(),
+} = {}) {
   assertDevAuthAllowed(env);
 
   return async function verifyDevToken(token) {
@@ -57,11 +72,34 @@ export function createDevVerifier({ env = process.env, logger = null } = {}) {
       throw unauthorized(ERROR_CODES.AUTH_TOKEN_INVALID, 'Token could not be verified');
     }
 
-    const [, userId, tenantId, role = ROLES.MANAGER] = token.split(':');
+    const [, userId, tenantId = '', role = ROLES.MANAGER] = token.split(':');
 
-    if (!userId || !tenantId) {
+    if (!userId) {
       throw unauthorized(ERROR_CODES.AUTH_TOKEN_INVALID, 'Token could not be verified');
     }
+
+    // No tenant named: the user is signing in and has not chosen one yet.
+    if (!tenantId) {
+      const memberships = new Map(demoMemberships());
+
+      logger?.warn?.(
+        { event: 'auth.dev_mode', userId, tenantId: null, tenants: memberships.size },
+        'request authenticated in dev mode — identity is NOT verified',
+      );
+
+      return {
+        userId,
+        email: `${userId}@dev.local`,
+        name: userId,
+        // Nothing is open yet; the console asks for a tenant explicitly.
+        defaultTenantId: null,
+        memberships,
+        issuedAt: Math.floor(Date.now() / 1000),
+        expiresAt: null,
+        devMode: true,
+      };
+    }
+
     if (!isRole(role)) {
       // An unrecognised role must never widen access, dev mode included.
       throw unauthorized(ERROR_CODES.AUTH_TOKEN_INVALID, 'Token could not be verified');

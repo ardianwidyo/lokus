@@ -49,8 +49,8 @@ export function buildServer({
         fastify.log.warn({ event: 'budget_degraded', ...alert }, alert.message),
     });
 
-  const verifier = verifyIdToken ?? buildVerifier(config, env, fastify.log);
   const directory = tenantDirectory ?? createSeededTenantDirectory();
+  const verifier = verifyIdToken ?? buildVerifier(config, env, fastify.log, directory);
   const runs = runStore ?? domain.runStore;
 
   // Registered before the routes so preflight is answered for all of them.
@@ -114,13 +114,16 @@ export function buildServer({
  * throws when NODE_ENV is production, so the server fails to boot rather than
  * starting with unverified identities accepted.
  */
-function buildVerifier(config, env, log) {
+function buildVerifier(config, env, log, directory) {
   if (isDevAuthEnabled(env)) {
     log.warn(
       { event: 'auth.dev_mode_enabled' },
       'LOKUS_AUTH_MODE=dev — identities are NOT verified. Local development only.',
     );
-    return createDevVerifier({ env, logger: log });
+    // A token that names no tenant stands in for an Identity Platform token
+    // for the demo account, so it carries the memberships that account would
+    // hold. Without this, screen 01 cannot list what to sign into.
+    return createDevVerifier({ env, logger: log, demoMemberships: () => directory.demoMemberships() });
   }
 
   return createTokenVerifier(config.auth);

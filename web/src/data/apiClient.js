@@ -74,7 +74,11 @@ export function isPermissionError(error) {
 export function createDevTokenProvider({ getTenant, user = 'demo' }) {
   return () => {
     const tenant = getTenant?.();
-    if (!tenant?.tenantId || !tenant?.role) return null;
+
+    // Before a tenant is chosen the console still has to authenticate, because
+    // the list of tenants to choose from comes from an authenticated route.
+    // Returning null here is what made screen 01 unreachable over HTTP.
+    if (!tenant?.tenantId || !tenant?.role) return `dev:${user}`;
 
     return `dev:${user}:${tenant.tenantId}:${tenant.role}`;
   };

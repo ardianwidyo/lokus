@@ -36,6 +36,18 @@ const SEED_TENANTS = Object.freeze([
   },
 ]);
 
+/**
+ * Roles the demo account holds per tenant, mirroring web/src/data/sessionSource.js
+ * so the seeded console and the API tell the same story. Viewer and admin are
+ * both represented because AC-6.3 is only demonstrable if some tenant is not a
+ * manager.
+ */
+const DEMO_ROLES = Object.freeze({
+  'nusa-retail': 'manager',
+  'klinik-sehat-prima': 'viewer',
+  'dealer-arta-motor': 'admin',
+});
+
 export function createSeededTenantDirectory({ tenants = SEED_TENANTS, clock = () => new Date() } = {}) {
   const byId = new Map(tenants.map((tenant) => [tenant.tenantId, tenant]));
   /** userId → (tenantId → ISO timestamp) */
@@ -77,7 +89,19 @@ export function createSeededTenantDirectory({ tenants = SEED_TENANTS, clock = ()
     return scopedRows(tenantId, rows);
   }
 
-  return { get, listForPrincipal, markOpened, rowsFor };
+  /**
+   * The memberships a demo account would carry if Identity Platform were
+   * issuing the token — one entry per seeded tenant, with the role that tenant
+   * documents. Only `createDevVerifier` reads this, and only for a token that
+   * names no tenant; it is what lets screen 01 list anything at all before a
+   * tenant has been chosen. The roles differ on purpose, so the RBAC gate is
+   * visible in the demo rather than uniformly open.
+   */
+  function demoMemberships() {
+    return new Map(tenants.map((tenant) => [tenant.tenantId, tenant.demoRole ?? DEMO_ROLES[tenant.tenantId]]));
+  }
+
+  return { get, listForPrincipal, markOpened, rowsFor, demoMemberships };
 }
 
 function byLastOpenedThenName(a, b) {

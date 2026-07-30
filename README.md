@@ -65,11 +65,23 @@ tenant, dan RBAC benar-benar dilewati — jalankan keduanya:
 GOOGLE_CLOUD_PROJECT=demo \
 LOKUS_AUTH_MODE=dev \
 LOKUS_ALLOWED_ORIGINS=http://localhost:5173 \
+GEMINI_API_KEY=...  \
 npm run dev --workspace @lokus/api
 
 # terminal 2 — konsol
 VITE_LOKUS_API_URL=http://localhost:8080 npm run dev
 ```
+
+Buka `http://localhost:5173/masuk`, pilih **Nusa Retail**, lalu buka layar
+**12 · Jawaban bersitasi** dari rail kiri. Di bawah judul panel akan tertulis
+**"ditulis gemini-3.5-flash, lolos cek sitasi"**. Kosongkan `GEMINI_API_KEY`,
+jalankan ulang, dan kalimat itu berubah jadi **"dikutip apa adanya dari SOP"**
+— beserta teks jawabannya. Itu cara termurah membuktikan modelnya benar-benar
+dipanggil, tanpa mempercayai klaim di halaman ini.
+
+`GEMINI_API_KEY` opsional dan gratis dari
+[AI Studio](https://aistudio.google.com/apikey) — tanpa billing account. Tanpa
+key, semuanya tetap jalan di jalur deterministik.
 
 `LOKUS_AUTH_MODE=dev` menerima identitas tanpa verifikasi dan **hanya untuk
 lokal** — server menolak start bila mode itu aktif saat `NODE_ENV=production`.
@@ -251,7 +263,7 @@ test sehingga layar baru yang lupa satu state akan menggagalkan build.
 
 | Bukti | Di mana |
 |---|---|
-| **890 test** lulus di 4 workspace | `npm test` |
+| **983 test** lulus di 4 workspace | `npm test` |
 | **24 dari 24 acceptance criteria** di spec.md punya test yang menyebutnya per nama | `grep -r AC- */test eval` |
 | **Eval agen**: 60 kasus, 5 ambang konstitusi, CI memblokir merge bila satu gagal | [`eval/`](eval/) · `npm run eval` |
 | **Terraform**: Cloud Run, Firestore, BigQuery, Storage, Secret Manager, Scheduler, WIF | [`infra/`](infra/) |

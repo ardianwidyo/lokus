@@ -86,10 +86,20 @@ describe('dev token parsing', () => {
     ['no token', null],
     ['a real-looking JWT', 'eyJhbGciOiJIUzI1NiJ9.e30.sig'],
     ['the prefix alone', 'dev:'],
-    ['no tenant', 'dev:dwi'],
     ['an unknown role', 'dev:dwi:nusa-retail:superuser'],
   ])('rejects %s', async (_label, token) => {
     await expect(verify(token)).rejects.toMatchObject({ statusCode: 401 });
+  });
+
+  it('accepts a token with no tenant, and grants it nothing (T062)', async () => {
+    // This used to be rejected, which made screen 01 unreachable over HTTP:
+    // the tenant list needs a token, and the token needed a tenant from that
+    // list. Signing in is now separable from opening a tenant — and this
+    // verifier was built without demo memberships, so it opens nothing.
+    const principal = await verify('dev:dwi');
+
+    expect(principal).toMatchObject({ userId: 'dwi', defaultTenantId: null, devMode: true });
+    expect(principal.memberships.size).toBe(0);
   });
 
   it('does not accept a token shaped like a JWT, so nothing here can be mistaken for one', async () => {
@@ -162,5 +172,115 @@ describe('the console can reach the API end to end in dev mode', () => {
     await boot();
 
     expect((await request('GET', '/v1/reviews', null, 'nusa-retail')).statusCode).toBe(401);
+  });
+});
+
+describe('T062 · a dev token without a tenant', () => {
+  const boot = async () => {
+    fastify = await buildServer({
+      config: CONFIG,
+      env: DEV_ENV,
+      services: createServices({ evaluationReport: null }),
+    });
+    return fastify;
+  };
+
+  it('authenticates, so screen 01 can list what to sign into', async () => {
+    // The defect this fixes: /v1/session needs a token, and the console could
+    // not mint one until a tenant was chosen from the list /v1/session returns.
+    await boot();
+
+    const response = await fastify.inject({
+      method: 'GET',
+      url: '/v1/session',
+      headers: { authorization: 'Bearer dev:demo' },
+    });
+
+    expect(response.statusCode).toBe(200);
+    const body = response.json();
+    expect(body.tenants.length).toBeGreaterThan(0);
+    expect(body.tenants.map((t) => t.tenantId)).toContain('nusa-retail');
+  });
+
+  it('carries the differing roles, so the RBAC gate is visible in the demo', async () => {
+    await boot();
+
+    const { tenants } = (
+      await fastify.inject({
+        method: 'GET',
+        url: '/v1/session',
+        headers: { authorization: 'Bearer dev:demo' },
+      })
+    ).json();
+
+    const roles = Object.fromEntries(tenants.map((t) => [t.tenantId, t.role]));
+    expect(roles['nusa-retail']).toBe('manager');
+    expect(roles['klinik-sehat-prima']).toBe('viewer');
+  });
+
+  it('opens nothing by itself — no tenant is selected yet', async () => {
+    await boot();
+
+    const body = (
+      await fastify.inject({
+        method: 'GET',
+        url: '/v1/session',
+        headers: { authorization: 'Bearer dev:demo' },
+      })
+    ).json();
+
+    expect(body.defaultTenantId).toBeNull();
+  });
+
+  it('still cannot read tenant data without naming a tenant', async () => {
+    // The whole point: widening sign-in must not widen access.
+    await boot();
+
+    const response = await fastify.inject({
+      method: 'GET',
+      url: '/v1/reviews',
+      headers: { authorization: 'Bearer dev:demo' },
+    });
+
+    expect(response.statusCode).toBeGreaterThanOrEqual(400);
+  });
+
+  it('is refused for a tenant it holds no membership in', async () => {
+    await boot();
+
+    const response = await fastify.inject({
+      method: 'GET',
+      url: '/v1/reviews',
+      headers: { authorization: 'Bearer dev:demo', 'x-lokus-tenant': 'tenant-yang-tidak-ada' },
+    });
+
+    expect(response.statusCode).toBeGreaterThanOrEqual(400);
+    expect(response.statusCode).toBeLessThan(500);
+  });
+
+  it('lists nothing when the deployment knows no demo tenants', async () => {
+    // The memberships are injected, not assumed, so an empty directory is an
+    // empty list rather than an invented one.
+    const verify = createDevVerifier({ env: DEV_ENV, demoMemberships: () => new Map() });
+
+    const principal = await verify('dev:demo');
+
+    expect(principal.memberships.size).toBe(0);
+    expect(principal.devMode).toBe(true);
+  });
+
+  it('still rejects a token with no user at all', async () => {
+    const verify = createDevVerifier({ env: DEV_ENV });
+
+    await expect(verify(DEV_TOKEN_PREFIX)).rejects.toThrow();
+  });
+
+  it('still rejects an unrecognised role when a tenant is named', async () => {
+    const verify = createDevVerifier({ env: DEV_ENV });
+
+    await expect(verify('dev:demo:nusa-retail:superuser')).rejects.toThrow();
+    await expect(verify(`dev:demo:nusa-retail:${ROLES.MANAGER}`)).resolves.toMatchObject({
+      defaultTenantId: 'nusa-retail',
+    });
   });
 });
