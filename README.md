@@ -74,11 +74,17 @@ VITE_LOKUS_API_URL=http://localhost:8080 npm run dev
 `LOKUS_AUTH_MODE=dev` menerima identitas tanpa verifikasi dan **hanya untuk
 lokal** — server menolak start bila mode itu aktif saat `NODE_ENV=production`.
 
-**Demo URL:** belum ter-deploy. Pipeline-nya siap
-([`docs/deploy.md`](docs/deploy.md)) dan menunggu satu project Google Cloud —
-bukan menunggu Identity Platform: dengan `LOKUS_API_URL` dibiarkan kosong,
-konsol berjalan di atas dataset contoh di browser dan keempat belas layar bisa
-diklik tanpa perlu login.
+**Demo URL: https://ardianwidyo.github.io/lokus/** — hidup, keempat belas layar
+bisa diklik, tanpa login dan tanpa akun apa pun. Konsol berjalan di atas
+dataset contoh **di dalam browser**, jadi yang Anda lihat di sana adalah
+aplikasi yang sama dengan yang dijalankan `npm run dev`.
+
+Yang **tidak** ada di demo URL itu: lapisan API. Auth, isolasi tenant, dan RBAC
+diuji oleh 127 test di workspace `api` dan bisa Anda jalankan sendiri dengan
+dua perintah di bawah, tapi tidak dilewati oleh demo publik. Terraform di
+[`infra/`](infra/) tervalidasi terhadap provider Google 6.12 dan **belum
+teraplikasi** — deploy Cloud Run menunggu billing account yang aktif
+([`docs/deploy.md`](docs/deploy.md) punya langkahnya).
 
 **Akun demo:** tidak perlu. Layar 01 menampilkan tiga tenant contoh; pilih
 **Nusa Retail** (Area Manager) untuk akses penuh, atau **Klinik Sehat Prima**
@@ -210,14 +216,14 @@ test sehingga layar baru yang lupa satu state akan menggagalkan build.
 
 | Bukti | Di mana |
 |---|---|
-| **831 test** lulus di 4 workspace | `npm test` |
+| **840 test** lulus di 4 workspace | `npm test` |
 | **24 dari 24 acceptance criteria** di spec.md punya test yang menyebutnya per nama | `grep -r AC- */test eval` |
 | **Eval agen**: 60 kasus, 5 ambang konstitusi, CI memblokir merge bila satu gagal | [`eval/`](eval/) · `npm run eval` |
 | **Terraform**: Cloud Run, Firestore, BigQuery, Storage, Secret Manager, Scheduler, WIF | [`infra/`](infra/) |
 | **CI**: lint, test + ambang cakupan, `terraform validate`, gerbang secret, eval | [`ci.yml`](.github/workflows/ci.yml) |
 | **CD**: dua image, auth tanpa kunci (WIF), rollout hanya setelah CI hijau | [`deploy.yml`](.github/workflows/deploy.yml) · [`docs/deploy.md`](docs/deploy.md) |
 | **Batas biaya**: turun ke Flash di 90%, alert, batas keras menolak | [`budget.js`](packages/core/src/cost/budget.js) |
-| **14/14 layar tertangkap tanpa satu pun error konsol** | [`scripts/screenshots.mjs`](scripts/screenshots.mjs) |
+| **14/14 layar hidup di demo URL**, diverifikasi lewat browser sungguhan | [`scripts/screenshots.mjs`](scripts/screenshots.mjs) |
 | **Aksesibilitas**: struktur, keyboard, kontras palet dihitung | [`accessibility.test.jsx`](web/test/accessibility.test.jsx) |
 
 Kualitas jejak audit yang paling layak diperiksa: **klasterisasi tema

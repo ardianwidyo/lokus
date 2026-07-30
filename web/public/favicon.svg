@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="LOKUS">
+  <!-- Colours are design/tokens.css values (--color-text, --color-accent,
+       --color-bg). An SVG cannot read CSS custom properties from another
+       document, so they are written out here; there are no new values. -->
+  <rect width="32" height="32" fill="#1d1f20"/>
+  <!-- The blueprint crosshair the panels use, and one outlet marker on it:
+       the same square-on-a-grid the map draws, at 32px. No rounding, no
+       gradient. -->
+  <path d="M16 5V27M5 16H27" stroke="#f2f2f3" stroke-width="1" opacity="0.35"/>
+  <rect x="11" y="11" width="10" height="10" fill="none" stroke="#f2f2f3" stroke-width="1.5"/>
+  <rect x="14.5" y="14.5" width="3" height="3" fill="#5980a6"/>
+</svg>

@@ -8,6 +8,12 @@
       name="description"
       content="Konsol intelijen operasional untuk bisnis bercabang: reputasi, lokasi, dan pengetahuan dalam satu permukaan."
     />
+    <!-- Vite rewrites this against `base`, so it becomes /lokus/favicon.svg on
+         a project site and /favicon.svg at a domain root. A relative href
+         would resolve against the current route instead, which is only correct
+         while every route has one segment. Without any icon the browser asks
+         for /favicon.ico and logs a 404 on every page. -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   </head>
   <body>
     <div id="root"></div>
