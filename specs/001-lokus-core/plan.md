@@ -7,10 +7,10 @@
 | Frontend | React + Vite | single stylesheet: `design/tokens.css` |
 | Domain | `packages/core` — plain JS, no cloud SDK | theme clustering, guardrails, draft assembly, scoring, seeded dataset |
 | API | Cloud Run (Node 20 + Fastify) | Identity Platform auth, RBAC middleware |
-| Agents | Vertex AI Agent Engine (ADK) | supervisor + 3 specialised agents |
-| Models | Gemini (reasoning), Gemini Flash (bulk summarisation) | tier switch on budget |
-| Retrieval | Vertex AI Search, `text-embedding-004` | chunk 800 tokens, overlap 120 |
-| Analytics | BigQuery (+ GIS) | review facts, theme rollups, distance/catchment |
+| Agents | supervisor + 3 specialised agents in `packages/core` | Vertex AI Agent Engine needs billing; see the 2026-07-30 deviation |
+| Models | Gemini (reasoning), Gemini Flash (bulk) via AI Studio REST | **wired**, key-gated, falls back to deterministic drafting |
+| Retrieval | keyword scoring in `packages/core`, threshold 0.70 | Vertex AI Search + `text-embedding-004` needs billing; chunking is 800/120 as planned |
+| Analytics | deterministic JS over the seeded dataset | BigQuery + GIS needs billing; the queries it replaces are named in the trace |
 | State | Firestore | tenants, tickets, agent runs/traces |
 | Docs | Cloud Storage | source SOP/catalog files |
 | External | Business Profile Performance API, Places API (New) | adapters behind one interface each |
@@ -118,6 +118,50 @@ folded in continuously rather than left to the end.
   did that week without asserting the opening caused it. Detected change points
   are drawn separately, as points on the series. Correlation stays visible;
   causation stays unclaimed.
+
+- **2026-07-30 · Gemini is called over the AI Studio REST endpoint, not Vertex
+  AI Agent Engine.** The stack table names Agent Engine and Vertex AI Search.
+  Neither can be reached: both require an active billing account, and the
+  project's is a closed trial (see the deploy note below). Until that changes
+  the table describes an intention, and a submission that shows Agent Engine in
+  its architecture diagram while calling nothing is claiming a stack it does
+  not run.
+
+  Gemini through Google AI Studio needs only an API key and has a free tier, so
+  the reasoning layer can be genuinely wired today. `generativelanguage.googleapis.com`
+  is called with `fetch` — no SDK, no new dependency. Two call sites, chosen
+  because they are where a language model actually earns its place: the reply
+  draft (US-3) and the cited answer (US-4). Everything else — clustering,
+  trends, scoring, distance — stays deterministic, because those are
+  arithmetic and a model would only make them less verifiable.
+
+  Three constraints hold regardless of who generates the words. The model is
+  given only the retrieved passages and must answer from them; its output goes
+  through the same guardrail and the same 0.70 threshold as before, and an
+  answer whose claims lose their citations is refused, not published
+  (constitution I). The call is a numbered step in the execution trace with its
+  own latency and cost (III). Budget still degrades to Flash and then refuses
+  (V).
+
+  The key is read from `GEMINI_API_KEY` in the API process only. It is never
+  bundled into the console: a browser-side key is a public key, and the demo on
+  GitHub Pages has no API behind it, so it keeps running the seeded path. With
+  no key configured every call site falls back to the deterministic
+  implementation rather than failing — the same rule the Business Profile
+  adapter already follows.
+
+- **2026-07-30 · Cloud Run is not deployed; the demo runs on GitHub Pages.**
+  The Google Cloud project's billing account is an expired trial and the card
+  offered to reactivate it was declined by Google Payments, so no billable
+  resource — Cloud Run, Firestore, BigQuery, Artifact Registry — can be created
+  at all. `infra/` is validated against the real Google provider 6.12 and has
+  never been applied.
+
+  The console is a static SPA over the seeded dataset, so it was published to
+  GitHub Pages instead, where all fourteen screens work with no API and no
+  credentials. What that demo does not exercise is the API layer: auth, tenant
+  isolation and RBAC are covered by tests and by two local commands, not by the
+  public URL. README and `docs/deploy.md` say so in those words.
 
 ## Definition of done (per phase)
 
