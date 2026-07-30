@@ -2,6 +2,7 @@ import { ChevronDown, House } from 'lucide-react';
 
 import { SCREENS, screenNumber, screenRailLabelKey } from '../app/screens.js';
 import { LanguageSwitcher, useLocale } from '../i18n/index.js';
+import { ThemeSwitcher } from '../theme/index.js';
 
 /**
  * Left rail, 238px, from design/SCREENS.md "Shell (semua layar)":
@@ -53,6 +54,7 @@ export function LeftRail({ current, onNavigate, tenant = null }) {
 
       <div className="rail-lang">
         <LanguageSwitcher />
+        <ThemeSwitcher />
       </div>
 
       <p className="rail-foot">

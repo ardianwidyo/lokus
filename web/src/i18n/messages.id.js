@@ -32,6 +32,11 @@ export const id = {
     languageEn: 'EN',
     languageIdFull: 'Bahasa Indonesia',
     languageEnFull: 'English',
+    themeLabel: 'Tema konsol',
+    themeLight: 'Terang',
+    themeDark: 'Gelap',
+    themeLightFull: 'Tema terang',
+    themeDarkFull: 'Tema gelap',
   },
 
   bottomNav: {

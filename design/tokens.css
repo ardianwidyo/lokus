@@ -2,17 +2,20 @@
 @import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;700&family=Barlow+Condensed:wght@400;600&display=swap');
 
 :root {
-  --color-bg: #f2f2f3;
-  --color-surface: #e9e9ea;
+  --color-bg: #ffffff;
+  --color-surface: #f5f5f5;
   --color-text: #1d1f20;
-  --color-accent: #5980a6;
-  --color-accent-2: #728fab;
+  --color-accent: #347dc5;
+  --color-accent-2: #6490b9;
   --color-divider: color-mix(in srgb, #1d1f20 16%, transparent);
 
   /* Tonal ramps — generated in OKLCH on one shared lightness scale, so the
-     same step of any role matches the others in visual value. */
-  --color-neutral-100: #f5f5f8;
-  --color-neutral-200: #e7e7ea;
+     same step of any role matches the others in visual value. Retuned for a
+     brighter ground and a more saturated accent hue (same 210° hue, higher
+     chroma) — lightness per step held steady so contrast ratios only improve,
+     never regress (see web/test/accessibility.test.jsx). */
+  --color-neutral-100: #fbfbfc;
+  --color-neutral-200: #eff0f1;
   --color-neutral-300: #d4d4d7;
   --color-neutral-400: #b7b7ba;
   --color-neutral-500: #98989b;
@@ -24,22 +27,37 @@
   --color-accent-100: #eef6ff;
   --color-accent-200: #d6ebff;
   --color-accent-300: #b5d9fd;
-  --color-accent-400: #94bce3;
-  --color-accent-500: #749dc4;
-  --color-accent-600: #597ea3;
-  --color-accent-700: #416180;
-  --color-accent-800: #2c455d;
-  --color-accent-900: #1d2d3d;
+  --color-accent-400: #8dbdec;
+  --color-accent-500: #5e9cd9;
+  --color-accent-600: #347dc5;
+  --color-accent-700: #2a5e92;
+  --color-accent-800: #224567;
+  --color-accent-900: #172b3f;
 
   --color-accent-2-100: #eef6ff;
   --color-accent-2-200: #d6ebff;
   --color-accent-2-300: #bdd8f2;
-  --color-accent-2-400: #9ebbd8;
-  --color-accent-2-500: #7e9cb8;
-  --color-accent-2-600: #627d98;
-  --color-accent-2-700: #486077;
-  --color-accent-2-800: #314457;
-  --color-accent-2-900: #1f2d3a;
+  --color-accent-2-400: #93b7dc;
+  --color-accent-2-500: #7098bf;
+  --color-accent-2-600: #567ea3;
+  --color-accent-2-700: #3f6280;
+  --color-accent-2-800: #2b4559;
+  --color-accent-2-900: #1c2d3a;
+
+  /* The one deliberately-dark surface, and its ink — map fields and the
+     user's own chat bubble (see shell.css ".map-bg", ".chat-bubble-user").
+     Fixed in both themes on purpose: it is a distinct accent surface, not a
+     themed one, so it must not invert when the ramp above does — otherwise
+     it would go pale in dark mode and its white/light-blue ink would vanish
+     into it. --color-on-accent-surface-muted is --color-accent-400's light
+     theme value, pinned, for markers and strokes drawn on that surface. */
+  --color-accent-surface: #172b3f;
+  --color-on-accent-surface: #ffffff;
+  --color-on-accent-surface-muted: #8dbdec;
+
+  /* A modal scrim dims toward black in both themes — it is not a themed
+     foreground/background pairing, so it does not live in the ramp above. */
+  --color-scrim: rgba(43, 43, 45, 0.5);
 
   --font-heading: "Barlow Condensed", system-ui, sans-serif;
   --font-heading-weight: 600;
@@ -61,6 +79,64 @@
   --shadow-sm: 0 1px 2px color-mix(in srgb, #2b2b2d 14%, transparent);
   --shadow-md: 0 3px 10px color-mix(in srgb, #2b2b2d 16%, transparent);
   --shadow-lg: 0 12px 32px color-mix(in srgb, #2b2b2d 22%, transparent);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Dark theme — same token names, same roles, values retuned. The app sets
+   `<html data-theme="dark">` (web/src/theme) to opt in; nothing below this
+   selector is read anywhere else, so every component that already consumes
+   var(--*) repaints correctly with no component change.
+
+   The ramps invert rather than reuse the light values: step 100 stays "the
+   step closest to the ground" and step 900 stays "the step closest to the
+   text colour" in both themes, only what "ground" and "text" mean has
+   flipped. This is what keeps the accent-100/accent-900 tint-and-text
+   pairings (decision panels, the active rail item) and the theme-matrix
+   heatmap's `step >= 500 ? var(--color-bg) : var(--color-text)` rule
+   (web/src/screens/theme/Sparkline.jsx) correct in both themes without
+   touching either — only the token values below changed. Contrast for every
+   real pairing in the app is checked in web/test/accessibility.test.jsx. */
+:root[data-theme="dark"] {
+  --color-bg: #121417;
+  --color-surface: #1e2125;
+  --color-text: #f1f2f3;
+  --color-accent: #6ea3d8;
+  --color-accent-2: #84a8cd;
+  --color-divider: color-mix(in srgb, #f1f2f3 16%, transparent);
+
+  --color-neutral-100: #1b1e22;
+  --color-neutral-200: #292e32;
+  --color-neutral-300: #3f444b;
+  --color-neutral-400: #575e66;
+  --color-neutral-500: #747c86;
+  --color-neutral-600: #969ba2;
+  --color-neutral-700: #b9bcc1;
+  --color-neutral-800: #dcdee0;
+  --color-neutral-900: #eef0f1;
+
+  --color-accent-100: #152433;
+  --color-accent-200: #203d5b;
+  --color-accent-300: #32699f;
+  --color-accent-400: #3270ae;
+  --color-accent-500: #468ace;
+  --color-accent-600: #6ea3d8;
+  --color-accent-700: #a0c2e3;
+  --color-accent-800: #cfdeed;
+  --color-accent-900: #eef2f6;
+
+  --color-accent-2-100: #1c2936;
+  --color-accent-2-200: #2a425a;
+  --color-accent-2-300: #395c7f;
+  --color-accent-2-400: #4675a4;
+  --color-accent-2-500: #608fbe;
+  --color-accent-2-600: #84a8cd;
+  --color-accent-2-700: #aec4db;
+  --color-accent-2-800: #d7e0ea;
+  --color-accent-2-900: #eff2f5;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.55);
+  --shadow-md: 0 3px 10px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.65);
 }
 
 body {
@@ -262,7 +338,7 @@ textarea.input { min-height: 90px; resize: vertical; }
 .dialog-backdrop {
   position: fixed; inset: 0; display: grid; place-items: center;
   padding: var(--space-4);
-  background: color-mix(in srgb, var(--color-neutral-900) 50%, transparent);
+  background: var(--color-scrim);
 }
 .dialog {
   width: min(440px, 100%); display: flex; flex-direction: column; gap: var(--space-3);

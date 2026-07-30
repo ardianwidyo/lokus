@@ -154,20 +154,24 @@
   color: var(--color-neutral-500);
 }
 
-/* ── Language switch ────────────────────────────────────────────────────────
+/* ── Language and theme switches ────────────────────────────────────────────
    design/SCREENS.md, "Pemilih bahasa": the rail footer, moving to the content
-   header below 900px where the rail is gone.
+   header below 900px where the rail is gone. The theme switch (light/dark)
+   sits right below it and shares every rule — same idiom, same footprint —
+   rather than introducing a second visual language for "pick one of two".
 
    `.seg` in tokens.css marks the chosen option with a solid accent block, which
    is right for a filter sitting on a wide panel and too loud for a 238px rail
    footer. The rail already has an idiom for "this one is current" — accent-100
    behind accent-900, the same as an active nav item — so the switch borrows that
    rather than introducing a third treatment. No new values; both are tokens. */
-.lang-switch {
+.lang-switch,
+.theme-switch {
   align-self: flex-start;
 }
 
-.lang-opt {
+.lang-opt,
+.theme-opt {
   padding: 5px 10px;
   font-family: var(--font-heading);
   font-weight: var(--font-heading-weight);
@@ -177,12 +181,16 @@
   color: var(--color-neutral-600);
 }
 
-.lang-opt:has(input:checked) {
+.lang-opt:has(input:checked),
+.theme-opt:has(input:checked) {
   background: var(--color-accent-100);
   color: var(--color-accent-900);
 }
 
 .rail-lang {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   margin: auto 0 0;
   padding: 14px 16px 0;
 }
@@ -195,7 +203,8 @@
   padding-top: 10px;
 }
 
-.header-lang {
+.header-lang,
+.header-theme {
   display: none;
 }
 
@@ -937,8 +946,8 @@
   max-width: 74%;
   margin: 0;
   padding: 10px 14px;
-  background: var(--color-accent-900);
-  color: var(--color-bg);
+  background: var(--color-accent-surface);
+  color: var(--color-on-accent-surface);
   font-size: 14.5px;
   line-height: 1.5;
 }
@@ -1146,13 +1155,15 @@
     padding: 14px 16px;
   }
 
-  /* The rail is gone, so the switch has to be reachable here or it is reachable
-     nowhere on a phone — and AC-8.1 says every screen. */
-  .header-lang {
+  /* The rail is gone, so the switches have to be reachable here or they are
+     reachable nowhere on a phone — and AC-8.1 says every screen. */
+  .header-lang,
+  .header-theme {
     display: inline-flex;
   }
 
-  .lang-opt {
+  .lang-opt,
+  .theme-opt {
     /* Touch target ≥ 44px, per design/UI-GUIDELINES.md "Responsif". */
     min-height: 44px;
     padding: 5px 14px;
@@ -1735,17 +1746,17 @@
 }
 
 .map-bg {
-  fill: var(--color-accent-900);
+  fill: var(--color-accent-surface);
 }
 
 .map-grid-lines line {
-  stroke: rgba(242, 242, 243, 0.1);
+  stroke: color-mix(in srgb, var(--color-on-accent-surface) 10%, transparent);
   stroke-width: 1;
 }
 
 .map-radius {
   fill: none;
-  stroke: var(--color-accent-400);
+  stroke: var(--color-on-accent-surface-muted);
   stroke-width: 1.5;
   stroke-dasharray: 5 4;
   opacity: 0.45;
@@ -1754,39 +1765,39 @@
 /* Circle = competitor, square = own branch. Shape, not hue. */
 .map-competitor {
   fill: none;
-  stroke: var(--color-accent-400);
+  stroke: var(--color-on-accent-surface-muted);
   stroke-width: 1.5;
 }
 
 .map-competitor.is-new {
-  fill: var(--color-accent-400);
+  fill: var(--color-on-accent-surface-muted);
 }
 
 .map-outlet rect {
   fill: none;
-  stroke: var(--color-bg);
+  stroke: var(--color-on-accent-surface);
   stroke-width: 1.5;
   cursor: pointer;
 }
 
 .map-outlet.is-selected rect {
-  fill: var(--color-bg);
+  fill: var(--color-on-accent-surface);
 }
 
 .map-outlet:focus-visible {
-  outline: 2px solid var(--color-accent-300);
+  outline: 2px solid var(--color-on-accent-surface-muted);
   outline-offset: 2px;
 }
 
 .map-label {
-  fill: var(--color-bg);
+  fill: var(--color-on-accent-surface);
   font-family: var(--font-heading);
   font-weight: var(--font-heading-weight);
   font-size: 15px;
 }
 
 .map-sublabel {
-  fill: rgba(242, 242, 243, 0.62);
+  fill: color-mix(in srgb, var(--color-on-accent-surface) 62%, transparent);
   font-size: 11.5px;
 }
 
@@ -2382,7 +2393,7 @@
 
 .radius-map .map-self {
   fill: none;
-  stroke: var(--color-bg);
+  stroke: var(--color-on-accent-surface);
   stroke-width: 1.5;
 }
 

@@ -1,6 +1,7 @@
 import { SessionProvider, useSession } from './app/SessionContext.jsx';
 import { useRoute } from './app/useRoute.js';
 import { LocaleProvider } from './i18n/index.js';
+import { ThemeProvider } from './theme/index.js';
 import { AdminScreen } from './screens/AdminScreen.jsx';
 import { ActionBoardScreen } from './screens/ActionBoardScreen.jsx';
 import { BriefingScreen } from './screens/BriefingScreen.jsx';
@@ -24,7 +25,8 @@ import { AppShell } from './shell/AppShell.jsx';
  * `LocaleProvider` wraps `SessionProvider` here rather than in `main.jsx`, so
  * that a test rendering `<App>` alone — every existing screen test does — gets
  * the language context `SessionContext` now depends on, without every test file
- * needing its own wrapper.
+ * needing its own wrapper. `ThemeProvider` sits outside it for the same reason
+ * `LocaleProvider` does: the theme is the reader's, not the tenant's.
  */
 export function App({
   sessionSource = null,
@@ -37,23 +39,26 @@ export function App({
   knowledgeSource = null,
   env = undefined,
   initialLocale = null,
+  initialTheme = null,
 }) {
   return (
-    <LocaleProvider initialLocale={initialLocale}>
-      <SessionProvider
-        source={sessionSource}
-        reputationSource={reputationSource}
-        agentSource={agentSource}
-        briefingSource={briefingSource}
-        adminSource={adminSource}
-        locationSource={locationSource}
-        outletSource={outletSource}
-        knowledgeSource={knowledgeSource}
-        {...(env ? { env } : {})}
-      >
-        <Console />
-      </SessionProvider>
-    </LocaleProvider>
+    <ThemeProvider initialTheme={initialTheme}>
+      <LocaleProvider initialLocale={initialLocale}>
+        <SessionProvider
+          source={sessionSource}
+          reputationSource={reputationSource}
+          agentSource={agentSource}
+          briefingSource={briefingSource}
+          adminSource={adminSource}
+          locationSource={locationSource}
+          outletSource={outletSource}
+          knowledgeSource={knowledgeSource}
+          {...(env ? { env } : {})}
+        >
+          <Console />
+        </SessionProvider>
+      </LocaleProvider>
+    </ThemeProvider>
   );
 }
 

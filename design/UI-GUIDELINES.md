@@ -18,7 +18,7 @@ sudut.
 - Sudut siku (radius 0), latar transparan pada kartu — kartu adalah gambar
   garis, bukan permukaan berisi.
 - Satu-satunya objek padat: tombol primer (`.btn-primary`, isian aksen).
-- Field steel gelap (`--color-accent-900`) hanya untuk permukaan peta.
+- Field steel gelap (`--color-accent-surface`) hanya untuk permukaan peta.
 - Angka dan judul Barlow Condensed 600; badan teks Barlow.
 - Heatmap dan intensitas memakai satu ramp aksen (200 → 900).
 - Status memakai bentuk dan tag, bukan merah/hijau.
@@ -36,20 +36,20 @@ sudut.
 ## Token yang paling sering dipakai
 
 ```css
---color-bg: #f2f2f3;         /* ground */
---color-surface: #e9e9ea;    /* input */
+--color-bg: #ffffff;         /* ground */
+--color-surface: #f5f5f5;    /* input */
 --color-text: #1d1f20;
---color-accent: #5980a6;
+--color-accent: #347dc5;
 --color-divider: color-mix(in srgb, #1d1f20 16%, transparent);
 
 --color-accent-100: #eef6ff;  /* panel keputusan, highlight baris terpilih */
 --color-accent-300: #b5d9fd;  /* border panel keputusan */
---color-accent-400: #94bce3;  /* marker di peta, nomor besar */
---color-accent-600: #597ea3;  /* hover tombol primer */
---color-accent-700: #416180;  /* teks aksen ukuran badan (kontras aman) */
---color-accent-900: #1d2d3d;  /* field peta, gelembung chat pengguna */
+--color-accent-400: #8dbdec;  /* nomor besar, border-left blok draft */
+--color-accent-600: #347dc5;  /* hover tombol primer */
+--color-accent-700: #2a5e92;  /* teks aksen ukuran badan (kontras aman) */
+--color-accent-900: #172b3f;  /* text-on-tint (panel keputusan, item rail aktif) */
 
---color-neutral-200: #e7e7ea; /* skeleton, track bar */
+--color-neutral-200: #eff0f1; /* skeleton, track bar */
 --color-neutral-600: #7a7a7d; /* label kicker */
 --color-neutral-700: #5d5d60; /* teks sekunder */
 
@@ -59,6 +59,18 @@ sudut.
 
 Teks berukuran badan dalam warna aksen wajib memakai `--color-accent-700`
 (aksen dasar hanya 3:1 — cukup untuk ikon, chrome, dan teks besar).
+
+Semua token di atas ikut berbalik nilai antara tema terang dan gelap — lihat
+"Tema terang / gelap" di bawah. Tiga token TIDAK ikut berbalik, karena
+perannya bukan pasangan latar/teks yang mengikuti tema, melainkan satu
+permukaan aksen yang sengaja tetap sama di kedua tema:
+
+```css
+--color-accent-surface: #172b3f;          /* field peta, gelembung chat pengguna */
+--color-on-accent-surface: #ffffff;       /* label di atas field peta */
+--color-on-accent-surface-muted: #8dbdec; /* marker & radius di atas field peta */
+--color-scrim: rgba(43, 43, 45, .5);      /* latar belakang dialog */
+```
 
 ## Kelas komponen yang tersedia
 
@@ -105,12 +117,16 @@ padding 3px 8px, format `01 supervisor.route`. Langkah guardrail memakai border
 `--color-accent-600` (min-width 16px) + nama tool 14px + keterangan 12.5px
 `--color-neutral-600`, dipisah `border-top:1px solid var(--color-divider)`.
 
-**Permukaan peta.** Latar `--color-accent-900`. Grid garis
-`rgba(242,242,243,.1)`, jalan `.3` tebal 2–2.5px, radius analisis sebagai
-lingkaran dashed `#94bce3` 45% opasitas. Marker: kotak 13px = cabang sendiri,
-lingkaran r=6 = pesaing, segitiga = kandidat. Label putih Barlow Condensed 17px
-+ baris detail 12px `rgba(242,242,243,.62)`. Tanda sudut di atas field gelap
-memakai `style="color:rgba(242,242,243,.6)"`.
+**Permukaan peta.** Latar `--color-accent-surface` — tetap sama di kedua tema
+(lihat "Token yang paling sering dipakai" di atas). Grid garis
+`color-mix(in srgb, var(--color-on-accent-surface) 10%, transparent)`, jalan
+`.3` tebal 2–2.5px, radius analisis sebagai lingkaran dashed
+`var(--color-on-accent-surface-muted)` 45% opasitas. Marker: kotak 13px =
+cabang sendiri, lingkaran r=6 = pesaing, segitiga = kandidat. Label
+`--color-on-accent-surface` Barlow Condensed 17px + baris detail 12px
+`color-mix(in srgb, var(--color-on-accent-surface) 62%, transparent)`. Tanda
+sudut di atas field gelap memakai `style="color:rgba(255,255,255,.6)"` — tetap
+putih di kedua tema, karena field itu sendiri tidak berubah.
 
 **Matriks tema × cabang.** `.table`; sel angka memakai latar dari ramp aksen
 (200 → 800) dan teks `--color-bg` bila latar ≥ 500. Kolom terakhir sparkline
@@ -151,6 +167,32 @@ tidak ada yang tertinggal.
   `--color-accent-100` + `border-left: 2px solid var(--color-accent)`.
 - Disabled: opacity .45.
 
+## Tema terang / gelap
+
+LOKUS punya dua tema, dipilih pembaca, bukan ditentukan sistem operasinya
+saja. `web/src/theme` (mengikuti bentuk `web/src/i18n` untuk bahasa persis):
+`ThemeProvider`/`useTheme` menyimpan pilihan, `themeStorage.js` membaca/menulis
+`localStorage` kunci `lokus.theme` (default ke `prefers-color-scheme` saat
+belum pernah memilih), dan `ThemeSwitcher` adalah dua radio dalam satu
+`radiogroup` — sama seperti `LanguageSwitcher`, dipasang di footer rail dan di
+header konten di bawah 900px.
+
+Mekanismenya satu atribut: `ThemeProvider` menulis
+`<html data-theme="light|dark">`, dan `design/tokens.css` mendefinisikan
+seluruh ramp warna dua kali — sekali di `:root`, sekali di
+`:root[data-theme="dark"]`. Karena setiap komponen sudah membaca `var(--*)`,
+tidak ada komponen yang perlu tahu temanya sendiri; mengganti tema mengganti
+warna di seluruh aplikasi lewat CSS saja.
+
+Aturan buat token baru: **jangan** memakai `--color-bg` atau `--color-text`
+sebagai proksi "putih"/"gelap" yang tetap — keduanya berbalik nilai per tema.
+Untuk elemen yang sengaja permanen gelap (permukaan peta, gelembung chat
+pengguna), pakai `--color-accent-surface` +
+`--color-on-accent-surface`/`--color-on-accent-surface-muted`, yang memang
+tidak berbalik. Setiap ramp/pasangan baru yang ditambahkan wajib punya kasus
+kontras di `web/test/accessibility.test.jsx`, satu untuk tema terang dan satu
+untuk tema gelap.
+
 ## Responsif
 
 - ≥ 1200px: rail 238px + konten; grid 3–4 kolom.
@@ -172,4 +214,7 @@ tidak ada yang tertinggal.
 > `design/UI-GUIDELINES.md`. Setiap klaim AI menempelkan chip sumber. Copy UI
 > tidak pernah ditulis langsung di komponen: ia dibaca lewat `useT()` dari
 > `web/src/i18n`, dengan Indonesia diambil apa adanya dari `design/SCREENS.md`
-> dan Inggris sebagai terjemahannya.
+> dan Inggris sebagai terjemahannya. Aplikasi punya tema terang dan gelap,
+> dipilih pembaca lewat `web/src/theme` (`ThemeSwitcher`, bentuknya sama
+> dengan `LanguageSwitcher`) — jangan pernah menulis warna literal, karena
+> `design/tokens.css` sudah mendefinisikan kedua tema lewat token yang sama.

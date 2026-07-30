@@ -27,6 +27,12 @@ ada dua daftar yang bisa berselisih.
   `--color-accent-900`. Tidak ada bendera dan tidak ada dropdown — dua pilihan
   tidak perlu disembunyikan. Di bawah 900px kontrol ini pindah ke header konten,
   sebelah tombol **Jalankan agen**, karena rail tidak tampil.
+- **Pemilih tema**, tepat di bawah pemilih bahasa dan berbagi treatment visual
+  yang sama persis: dua tombol **Terang** dan **Gelap** dalam satu
+  `radiogroup`. Default mengikuti preferensi sistem operasi pembaca sampai
+  pembaca memilih sendiri, lalu pilihan itu yang menang selamanya (sama
+  seperti bahasa). Sama seperti pemilih bahasa, pindah ke header konten di
+  bawah 900px.
 - **Kaki rail**: "Prototipe desain · data contoh / Siklus agen terakhir 06.00 WIB"
   11px `--color-neutral-600`.
 - **Header konten** (sticky, `padding: 18px 28px`, border bawah): kicker

@@ -2,6 +2,7 @@ import { Play } from 'lucide-react';
 
 import { screenNumber, screenSubtitleKey, screenTitleKey } from '../app/screens.js';
 import { LanguageSwitcher, useT } from '../i18n/index.js';
+import { ThemeSwitcher } from '../theme/index.js';
 
 /**
  * Sticky content header: kicker "LAYAR nn" · title 26px · right-aligned
@@ -11,9 +12,9 @@ import { LanguageSwitcher, useT } from '../i18n/index.js';
  * — screen 01 has no tenant yet, so there is nothing to run against — and
  * where the caller says the current role may not run one.
  *
- * The language switch is mounted here too, hidden by CSS above 900px where the
- * rail carries it. Below that the rail is gone, and a control reachable on no
- * screen is not a control (AC-8.1).
+ * The language and theme switches are mounted here too, hidden by CSS above
+ * 900px where the rail carries them. Below that the rail is gone, and a
+ * control reachable on no screen is not a control (AC-8.1).
  */
 export function ScreenHeader({ screen, onRunAgent = null, canRunAgent = true }) {
   const t = useT();
@@ -28,6 +29,7 @@ export function ScreenHeader({ screen, onRunAgent = null, canRunAgent = true }) 
       <p className="screen-subtitle">{t(screenSubtitleKey(screen))}</p>
 
       <LanguageSwitcher className="header-lang" />
+      <ThemeSwitcher className="header-theme" />
 
       {screen.showRunAgent === false || !canRunAgent ? null : (
         <button

@@ -32,6 +32,11 @@ export const en = {
     languageEn: 'EN',
     languageIdFull: 'Bahasa Indonesia',
     languageEnFull: 'English',
+    themeLabel: 'Console theme',
+    themeLight: 'Light',
+    themeDark: 'Dark',
+    themeLightFull: 'Light theme',
+    themeDarkFull: 'Dark theme',
   },
 
   bottomNav: {
