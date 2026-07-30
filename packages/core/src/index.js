@@ -18,6 +18,7 @@ export {
   isGroundedText,
   writeGroundedAnswer,
 } from './knowledge/groundedWriter.js';
+export { buildReplyPrompt, checkReplyShape, writeReply } from './reputation/writeReply.js';
 export { idFactor, idInteger, idNumber } from './lib/format.js';
 export { isGrounded, toolResult } from './lib/toolResult.js';
 export { TenantScopeError, assertTenant, scopeToTenant } from './lib/tenantScope.js';

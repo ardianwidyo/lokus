@@ -25,7 +25,7 @@ import { guardrailCheck } from '../reputation/guardrails.js';
  * Every method takes the tenant id first and passes it down; nothing here can
  * be called without one.
  */
-export function createReputationService({ gbp, approvalStore = null } = {}) {
+export function createReputationService({ gbp, approvalStore = null, gemini = null } = {}) {
   const store = approvalStore ?? createMemoryApprovalStore();
 
   const reviewsByTenant = new Map();
@@ -41,7 +41,7 @@ export function createReputationService({ gbp, approvalStore = null } = {}) {
   async function draftFor(tenantId, review) {
     const key = `${tenantId}:${review.id}`;
     if (!draftCache.has(key)) {
-      const result = await draftReply({ tenantId, review });
+      const result = await draftReply({ tenantId, review, gemini });
       draftCache.set(key, result.data);
     }
     return draftCache.get(key);

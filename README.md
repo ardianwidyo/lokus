@@ -192,7 +192,7 @@ pernah dipanggil adalah klaim yang tidak bisa dipertanggungjawabkan.
 
 | Berjalan sungguhan | Belum tersambung |
 |---|---|
-| **Gemini** (`gemini-2.0-flash` / `-lite`) menulis draft balasan dan jawaban bersitasi lewat AI Studio REST — [`gemini.js`](packages/core/src/adapters/gemini.js) | **Vertex AI Agent Engine** & **Vertex AI Search**: butuh billing account aktif |
+| **Gemini** (`gemini-2.0-flash` / `-lite`) menulis draft balasan (layar 06) dan jawaban bersitasi (layar 12) lewat AI Studio REST — [`gemini.js`](packages/core/src/adapters/gemini.js) | **Vertex AI Agent Engine** & **Vertex AI Search**: butuh billing account aktif |
 | Supervisor: routing, delegasi paralel, merge, guardrail, jejak langkah bernomor | **BigQuery + GIS**: klasterisasi, tren, dan jarak dihitung deterministik di `packages/core` |
 | Retrieval berambang 0,70, penolakan, dan pencatatan celah pengetahuan | **Firestore** & **Cloud Storage**: state di memori |
 | Isolasi tenant, RBAC, guardrail, batas biaya | **Business Profile** & **Places**: adapter sengaja tidak diimplementasi, bukan dipalsukan |
@@ -251,7 +251,7 @@ test sehingga layar baru yang lupa satu state akan menggagalkan build.
 
 | Bukti | Di mana |
 |---|---|
-| **873 test** lulus di 4 workspace | `npm test` |
+| **886 test** lulus di 4 workspace | `npm test` |
 | **24 dari 24 acceptance criteria** di spec.md punya test yang menyebutnya per nama | `grep -r AC- */test eval` |
 | **Eval agen**: 60 kasus, 5 ambang konstitusi, CI memblokir merge bila satu gagal | [`eval/`](eval/) · `npm run eval` |
 | **Terraform**: Cloud Run, Firestore, BigQuery, Storage, Secret Manager, Scheduler, WIF | [`infra/`](infra/) |

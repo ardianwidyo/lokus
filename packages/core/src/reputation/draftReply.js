@@ -3,6 +3,7 @@ import { findOutlet } from '../domain/outlets.js';
 import { assertTenant } from '../lib/tenantScope.js';
 import { toolResult } from '../lib/toolResult.js';
 import { CONFIDENCE_THRESHOLD, firstSentence, searchPassages } from '../knowledge/retrieval.js';
+import { writeReply } from './writeReply.js';
 
 /**
  * Brand-voice reply drafting, grounded in the SOP.
@@ -112,6 +113,9 @@ export async function draftReply({
   passages = null,
   threshold = CONFIDENCE_THRESHOLD,
   gapLog = null,
+  // Absent by default: the assembled template is what the public demo sends.
+  gemini = null,
+  tier = undefined,
 } = {}) {
   const startedAt = Date.now();
   assertTenant(tenantId);
@@ -179,7 +183,9 @@ export async function draftReply({
     ? `Terima kasih sudah memberi tahu, ${address.salutation} ${address.name}.`
     : 'Terima kasih sudah memberi tahu kami.';
 
-  const text = [
+  // The assembled draft: grounded by construction, never wrong, only stiff.
+  // It is also the fallback for everything the model might get wrong below.
+  const assembled = [
     opening,
     fill(framing.acknowledgement),
     actionSentence(classified.theme, sopPassage, outlet),
@@ -187,6 +193,18 @@ export async function draftReply({
   ]
     .filter(Boolean)
     .join(' ');
+
+  const written = await writeReply({
+    gemini,
+    review,
+    sopPassage,
+    voicePassage,
+    outlet,
+    address,
+    tier,
+    fallbackText: assembled,
+  });
+  const text = written.text;
 
   const citations = [sopPassage, voicePassage].filter(Boolean).map((passage) => ({
     docId: passage.docId,
@@ -206,6 +224,12 @@ export async function draftReply({
       citations,
       rejectedCount,
       requiresApproval: review.rating <= 2,
+      // Who wrote it, and whether the generated text survived its checks.
+      // Constitution II is unaffected either way: a 1–2 star reply still waits
+      // for a named human.
+      generated: written.generated,
+      shapeChecks: written.checks,
+      generationStep: written.step,
       prompt: buildPrompt({ review, outlet, framing, passages: [sopPassage, voicePassage].filter(Boolean) }),
     },
     sources: citations.map((citation) => ({

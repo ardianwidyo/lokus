@@ -71,7 +71,7 @@ export function createServices({
     ticketStore,
     budget,
     supervisor,
-    reputation: createReputationService({ gbp }),
+    reputation: createReputationService({ gbp, gemini }),
     briefing: createBriefingService({ gbp, places, ticketStore }),
     admin: createAdminService({ budget, evaluationReport }),
     location: createLocationService({ places }),
