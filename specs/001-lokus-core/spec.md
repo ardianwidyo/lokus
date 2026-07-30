@@ -117,4 +117,7 @@ real-time streaming ingestion.
 - **Q1** Business Profile API access for the pilot tenant — granted or seeded
   dataset for the demo? (Adapter interface stays the same either way.)
 - **Q2** Which real SOP document can be used in the demo, redacted or not.
-- **Q3** Team name and members for the README and the closing slide.
+- ~~**Q3** Team name and members for the README and the closing slide.~~
+  **Resolved 2026-07-30:** a single entrant, Ardian Widyo Prasetyo. The
+  submission is one person directing the spec and the decisions, with the
+  implementation written by Claude Code against this repository's constitution.

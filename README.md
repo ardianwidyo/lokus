@@ -348,4 +348,13 @@ Dua tempat lain di mana ini terlihat jelas, keduanya di layar 04:
 
 ## Tim
 
-Belum diisi — spec.md Q3 masih terbuka.
+**Ardian Widyo Prasetyo** — peserta tunggal.
+
+Spec, konstitusi, dan setiap keputusan produk di repo ini ditetapkan manusia;
+implementasinya ditulis Claude Code terhadap aturan-aturan itu. Kami menyebutkan
+ini terang-terangan karena dua alasan. Pertama, riwayat commit memperlihatkannya
+sendiri — siapa pun bisa membacanya, jadi menyamarkannya hanya akan merusak
+kredibilitas yang lain. Kedua, cara kerja itulah yang membuat aturan di
+[`constitution.md`](.specify/memory/constitution.md) mengikat: agen yang menulis
+kode tidak boleh menawar prinsipnya, dan setiap penyimpangan harus tercatat di
+`plan.md` beserta alasan dan tanggalnya sebelum kodenya berubah.
