@@ -1,0 +1,75 @@
+name: Pages
+
+# The console is a static SPA that runs the seeded dataset in the browser, so
+# it needs no API, no credentials and no billing account to be useful — every
+# screen works, which makes GitHub Pages a real demo URL rather than a
+# placeholder for one.
+#
+# Same gate as the Cloud Run deploy (constitution VII): nothing ships until CI
+# is green, because a failing eval must never reach a URL a judge will open.
+on:
+  workflow_run:
+    workflows: [CI]
+    branches: [main]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Let a running deploy finish rather than cancelling it: a half-uploaded
+# artifact is worse than a slightly stale page.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build and publish the console
+    runs-on: ubuntu-latest
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build the console for a project-site subdirectory
+        # Pages serves this repo at /<repo>/, so asset URLs and the router both
+        # need that prefix. vite.config.js also writes dist/404.html, which is
+        # how a static host answers a deep link like /lokus/briefing.
+        env:
+          LOKUS_BASE_PATH: /${{ github.event.repository.name }}/
+        run: npm run build --workspace web
+
+      - name: Fail if the SPA fallback is missing
+        # Without 404.html every link except the front page returns a GitHub
+        # error page. That failure is invisible in the build log and obvious to
+        # a judge, so it is checked here rather than discovered later.
+        run: test -f web/dist/404.html
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web/dist
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Report the URL
+        run: echo "Console published to ${{ steps.deployment.outputs.page_url }}"

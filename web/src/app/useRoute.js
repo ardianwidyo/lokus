@@ -1,11 +1,16 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { stripBase, withBase } from './basePath.js';
 import { DEFAULT_PATH, SCREENS, findScreenByPath } from './screens.js';
 
 /**
  * Fourteen static paths, no nested routes, no data loaders — a router library
  * would be a dependency plan.md does not list, for a problem this size.
  * History API plus a popstate listener is the whole requirement.
+ *
+ * Paths are always the root-relative ones in screens.js. Where the app happens
+ * to be mounted is handled by basePath.js at the two edges, reading and
+ * writing, so that a deployment detail never reaches a screen.
  */
 export function useRoute() {
   const [location, setLocation] = useState(() => ({
@@ -28,10 +33,11 @@ export function useRoute() {
   const navigate = useCallback((target) => {
     const [nextPath, query = ''] = String(target).split('?');
     const search = query ? `?${query}` : '';
+    const href = withBase(nextPath);
 
-    if (nextPath === window.location.pathname && search === window.location.search) return;
+    if (href === window.location.pathname && search === window.location.search) return;
 
-    window.history.pushState({}, '', `${nextPath}${search}`);
+    window.history.pushState({}, '', `${href}${search}`);
     setLocation({ path: findScreenByPath(nextPath) ? nextPath : DEFAULT_PATH, search });
   }, []);
 
@@ -45,6 +51,6 @@ export function useRoute() {
 }
 
 function currentPath() {
-  const { pathname } = window.location;
-  return findScreenByPath(pathname) ? pathname : DEFAULT_PATH;
+  const path = stripBase(window.location.pathname);
+  return findScreenByPath(path) ? path : DEFAULT_PATH;
 }
