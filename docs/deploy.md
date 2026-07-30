@@ -1,8 +1,24 @@
 # Deploy — LOKUS (T057)
 
-Two Cloud Run services in `asia-southeast2`: `lokus-api-<env>` and
-`lokus-web-<env>`. Every merge to `main` deploys, once CI is green
-(constitution VII).
+There are two targets, and only one of them is live today.
+
+**GitHub Pages — live at https://ardianwidyo.github.io/lokus/.** The console is
+a static SPA that runs the seeded dataset in the browser, so it needs no API,
+no credentials and no billing account: all fourteen screens work. This is the
+demo URL. `.github/workflows/pages.yml` builds and publishes it on every green
+CI run, and needs no configuration beyond Pages being enabled with GitHub
+Actions as the source.
+
+Two details make it work, both invisible in development. The build takes
+`LOKUS_BASE_PATH=/<repo>/` so assets and the router agree on where the app is
+mounted, and it writes `dist/404.html` so a static host can answer a deep link
+like `/lokus/briefing`. The workflow fails if that file is missing.
+
+**Cloud Run — not applied.** Two services in `asia-southeast2`,
+`lokus-api-<env>` and `lokus-web-<env>`, deploying on every green merge to
+`main` (constitution VII). The Terraform below is validated against the real
+Google provider but has never been applied, because the project's billing
+account is a closed trial. Everything from here down is that path.
 
 ## One-time setup
 
