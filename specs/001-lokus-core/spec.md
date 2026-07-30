@@ -2,7 +2,9 @@
 
 **Feature branch**: `001-lokus-core`
 **Status**: ready for planning
-**Language**: product UI in Bahasa Indonesia; code and docs in English
+**Language**: product UI in Bahasa Indonesia (default) or English, chosen by the
+reader — see US-8 for what the choice does and does not translate. Code and docs
+in English.
 
 ## Problem
 
@@ -96,6 +98,39 @@ that combines reviews, SOP, and location context.
 - **AC-7.3** The answer offers at least one action (create ticket, open
   reviews, show on map).
 - **AC-7.4** Per-answer model cost is displayed.
+
+### US-8 Console language
+As U3 and U4, I read the console in English while my branches keep operating in
+Indonesian, so the interface language must be my choice and must not change the
+language customers and branch staff are addressed in.
+
+The choice governs **the console's own words** — everything LOKUS wrote. It does
+not govern **content that belongs to the tenant's world**. Three layers, and the
+boundary between them is a product decision, not a shortcut:
+
+| Layer | Follows the locale? | Examples |
+|---|---|---|
+| Console chrome and static copy | yes | nav, screen titles, buttons, the four data states, table headers |
+| Agent-authored copy | yes | briefing timeline and decisions, metric labels, guardrail check explanations, site-scout reasoning, comparison conclusions, refusal reasons, ticket status columns |
+| Tenant content | **no** | customer review text, SOP passages and their quotations, the public reply drafted for a review, document titles |
+
+- **AC-8.1** A language control is reachable from every screen and offers exactly
+  Indonesian and English. Indonesian is the default for a reader who has never
+  chosen.
+- **AC-8.2** Choosing a language re-renders the console immediately, persists the
+  choice across reloads, and sets `<html lang>` to match.
+- **AC-8.3** Numbers and dates follow the chosen locale: `3,04` and
+  `30 Juli 2026` in Indonesian, `3.04` and `30 July 2026` in English. No screen
+  mixes the two conventions.
+- **AC-8.4** Agent-authored copy served by the API follows the locale the console
+  requested, and the locale travels on the request rather than being inferred
+  server-side.
+- **AC-8.5** A reply drafted for a customer review stays in Indonesian whatever
+  the console language is, and a cited answer quotes its SOP passage verbatim in
+  the language the document is written in. The console may explain such content
+  in English; it may not translate it.
+- **AC-8.6** Neither dictionary has a key the other lacks, and the check is
+  automated rather than reviewed by eye.
 
 ## Success metrics
 

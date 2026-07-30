@@ -126,3 +126,17 @@ One commit per task, prefixed with the task id.
   and the 0.70 threshold, and a draft whose claims lost their citations is
   refused rather than sent. With no key the deterministic path runs unchanged,
   which is what the public demo does. [AC-3.2, AC-3.4, AC-4.1, AC-4.2]
+- **T062** Agent-authored copy learns a locale. One translator and two
+  dictionaries in `packages/core/src/i18n`, a `locale` parameter on every
+  function that writes a sentence a reader sees, and locale-aware number
+  formatting replacing the `.replace('.', ',')` calls. The API reads
+  `Accept-Language`, normalises it to `id` or `en`, and passes it to the
+  services. Tenant content — review text, SOP passages, the public reply — is
+  deliberately left alone, and `answerActions` stops recovering the leading theme
+  by regex over Indonesian prose. [AC-8.3, AC-8.4, AC-8.5, AC-8.6]
+- **T063** The console gets the switch. `web/src/i18n` holds the chrome and
+  screen copy for both locales, a `LocaleProvider` persists the choice and syncs
+  `<html lang>`, and the rail carries the control so it is reachable from all
+  fourteen screens. Every hardcoded Indonesian string in `web/src` moves into the
+  dictionaries — the four states included — and the HTTP client sends the locale
+  so T062 answers in it. [AC-8.1, AC-8.2, AC-8.3, AC-8.6]

@@ -3,6 +3,13 @@
 Prototipe: `design/reference/03-aplikasi-14-layar.dc.html` (klik rail kiri untuk
 pindah layar). Copy Indonesia di dokumen ini sudah final — pakai apa adanya.
 
+Sejak US-8 konsol punya dua bahasa. Copy Indonesia di dokumen ini tetap **sumber
+kebenaran**: ia yang ditulis lebih dulu, dan Inggris adalah terjemahan yang
+ditulis terhadapnya, bukan sebaliknya. Kalau keduanya berbeda arti, yang
+Indonesia yang benar dan terjemahannya yang salah. Padanan Inggris tinggal di
+`web/src/i18n/messages.en.js`, bukan di dokumen ini — satu tempat, supaya tidak
+ada dua daftar yang bisa berselisih.
+
 ## Shell (semua layar)
 
 - **Rail kiri**, lebar 238px, `border-right: 1px solid var(--color-divider)`,
@@ -14,6 +21,12 @@ pindah layar). Copy Indonesia di dokumen ini sudah final — pakai apa adanya.
   Condensed, padding `7px 16px`. Aktif: latar `--color-accent-100`, teks
   `--color-accent-900`, `border-left: 2px solid var(--color-accent)`. Hover:
   latar `--color-accent-100`.
+- **Pemilih bahasa** di kaki rail, di atas baris keterangan: dua tombol `ID` dan
+  `EN` dalam satu kelompok `radiogroup`, 11px Barlow Condensed uppercase, kotak
+  hairline seperti `.seg`. Yang aktif memakai latar `--color-accent-100` + teks
+  `--color-accent-900`. Tidak ada bendera dan tidak ada dropdown — dua pilihan
+  tidak perlu disembunyikan. Di bawah 900px kontrol ini pindah ke header konten,
+  sebelah tombol **Jalankan agen**, karena rail tidak tampil.
 - **Kaki rail**: "Prototipe desain · data contoh / Siklus agen terakhir 06.00 WIB"
   11px `--color-neutral-600`.
 - **Header konten** (sticky, `padding: 18px 28px`, border bawah): kicker

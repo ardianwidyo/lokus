@@ -4,7 +4,7 @@
 
 | Layer | Choice | Notes |
 |---|---|---|
-| Frontend | React + Vite | single stylesheet: `design/tokens.css` |
+| Frontend | React + Vite | single stylesheet: `design/tokens.css`; copy from `web/src/i18n` |
 | Domain | `packages/core` — plain JS, no cloud SDK | theme clustering, guardrails, draft assembly, scoring, seeded dataset |
 | API | Cloud Run (Node 20 + Fastify) | Identity Platform auth, RBAC middleware |
 | Agents | supervisor + 3 specialised agents in `packages/core` | Vertex AI Agent Engine needs billing; see the 2026-07-30 deviation |
@@ -53,6 +53,46 @@ agent_run(id, tenant_id, intent, steps[{n,tool,args_digest,result_size,ms}],
        latency_ms, cost_idr, guardrail{checks[],passed})
 knowledge_gap(id, tenant_id, question, occurrences, proposed_clause)
 ```
+
+## Localisation
+
+US-8. Two locales, `id` (default) and `en`. The interesting part is not the
+mechanism but where the boundary falls: `packages/core` writes two different
+kinds of string, and only one of them is translatable.
+
+```
+web/src/i18n/          console chrome and static screen copy
+packages/core/src/i18n/  agent-authored copy — labels, reasons, verdicts, conclusions
+(nowhere)              tenant content — review text, SOP passages, public replies
+```
+
+- **One dictionary pair per layer**, `messages.id.js` and `messages.en.js`, keyed
+  by dotted path. `createTranslator` in `packages/core/src/i18n/translate.js` is
+  shared by both layers, so there is one interpolation implementation, not two.
+  Indonesian remains the canonical copy: it comes from `design/SCREENS.md` and
+  English is written against it.
+- **Locale is a parameter, never ambient.** Core functions take
+  `locale = DEFAULT_LOCALE`; nothing reads a module-level global. That keeps the
+  domain pure and lets one API process serve both locales concurrently.
+- **The locale travels on the request** (AC-8.4): the console sends
+  `Accept-Language`, `plugins/locale.js` normalises it against the two supported
+  values, and route handlers pass `request.locale` into the services. An
+  unrecognised or absent header is Indonesian, never an error.
+- **Formatting is locale-aware, not string surgery.** `lib/format.js` keeps its
+  `idNumber` / `idFactor` / `idInteger` names as Indonesian-bound wrappers, and
+  the new `localeNumber` / `localeFactor` / `localeInteger` / `localeDate` take
+  the locale. The `.replace('.', ',')` calls scattered through the screens go.
+- **Model output is out of scope on purpose.** The Gemini prompts stay
+  Indonesian: a reply is read by an Indonesian customer, and the grounding guard
+  in `knowledge/groundedWriter.js` matches an Indonesian refusal sentinel. Asking
+  the model to answer in English would put the guard and the eval golden set on a
+  language the rest of the layer does not expect, for no operator benefit
+  (AC-8.5).
+
+A finding that carries prose the code later re-parses is the failure mode this
+work exposes: `agents/answerActions.js` recovered the leading theme with
+`/adalah ([A-Za-z\s]+):/` over an Indonesian sentence. Findings now carry
+`themeId` and the regex is gone — copy is for readers, ids are for code.
 
 ## Phases
 

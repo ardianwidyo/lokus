@@ -134,6 +134,13 @@ Perlu izin        "Hubungkan Business Profile" / "LOKUS butuh akses baca review 
                   tulis balasan untuk 42 lokasi milik Anda." / [Hubungkan akun]
 ```
 
+Keempat state ikut bahasa yang dipilih pembaca (US-8). Copy Indonesia di atas
+tetap yang final dan yang ditulis lebih dulu; padanan Inggrisnya ada di
+`web/src/i18n/messages.en.js` dengan kunci yang sama. Jangan menulis copy state
+langsung di komponen — kalau sebuah panel butuh kalimat yang belum ada, kuncinya
+ditambahkan ke **kedua** kamus sekaligus, dan test paritas kamus yang memastikan
+tidak ada yang tertinggal.
+
 ## State interaksi
 
 - Hover tombol primer `--color-accent-600`; press `--color-accent-700`.
@@ -163,4 +170,6 @@ Perlu izin        "Hubungkan Business Profile" / "LOKUS butuh akses baca review 
 > Heatmap memakai satu ramp aksen. Setiap panel data harus punya empat state
 > (memuat, kosong, gagal, perlu izin) dengan copy yang ada di
 > `design/UI-GUIDELINES.md`. Setiap klaim AI menempelkan chip sumber. Copy UI
-> berbahasa Indonesia dan diambil apa adanya dari `design/SCREENS.md`.
+> tidak pernah ditulis langsung di komponen: ia dibaca lewat `useT()` dari
+> `web/src/i18n`, dengan Indonesia diambil apa adanya dari `design/SCREENS.md`
+> dan Inggris sebagai terjemahannya.
