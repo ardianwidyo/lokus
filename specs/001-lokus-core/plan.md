@@ -211,6 +211,32 @@ folded in continuously rather than left to the end.
   isolation and RBAC are covered by tests and by two local commands, not by the
   public URL. README and `docs/deploy.md` say so in those words.
 
+- **2026-07-30 · a dev token may omit the tenant, and screen 01 depends on it.**
+  T058 defined the local token as `dev:<userId>:<tenantId>:<role>`, and the
+  console mints one only once a tenant has been chosen. But the tenant list
+  comes from `GET /v1/session`, which requires authentication — so against a
+  real API the sign-in screen asks for a token that cannot exist until the
+  screen it blocks has been used. The console could never get past screen 01
+  over HTTP, which meant the auth, tenant-isolation and RBAC layers T059 exists
+  to exercise were still only reachable from tests. README told readers to run
+  it that way; a judge following those instructions met an empty screen with an
+  error state.
+
+  `dev:<userId>` is now also valid. It authenticates a user and carries the
+  memberships Identity Platform would carry for the demo account — the three
+  seeded tenants with the roles the directory already documents (Nusa Retail
+  manager, Klinik Sehat Prima viewer, Dealer Arta Motor admin). That is the
+  point of the mode: it stands in for the identity provider, so it should carry
+  what the provider would.
+
+  Nothing about tenant scoping moves. `withTenant` still requires the
+  `x-lokus-tenant` header and still checks membership against the principal, so
+  a tenant outside the demo directory is refused exactly as before, and the
+  refusal is still indistinguishable from a tenant that does not exist. The
+  mode remains fenced the same three ways: it refuses to boot under
+  `NODE_ENV=production`, nothing selects it unless `LOKUS_AUTH_MODE` is exactly
+  `dev`, and every request under it is logged as unverified.
+
 ## Definition of done (per phase)
 
 1. All tasks in the phase committed with their task-id prefixes.

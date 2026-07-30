@@ -140,3 +140,10 @@ One commit per task, prefixed with the task id.
   fourteen screens. Every hardcoded Indonesian string in `web/src` moves into the
   dictionaries — the four states included — and the HTTP client sends the locale
   so T062 answers in it. [AC-8.1, AC-8.2, AC-8.3, AC-8.6]
+- **T062** The console can actually sign in over HTTP. A dev token without a
+  tenant authenticates a user and carries the demo memberships, so screen 01
+  can list tenants before one is chosen; every tenant-scoped route still checks
+  membership, and a tenant outside the directory is refused as before. Verified
+  through a browser against a running API, not only through tests — the defect
+  this fixes was invisible to a suite that sets the tenant itself.
+  [AC-6.1, AC-6.3]
