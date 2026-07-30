@@ -131,6 +131,9 @@ boundary between them is a product decision, not a shortcut:
   in English; it may not translate it.
 - **AC-8.6** Neither dictionary has a key the other lacks, and the check is
   automated rather than reviewed by eye.
+- **AC-8.7** A rejected action explains itself in the reader's language when the
+  console has copy for the failure, and in Indonesian rather than not at all when
+  it does not. No failure renders as an empty panel or as a bare error code.
 
 ## Success metrics
 

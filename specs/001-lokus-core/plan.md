@@ -78,6 +78,14 @@ packages/core/src/i18n/  agent-authored copy — labels, reasons, verdicts, conc
   `Accept-Language`, `plugins/locale.js` normalises it against the two supported
   values, and route handlers pass `request.locale` into the services. An
   unrecognised or absent header is Indonesian, never an error.
+- **Errors travel as codes, not as prose.** `TicketError`, `LocationScoreError`,
+  `DecisionApprovalError` and the rest keep their Indonesian `message` as a
+  developer-facing default and are *not* threaded with a locale — a throw site
+  four calls deep should not need to know who is reading. The console translates
+  on `error.code`, which is already stable and already what the panel layer
+  switches on, and falls back to `error.message` for a code it has no copy for.
+  That way a new domain error surfaces readable Indonesian instead of a blank
+  panel, and adding its English copy is a dictionary edit with no core change.
 - **Formatting is locale-aware, not string surgery.** `lib/format.js` keeps its
   `idNumber` / `idFactor` / `idInteger` names as Indonesian-bound wrappers, and
   the new `localeNumber` / `localeFactor` / `localeInteger` / `localeDate` take
