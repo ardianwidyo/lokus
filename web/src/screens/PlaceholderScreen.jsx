@@ -1,4 +1,6 @@
 import { DataPanel, PANEL_STATUS } from '../components/states/index.js';
+import { screenSubtitleKey, screenTitleKey } from '../app/screens.js';
+import { useT } from '../i18n/index.js';
 
 /**
  * Every screen the shell can reach but no phase has filled in yet. It renders
@@ -6,23 +8,20 @@ import { DataPanel, PANEL_STATUS } from '../components/states/index.js';
  * required states are wired from the first commit and the screen says honestly
  * which phase builds it.
  */
-const PHASE_NAMES = {
-  P1: 'P1 · Reputasi',
-  P2: 'P2 · Pengetahuan',
-  P3: 'P3 · Lokasi',
-  P4: 'P4 · Orkestrasi',
-  P5: 'P5 · Pengerasan',
-};
-
 export function PlaceholderScreen({ screen }) {
+  const t = useT();
+
   return (
     <DataPanel
       status={PANEL_STATUS.EMPTY}
-      kicker={PHASE_NAMES[screen.phase] ?? screen.phase}
-      title={screen.title}
+      kicker={t(`phase.${screen.phase}`)}
+      title={t(screenTitleKey(screen))}
       empty={{
-        title: 'Layar ini belum dibangun',
-        description: `${screen.subtitle} Panel akan terisi pada fase ${screen.phase}.`,
+        title: t('placeholder.title'),
+        description: t('placeholder.description', {
+          subtitle: t(screenSubtitleKey(screen)),
+          phase: screen.phase,
+        }),
       }}
     />
   );

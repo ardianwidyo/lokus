@@ -53,7 +53,9 @@ describe('Screen 06 · Draft balasan AI', () => {
     const sop = screen.getByText(/SOP Layanan Pelanggan v4 · hal\. 12/);
     const card = sop.closest('.source-card');
 
-    expect(within(card).getByText(/skor 1\.00|skor 0\.\d\d/)).toBeInTheDocument();
+    // Indonesian decimal comma — since US-8 this figure goes through the
+    // locale-aware formatter rather than a raw `.toFixed(2)`.
+    expect(within(card).getByText(/skor 1,00|skor 0,\d\d/)).toBeInTheDocument();
     expect(within(card).getByText(/kasir tambahan/)).toBeInTheDocument();
   });
 

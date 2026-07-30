@@ -71,7 +71,8 @@ describe('Screen 10 · Chat agen (AC-7.2, AC-7.4)', () => {
 
     const answer = await ask('Ringkas keluhan pekan ini');
 
-    expect(within(answer).getByText(/\d+ langkah · [\d.]+ s ·\s*Rp \d+/)).toBeInTheDocument();
+    // Indonesian decimal comma for the latency figure, since US-8.
+    expect(within(answer).getByText(/\d+ langkah · [\d,]+ s ·\s*Rp \d+/)).toBeInTheDocument();
   });
 
   it('tags the sources the answer stands on', async () => {

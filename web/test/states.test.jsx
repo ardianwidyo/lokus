@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render as rtlRender, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -10,6 +10,12 @@ import {
   NeedsPermission,
   PANEL_STATUS,
 } from '../src/components/states/index.js';
+import { LocaleProvider } from '../src/i18n/index.js';
+
+/** Every state component reads its default copy through `useT()`. */
+function render(ui) {
+  return rtlRender(<LocaleProvider>{ui}</LocaleProvider>);
+}
 
 describe('Loading', () => {
   it('shows three skeleton bars at the prescribed widths', () => {

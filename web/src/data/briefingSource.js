@@ -1,9 +1,11 @@
 import {
+  DEFAULT_LOCALE,
   approveBriefingDecision,
   createMemoryTicketStore,
   createMemoryWarehouse,
   createSeededGbpAdapter,
   createSeededPlacesAdapter,
+  networkMetrics,
   runNightlyCycle,
 } from '@lokus/core';
 
@@ -15,9 +17,20 @@ import {
  * actual review text — not a fixture shaped to look like one.
  *
  * The network metric cards are computed from the same review set, so a number
- * on the card and a number in the timeline can never disagree.
+ * on the card and a number in the timeline can never disagree. `networkMetrics`
+ * itself lives in `packages/core/src/services/briefingService.js` — the API's
+ * briefing service uses the identical function, so the four cards cannot drift
+ * between what the seeded console shows and what a deployed one would.
+ *
+ * `locale` is closed over at construction; `SessionContext` rebuilds this source
+ * when the reader's language changes, the same way it rebuilds on a tenant
+ * switch.
  */
-export function createSeededBriefingSource({ tenantId = 'nusa-retail', ticketStore = null } = {}) {
+export function createSeededBriefingSource({
+  tenantId = 'nusa-retail',
+  ticketStore = null,
+  locale = DEFAULT_LOCALE,
+} = {}) {
   const gbp = createSeededGbpAdapter();
   const places = createSeededPlacesAdapter();
   const tickets = ticketStore ?? createMemoryTicketStore();
@@ -29,6 +42,7 @@ export function createSeededBriefingSource({ tenantId = 'nusa-retail', ticketSto
       gbp,
       places,
       warehouse: createMemoryWarehouse(),
+      locale,
     });
     return briefingPromise;
   };
@@ -37,7 +51,7 @@ export function createSeededBriefingSource({ tenantId = 'nusa-retail', ticketSto
     const result = await load();
     const { data } = await gbp.listReviews({ tenantId, limit: 5000 });
 
-    return { ...result, metrics: networkMetrics(data.reviews, result) };
+    return { ...result, metrics: networkMetrics(data.reviews, result, locale) };
   }
 
   /**
@@ -52,53 +66,9 @@ export function createSeededBriefingSource({ tenantId = 'nusa-retail', ticketSto
       approvedBy,
       role,
       ticketStore: tickets,
+      locale,
     });
   }
 
   return { isSeeded: true, briefing, approveDecision, tickets };
-}
-
-/** The four metric cards under the timeline, all derived from the review set. */
-function networkMetrics(reviews, briefing) {
-  const rating = reviews.reduce((sum, review) => sum + review.rating, 0) / (reviews.length || 1);
-  const unanswered = reviews.filter((review) => review.replyState === 'none').length;
-
-  const byOutlet = new Map();
-  for (const review of reviews) {
-    const bucket = byOutlet.get(review.outletId) ?? { sum: 0, count: 0 };
-    bucket.sum += review.rating;
-    bucket.count += 1;
-    byOutlet.set(review.outletId, bucket);
-  }
-
-  const needsAttention = [...byOutlet.values()].filter(
-    (bucket) => bucket.sum / bucket.count < 4,
-  ).length;
-
-  return [
-    {
-      id: 'rating',
-      kicker: 'Rating jaringan',
-      value: rating.toFixed(2).replace('.', ','),
-      note: `rata-rata ${reviews.length} review dalam 8 pekan`,
-    },
-    {
-      id: 'unanswered',
-      kicker: 'Belum dibalas',
-      value: String(unanswered),
-      note: `${briefing.heldForApproval} menunggu persetujuan Anda`,
-    },
-    {
-      id: 'replied',
-      kicker: 'Dibalas otomatis',
-      value: String(briefing.repliesSent),
-      note: 'semua bintang 3–5, tanpa persetujuan manual',
-    },
-    {
-      id: 'attention',
-      kicker: 'Cabang perlu perhatian',
-      value: String(needsAttention),
-      note: `dari ${byOutlet.size} cabang · rating di bawah 4,0`,
-    },
-  ];
 }

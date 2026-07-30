@@ -1,4 +1,4 @@
-import { createKnowledgeService } from '@lokus/core';
+import { DEFAULT_LOCALE, createKnowledgeService } from '@lokus/core';
 
 /**
  * Knowledge data for screens 11 and 12.
@@ -6,14 +6,19 @@ import { createKnowledgeService } from '@lokus/core';
  * One service instance per tenant, so the gap log behind screen 11 is the same
  * one screen 12's refusals write into — a question refused in the answer view
  * appears in the gap report without a reload.
+ *
+ * `locale` is closed over at construction; `SessionContext` rebuilds this
+ * source when the reader's language changes, the same way it rebuilds on a
+ * tenant switch.
  */
-export function createSeededKnowledgeSource({ tenantId = 'nusa-retail' } = {}) {
+export function createSeededKnowledgeSource({ tenantId = 'nusa-retail', locale = DEFAULT_LOCALE } = {}) {
   const service = createKnowledgeService();
 
   return {
     isSeeded: true,
     overview: (forTenantId = tenantId) => service.overview(forTenantId),
-    ask: (forTenantId, question, options) => service.ask(forTenantId, question, options),
+    ask: (forTenantId, question, options) =>
+      service.ask(forTenantId, question, { ...options, locale }),
     ingest: (forTenantId, document) => service.ingest(forTenantId, document),
   };
 }

@@ -1,6 +1,7 @@
 import { Bot, Inbox, Map, Sunrise } from 'lucide-react';
 
 import { BOTTOM_NAV_IDS, SCREENS } from '../app/screens.js';
+import { useT } from '../i18n/index.js';
 
 /**
  * Below 900px the rail collapses to four items, 60px tall, 19px icons with a
@@ -14,18 +15,12 @@ const ICONS = {
   chat: Bot,
 };
 
-const LABELS = {
-  briefing: 'Briefing',
-  peta: 'Peta',
-  review: 'Review',
-  chat: 'Agen',
-};
-
 export function BottomNav({ current, onNavigate }) {
+  const t = useT();
   const items = BOTTOM_NAV_IDS.map((id) => SCREENS.find((screen) => screen.id === id));
 
   return (
-    <nav className="bottom-nav" aria-label="Navigasi utama">
+    <nav className="bottom-nav" aria-label={t('shell.bottomNavLabel')}>
       {items.map((screen) => {
         const Icon = ICONS[screen.id];
         const isActive = screen.id === current.id;
@@ -42,7 +37,7 @@ export function BottomNav({ current, onNavigate }) {
             }}
           >
             <Icon size={19} strokeWidth={1.5} aria-hidden="true" />
-            <span className="bottom-nav-label">{LABELS[screen.id]}</span>
+            <span className="bottom-nav-label">{t(`bottomNav.${screen.id}`)}</span>
           </a>
         );
       })}

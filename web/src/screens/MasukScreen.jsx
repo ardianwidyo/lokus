@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import { useSession } from '../app/SessionContext.jsx';
 import { useAsyncData } from '../app/useAsyncData.js';
 import { DataPanel, PANEL_STATUS } from '../components/states/index.js';
+import { useLocale } from '../i18n/index.js';
 import { SignInCard } from './masuk/SignInCard.jsx';
 import { TenantRow } from './masuk/TenantRow.jsx';
 
@@ -18,6 +19,7 @@ import { TenantRow } from './masuk/TenantRow.jsx';
  */
 export function MasukScreen({ onNavigate }) {
   const { source, selectTenant } = useSession();
+  const { t, errorText } = useLocale();
   const [selecting, setSelecting] = useState(null);
   const [selectError, setSelectError] = useState(null);
 
@@ -34,7 +36,7 @@ export function MasukScreen({ onNavigate }) {
       await selectTenant(tenantId);
       onNavigate('/briefing');
     } catch (failure) {
-      setSelectError(failure?.message || 'Tenant tidak bisa dibuka.');
+      setSelectError(errorText(failure, 'masuk.tenantOpenFailed'));
     } finally {
       setSelecting(null);
     }
@@ -50,25 +52,25 @@ export function MasukScreen({ onNavigate }) {
       <div className="masuk-tenants">
         <DataPanel
           status={panelStatus(status, tenants)}
-          kicker="Setelah masuk · pilih tenant"
-          meta={source.isSeeded ? <span className="tag tag-neutral">data contoh</span> : null}
-          loading={{ message: 'Memuat daftar tenant dan peran Anda…' }}
+          kicker={t('masuk.tenantsKicker')}
+          meta={
+            source.isSeeded ? <span className="tag tag-neutral">{t('common.sampleData')}</span> : null
+          }
+          loading={{ message: t('masuk.tenantsLoading') }}
           empty={{
-            title: 'Belum ada tenant',
-            description:
-              'Akun Anda belum ditautkan ke tenant mana pun. Minta admin organisasi menambahkan Anda.',
+            title: t('masuk.tenantsEmptyTitle'),
+            description: t('masuk.tenantsEmptyDescription'),
           }}
           error={{
-            title: 'Daftar tenant tak bisa dimuat',
-            description: error?.message
-              ? `${error.message} Percobaan ulang tidak otomatis di layar ini.`
-              : 'Layanan sesi tidak menjawab. Percobaan ulang tidak otomatis di layar ini.',
+            title: t('masuk.tenantsErrorTitle'),
+            description: error
+              ? t('masuk.tenantsErrorRetry', { message: errorText(error) })
+              : t('masuk.tenantsErrorFallback'),
             onRetry: reload,
           }}
           needsPermission={{
-            title: 'Akun ini belum diberi akses tenant',
-            description:
-              'LOKUS butuh keanggotaan tenant sebelum bisa menampilkan cabang. Hubungi admin organisasi Anda.',
+            title: t('masuk.tenantsPermissionTitle'),
+            description: t('masuk.tenantsPermissionDescription'),
           }}
         >
           <ul className="tenant-list">
@@ -90,10 +92,7 @@ export function MasukScreen({ onNavigate }) {
             </p>
           ) : null}
 
-          <p className="tenant-note">
-            Pemisahan tenant dan peran ditampilkan sejak layar pertama — ini bukti nyata kesiapan
-            multi-tenant, bukan klaim di slide.
-          </p>
+          <p className="tenant-note">{t('masuk.tenantNote')}</p>
         </DataPanel>
       </div>
     </div>

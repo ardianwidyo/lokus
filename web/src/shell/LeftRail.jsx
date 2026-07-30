@@ -1,30 +1,31 @@
 import { ChevronDown, House } from 'lucide-react';
 
-import { SCREENS, screenNumber } from '../app/screens.js';
+import { SCREENS, screenNumber, screenRailLabelKey } from '../app/screens.js';
+import { LanguageSwitcher, useLocale } from '../i18n/index.js';
 
 /**
  * Left rail, 238px, from design/SCREENS.md "Shell (semua layar)":
- * lockup · tenant picker · "14 LAYAR" label · the 14 numbered items · footer.
- *
- * The tenant picker is inert until screen 01 selects a tenant (T005); it shows
- * the active tenant and nothing else in this phase.
+ * lockup · tenant picker · "14 LAYAR" label · the 14 numbered items · language
+ * switch · footer.
  */
 export function LeftRail({ current, onNavigate, tenant = null }) {
+  const { t } = useLocale();
+
   return (
-    <nav className="rail" aria-label="Navigasi layar">
+    <nav className="rail" aria-label={t('shell.navLabel')}>
       <div className="rail-brand">
         <span className="rail-logo" aria-hidden="true">
           LOGO
         </span>
         <span className="rail-lockup">
           <span className="rail-name">LOKUS</span>
-          <span className="rail-tagline">Local Ops Intelligence</span>
+          <span className="rail-tagline">{t('shell.tagline')}</span>
         </span>
       </div>
 
       <TenantPicker tenant={tenant} />
 
-      <p className="rail-kicker">14 layar</p>
+      <p className="rail-kicker">{t('shell.screenCount')}</p>
 
       <ul className="rail-list">
         {SCREENS.map((screen) => {
@@ -43,30 +44,36 @@ export function LeftRail({ current, onNavigate, tenant = null }) {
                 }}
               >
                 <span className="rail-no">{screenNumber(screen)}</span>
-                <span className="rail-label">{screen.railLabel}</span>
+                <span className="rail-label">{t(screenRailLabelKey(screen))}</span>
               </a>
             </li>
           );
         })}
       </ul>
 
+      <div className="rail-lang">
+        <LanguageSwitcher />
+      </div>
+
       <p className="rail-foot">
-        Prototipe desain · data contoh
+        {t('shell.footPrototype')}
         <br />
-        Siklus agen terakhir 06.00 WIB
+        {t('shell.footLastCycle')}
       </p>
     </nav>
   );
 }
 
 function TenantPicker({ tenant }) {
+  const { t, fmt } = useLocale();
+
   if (!tenant) {
     return (
       <p className="rail-tenant rail-tenant-empty">
         <House size={15} strokeWidth={1.5} aria-hidden="true" />
         <span className="rail-tenant-text">
-          <span className="rail-tenant-name">Belum ada tenant</span>
-          <span className="rail-tenant-meta">Pilih tenant di layar 01</span>
+          <span className="rail-tenant-name">{t('shell.noTenant')}</span>
+          <span className="rail-tenant-meta">{t('shell.pickTenant')}</span>
         </span>
       </p>
     );
@@ -78,7 +85,7 @@ function TenantPicker({ tenant }) {
       <span className="rail-tenant-text">
         <span className="rail-tenant-name">{tenant.name}</span>
         <span className="rail-tenant-meta">
-          {tenant.outletCount} cabang · {tenant.area}
+          {t('shell.tenantMeta', { count: fmt.integer(tenant.outletCount), area: tenant.area })}
         </span>
       </span>
       <ChevronDown size={13} strokeWidth={1.5} aria-hidden="true" />

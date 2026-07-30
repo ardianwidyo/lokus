@@ -1,3 +1,5 @@
+import { useT } from '../../i18n/index.js';
+
 /**
  * Empty — "Kosong".
  *
@@ -11,20 +13,17 @@
  * Screens pass their own copy from design/SCREENS.md; the defaults here carry
  * no counts or dates, because an unsourced number is a bug (constitution I).
  */
-export function Empty({
-  title = 'Belum ada data',
-  description = null,
-  actionLabel = 'Periksa sekarang',
-  onAction = null,
-}) {
+export function Empty({ title = null, description = null, actionLabel = null, onAction = null }) {
+  const t = useT();
+
   return (
     <div className="state state-empty" role="status" aria-live="polite">
-      <p className="state-title">{title}</p>
+      <p className="state-title">{title ?? t('state.emptyDefault')}</p>
       {description ? <p className="state-description">{description}</p> : null}
       {onAction ? (
         <div className="state-actions">
           <button type="button" className="btn btn-secondary" onClick={onAction}>
-            {actionLabel}
+            {actionLabel ?? t('state.emptyAction')}
           </button>
         </div>
       ) : null}

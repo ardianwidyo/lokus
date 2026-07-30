@@ -1,4 +1,5 @@
 import {
+  DEFAULT_LOCALE,
   approveDraft,
   createMemoryApprovalStore,
   createSeededGbpAdapter,
@@ -24,8 +25,13 @@ import {
  *
  * Nothing here computes a figure of its own — every count, theme and citation
  * comes back from core, so a number on screen traces to the reviews behind it.
+ *
+ * `locale` is closed over at construction rather than passed per call, because
+ * `SessionContext` already rebuilds this source when the reader's language
+ * changes (the same way it rebuilds on a tenant switch) — see the comment
+ * there. That keeps every call site in the screens unchanged.
  */
-export function createSeededReputationSource({ tenantId = 'nusa-retail' } = {}) {
+export function createSeededReputationSource({ tenantId = 'nusa-retail', locale = DEFAULT_LOCALE } = {}) {
   const gbp = createSeededGbpAdapter();
   const store = createMemoryApprovalStore();
 
@@ -41,7 +47,7 @@ export function createSeededReputationSource({ tenantId = 'nusa-retail' } = {}) 
   const draftCache = new Map();
   async function draftFor(review) {
     if (!draftCache.has(review.id)) {
-      const result = await draftReply({ tenantId, review });
+      const result = await draftReply({ tenantId, review, locale });
       draftCache.set(review.id, result.data);
     }
     return draftCache.get(review.id);
@@ -76,7 +82,7 @@ export function createSeededReputationSource({ tenantId = 'nusa-retail' } = {}) 
 
     const draft = await draftFor(review);
     const guardrail = draft.drafted
-      ? guardrailCheck({ draftText: draft.text, citations: draft.citations }).data
+      ? guardrailCheck({ draftText: draft.text, citations: draft.citations, locale }).data
       : null;
     const persisted = await store.get(tenantId, reviewId);
 
@@ -108,16 +114,16 @@ export function createSeededReputationSource({ tenantId = 'nusa-retail' } = {}) 
   async function themeMatrix() {
     const reviews = await loadReviews();
     const { data, sources } = await themeCluster({ tenantId, reviews });
-    const themes = flagSystemicThemes(data.themes);
+    const themes = flagSystemicThemes(data.themes, { locale });
 
     return {
-      themes: themes.map((theme) => ({ ...theme, label: themeLabel(theme.theme) })),
-      finding: systemicFinding(data.themes),
+      themes: themes.map((theme) => ({ ...theme, label: themeLabel(theme.theme, locale) })),
+      finding: systemicFinding(data.themes, { locale }),
       weeks: data.weeks,
       reviewsConsidered: data.reviewsConsidered,
       sourceCount: sources.length,
       sentimentByWeek: sentimentByWeek(reviews, data.weeks),
-      bestPractice: bestPractice(themes),
+      bestPractice: bestPractice(themes, locale),
     };
   }
 
@@ -164,7 +170,7 @@ function sentimentByWeek(reviews, weeks) {
  * "praktik baik terdeteksi" card looks for something to copy, not just
  * something to fix.
  */
-function bestPractice(themes) {
+function bestPractice(themes, locale) {
   const leading = themes[0];
   if (!leading) return null;
 
@@ -176,7 +182,7 @@ function bestPractice(themes) {
     outletId,
     outletName: OUTLET_NAMES[outletId] ?? outletId,
     theme: leading.theme,
-    label: themeLabel(leading.theme),
+    label: themeLabel(leading.theme, locale),
     count,
   };
 }

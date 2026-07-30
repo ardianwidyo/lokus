@@ -1,9 +1,13 @@
 import { useEffect, useRef } from 'react';
 
+import { useT } from '../../i18n/index.js';
+
 /** Stars as text, per design/UI-GUIDELINES.md "Kartu review". */
 export function Stars({ rating }) {
+  const t = useT();
+
   return (
-    <span className="stars" aria-label={`${rating} dari 5 bintang`}>
+    <span className="stars" aria-label={t('common.stars', { rating })}>
       {'★'.repeat(rating)}
       {'☆'.repeat(5 - rating)}
     </span>
@@ -16,6 +20,7 @@ export function Stars({ rating }) {
  * rather than a mouse-only list with key handlers bolted on.
  */
 export function ReviewList({ rows, selectedId, onSelect, onApprove, onEdit }) {
+  const t = useT();
   const listRef = useRef(null);
   const selectedIndex = rows.findIndex((row) => row.id === selectedId);
 
@@ -54,7 +59,7 @@ export function ReviewList({ rows, selectedId, onSelect, onApprove, onEdit }) {
     <ul
       className="review-list"
       role="listbox"
-      aria-label="Daftar review"
+      aria-label={t('review.listLabel')}
       tabIndex={0}
       ref={listRef}
       onKeyDown={handleKeyDown}

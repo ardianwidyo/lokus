@@ -154,6 +154,51 @@
   color: var(--color-neutral-500);
 }
 
+/* ── Language switch ────────────────────────────────────────────────────────
+   design/SCREENS.md, "Pemilih bahasa": the rail footer, moving to the content
+   header below 900px where the rail is gone.
+
+   `.seg` in tokens.css marks the chosen option with a solid accent block, which
+   is right for a filter sitting on a wide panel and too loud for a 238px rail
+   footer. The rail already has an idiom for "this one is current" — accent-100
+   behind accent-900, the same as an active nav item — so the switch borrows that
+   rather than introducing a third treatment. No new values; both are tokens. */
+.lang-switch {
+  align-self: flex-start;
+}
+
+.lang-opt {
+  padding: 5px 10px;
+  font-family: var(--font-heading);
+  font-weight: var(--font-heading-weight);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-neutral-600);
+}
+
+.lang-opt:has(input:checked) {
+  background: var(--color-accent-100);
+  color: var(--color-accent-900);
+}
+
+.rail-lang {
+  margin: auto 0 0;
+  padding: 14px 16px 0;
+}
+
+/* The footer keeps the top border; with the switch above it, the border would
+   otherwise sit between the two and read as if they were unrelated. */
+.rail-lang + .rail-foot {
+  margin-top: 0;
+  border-top: 0;
+  padding-top: 10px;
+}
+
+.header-lang {
+  display: none;
+}
+
 .rail-foot {
   margin: auto 0 0;
   padding: 14px 16px;
@@ -1099,6 +1144,18 @@
   .screen-header {
     gap: var(--space-3);
     padding: 14px 16px;
+  }
+
+  /* The rail is gone, so the switch has to be reachable here or it is reachable
+     nowhere on a phone — and AC-8.1 says every screen. */
+  .header-lang {
+    display: inline-flex;
+  }
+
+  .lang-opt {
+    /* Touch target ≥ 44px, per design/UI-GUIDELINES.md "Responsif". */
+    min-height: 44px;
+    padding: 5px 14px;
   }
 
   .screen-subtitle {

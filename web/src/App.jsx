@@ -1,5 +1,6 @@
 import { SessionProvider, useSession } from './app/SessionContext.jsx';
 import { useRoute } from './app/useRoute.js';
+import { LocaleProvider } from './i18n/index.js';
 import { AdminScreen } from './screens/AdminScreen.jsx';
 import { ActionBoardScreen } from './screens/ActionBoardScreen.jsx';
 import { BriefingScreen } from './screens/BriefingScreen.jsx';
@@ -17,7 +18,14 @@ import { ReviewInboxScreen } from './screens/ReviewInboxScreen.jsx';
 import { ThemeAnalysisScreen } from './screens/ThemeAnalysisScreen.jsx';
 import { AppShell } from './shell/AppShell.jsx';
 
-/** Sources are injectable so tests can drive every state of every panel. */
+/**
+ * Sources are injectable so tests can drive every state of every panel.
+ *
+ * `LocaleProvider` wraps `SessionProvider` here rather than in `main.jsx`, so
+ * that a test rendering `<App>` alone — every existing screen test does — gets
+ * the language context `SessionContext` now depends on, without every test file
+ * needing its own wrapper.
+ */
 export function App({
   sessionSource = null,
   reputationSource = null,
@@ -28,21 +36,24 @@ export function App({
   outletSource = null,
   knowledgeSource = null,
   env = undefined,
+  initialLocale = null,
 }) {
   return (
-    <SessionProvider
-      source={sessionSource}
-      reputationSource={reputationSource}
-      agentSource={agentSource}
-      briefingSource={briefingSource}
-      adminSource={adminSource}
-      locationSource={locationSource}
-      outletSource={outletSource}
-      knowledgeSource={knowledgeSource}
-      {...(env ? { env } : {})}
-    >
-      <Console />
-    </SessionProvider>
+    <LocaleProvider initialLocale={initialLocale}>
+      <SessionProvider
+        source={sessionSource}
+        reputationSource={reputationSource}
+        agentSource={agentSource}
+        briefingSource={briefingSource}
+        adminSource={adminSource}
+        locationSource={locationSource}
+        outletSource={outletSource}
+        knowledgeSource={knowledgeSource}
+        {...(env ? { env } : {})}
+      >
+        <Console />
+      </SessionProvider>
+    </LocaleProvider>
   );
 }
 

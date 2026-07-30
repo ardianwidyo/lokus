@@ -1,15 +1,13 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { FileText, Send } from 'lucide-react';
 
 import { useSession } from '../app/SessionContext.jsx';
 import { Blueprint } from '../components/Blueprint.jsx';
 import { DataPanel, PANEL_STATUS } from '../components/states/index.js';
+import { Rich, useLocale } from '../i18n/index.js';
 
-/** The question screen 12 opens on, from design/SCREENS.md. */
-const DEFAULT_QUESTION =
-  'Pelanggan minta refund barang promo yang sudah dibuka. Boleh atau tidak, dan apa syaratnya?';
-
-const ASKED_BY = { name: 'Dwi Kurnia', outlet: 'Bekasi Timur', channel: 'via WhatsApp' };
+/** Who is asking, from design/SCREENS.md screen 12. A person, not copy. */
+const ASKED_BY = { name: 'Dwi Kurnia', outlet: 'Bekasi Timur' };
 
 /**
  * Screen 12 · Jawaban bersitasi.
@@ -18,9 +16,14 @@ const ASKED_BY = { name: 'Dwi Kurnia', outlet: 'Bekasi Timur', channel: 'via Wha
  * cannot answer, refused out loud with the gap recorded. Both outcomes are
  * reachable from the same box, which is what makes the refusal credible: it is
  * the same code path, not a demo mode.
+ *
+ * The question the screen opens on is the reader's language, because it is the
+ * console's worked example. The passage it quotes back is not: that is the
+ * document's own wording (AC-8.5).
  */
 export function CitedAnswerScreen({ onNavigate }) {
   const { knowledgeSource, tenant } = useSession();
+  const { t, fmt, errorText } = useLocale();
   const [answer, setAnswer] = useState(null);
   const [status, setStatus] = useState(PANEL_STATUS.LOADING);
   const [failure, setFailure] = useState(null);
@@ -41,53 +44,67 @@ export function CitedAnswerScreen({ onNavigate }) {
         setAnswer(result);
         setStatus(PANEL_STATUS.READY);
       } catch (error) {
-        setFailure(error?.message ?? 'Layanan pengetahuan tidak menjawab.');
+        setFailure(errorText(error, 'answer.errorFallback'));
         setStatus(PANEL_STATUS.ERROR);
       }
     },
-    [knowledgeSource, tenant?.tenantId],
+    [knowledgeSource, tenant?.tenantId, errorText],
   );
 
+  const defaultQuestion = t('answer.defaultQuestion');
+
   // The default question runs once, so the screen opens on a worked example.
+  // In an effect rather than during render: asking during render made the
+  // request a side effect of painting, which StrictMode double-invokes.
   const started = useRef(false);
-  if (!started.current) {
+  useEffect(() => {
+    if (started.current) return;
     started.current = true;
-    ask(DEFAULT_QUESTION);
-  }
+    ask(defaultQuestion);
+  }, [ask, defaultQuestion]);
 
   return (
     <div className="answer-grid">
       <div className="answer-main">
         <Blueprint className="question-card">
           <span className="kicker">
-            {ASKED_BY.name} · {ASKED_BY.outlet} · {ASKED_BY.channel}
+            {t('answer.questionMeta', {
+              name: ASKED_BY.name,
+              outlet: ASKED_BY.outlet,
+              channel: t('answer.askedByChannel'),
+            })}
           </span>
-          <p className="question-text">{answer?.question ?? DEFAULT_QUESTION}</p>
+          <p className="question-text">{answer?.question ?? defaultQuestion}</p>
         </Blueprint>
 
         <DataPanel
           status={status}
-          kicker={answer?.answered ? 'Jawaban Agen Pengetahuan' : 'Agen Pengetahuan'}
+          kicker={answer?.answered ? t('answer.kickerAnswered') : t('answer.kicker')}
           meta={
             answer?.answered ? (
               <span className="panel-meta">
-                {answer.citations.length} sumber · {answer.confidenceLabel} ·{' '}
-                {/* Constitution III: who wrote these words is part of the trace.
-                    A generated answer passed a grounding check; a quoted one
-                    never needed to, and the difference is the reader's to
-                    know. */}
-                {answer.generated
-                  ? `ditulis ${answer.generationStep?.model ?? 'Gemini'}, lolos cek sitasi`
-                  : 'dikutip apa adanya dari SOP'}
+                {t('answer.meta', {
+                  sources: answer.citations.length,
+                  confidence: answer.confidenceLabel,
+                  // Constitution III: who wrote these words is part of the
+                  // trace. A generated answer passed a grounding check; a quoted
+                  // one never needed to, and the difference is the reader's to
+                  // know.
+                  origin: answer.generated
+                    ? t('answer.originGenerated', {
+                        model: answer.generationStep?.model ?? 'Gemini',
+                      })
+                    : t('answer.originQuoted'),
+                })}
               </span>
             ) : null
           }
-          loading={{ message: 'Agen sedang mencari pasal yang relevan…' }}
-          empty={{ title: 'Belum ada pertanyaan' }}
+          loading={{ message: t('answer.loading') }}
+          empty={{ title: t('answer.emptyTitle') }}
           error={{
-            title: 'Jawaban tak bisa dimuat',
+            title: t('answer.errorTitle'),
             description: failure,
-            onRetry: () => ask(answer?.question ?? DEFAULT_QUESTION),
+            onRetry: () => ask(answer?.question ?? defaultQuestion),
           }}
         >
           {answer?.answered ? (
@@ -100,13 +117,13 @@ export function CitedAnswerScreen({ onNavigate }) {
 
               <div className="state-actions">
                 <button type="button" className="btn btn-primary">
-                  Kirim ke WhatsApp {ASKED_BY.name.split(' ')[0]}
+                  {t('answer.sendWhatsApp', { name: ASKED_BY.name.split(' ')[0] })}
                 </button>
                 <button type="button" className="btn btn-secondary">
-                  Simpan sebagai FAQ
+                  {t('answer.saveFaq')}
                 </button>
                 <button type="button" className="btn btn-ghost">
-                  Jawaban ini salah
+                  {t('answer.wrongAnswer')}
                 </button>
               </div>
             </>
@@ -116,16 +133,13 @@ export function CitedAnswerScreen({ onNavigate }) {
             <>
               <p className="draft-refusal">{answer.text}</p>
               <p className="state-description">{answer.reason}</p>
-              <p className="state-note">
-                Pertanyaan ini sudah dicatat sebagai celah pengetahuan. Tidak ada jawaban yang
-                dikarang.
-              </p>
+              <p className="state-note">{t('answer.refusedNote')}</p>
               <button
                 type="button"
                 className="btn btn-secondary"
                 onClick={() => onNavigate?.('/pengetahuan')}
               >
-                Lihat celah pengetahuan →
+                {t('answer.seeGaps')}
               </button>
             </>
           ) : null}
@@ -140,34 +154,31 @@ export function CitedAnswerScreen({ onNavigate }) {
           }}
         >
           <label className="sr-only" htmlFor="kb-question">
-            Pertanyaan staf cabang
+            {t('answer.inputLabel')}
           </label>
           <input
             id="kb-question"
             ref={inputRef}
             className="input"
-            placeholder="Tanya apa saja yang ada di SOP…"
+            placeholder={t('answer.inputPlaceholder')}
           />
           <button type="submit" className="btn btn-primary">
             <Send size={14} strokeWidth={1.5} aria-hidden="true" />
-            Tanya
+            {t('answer.ask')}
           </button>
         </form>
 
         <p className="state-note answer-foot">
-          Agen menolak menjawab bila skor kemiripan sumber di bawah{' '}
-          {answer?.threshold?.toFixed(2) ?? '0,70'} — dalam kasus itu ia mengatakan “tidak ada di
-          dokumen” dan mencatat pertanyaannya sebagai celah pengetahuan. Tidak ada jawaban yang
-          dikarang.
+          {t('answer.foot', { threshold: fmt.number(answer?.threshold ?? 0.7) })}
         </p>
       </div>
 
       <DataPanel
         status={status}
-        kicker="Sumber"
-        loading={{ message: 'Mengambil kutipan…' }}
-        empty={{ title: 'Belum ada sumber' }}
-        error={{ title: 'Sumber tak bisa dimuat' }}
+        kicker={t('answer.sourcesKicker')}
+        loading={{ message: t('answer.sourcesLoading') }}
+        empty={{ title: t('answer.sourcesEmpty') }}
+        error={{ title: t('answer.sourcesError') }}
       >
         {answer?.answered ? (
           <>
@@ -177,13 +188,18 @@ export function CitedAnswerScreen({ onNavigate }) {
                   <Blueprint className="source-card">
                     <p className="source-title">
                       <FileText size={12} strokeWidth={1.5} aria-hidden="true" />
-                      <span className="source-marker">{citation.marker}</span> {citation.title} · hal.{' '}
-                      {citation.page}
+                      <span className="source-marker">{citation.marker}</span> {citation.title} ·{' '}
+                      {t('common.page', { page: citation.page })}
                     </p>
-                    <p className="source-score">skor {citation.score.toFixed(2)}</p>
-                    <p className="source-quote">“{citation.quote}”</p>
+                    <p className="source-score">
+                      {t('common.score', { score: fmt.number(citation.score) })}
+                    </p>
+                    {/* The document's own wording, in the document's language. */}
+                    <p className="source-quote" lang="id">
+                      “{citation.quote}”
+                    </p>
                     <button type="button" className="btn btn-ghost">
-                      Buka halaman {citation.page} →
+                      {t('answer.openPage', { page: citation.page })}
                     </button>
                   </Blueprint>
                 </li>
@@ -192,16 +208,20 @@ export function CitedAnswerScreen({ onNavigate }) {
 
             {/* AC-4.3: what was considered and left out is part of the answer. */}
             <p className="state-note">
-              Potongan yang dipertimbangkan tapi tidak dipakai: <strong>{answer.rejectedCount}</strong>{' '}
-              · semuanya di bawah ambang {answer.threshold.toFixed(2)}.
+              <Rich
+                k="answer.rejectedNote"
+                values={{
+                  count: <strong>{answer.rejectedCount}</strong>,
+                  threshold: fmt.number(answer.threshold),
+                }}
+              />
             </p>
           </>
         ) : null}
 
         {answer && !answer.answered ? (
           <p className="state-description">
-            Tidak ada kutipan yang lolos ambang, jadi tidak ada sumber untuk ditampilkan.{' '}
-            {answer.rejectedCount} potongan dipertimbangkan dan semuanya ditolak.
+            {t('answer.noSources', { count: answer.rejectedCount })}
           </p>
         ) : null}
       </DataPanel>

@@ -4,13 +4,19 @@ import { canWrite } from '../app/roles.js';
 import { useSession } from '../app/SessionContext.jsx';
 import { useAsyncData } from '../app/useAsyncData.js';
 import { DataPanel, PANEL_STATUS } from '../components/states/index.js';
+import { useLocale } from '../i18n/index.js';
 import { DraftBlock } from './review/DraftBlock.jsx';
 import { ReviewList, Stars } from './review/ReviewList.jsx';
 
+/**
+ * The bucket ids are stored values shared with the API, so they stay Indonesian
+ * in both languages — `?bucket=perlu-tindakan` is a contract, not copy. Only the
+ * labels follow the reader.
+ */
 const BUCKETS = [
-  { id: 'perlu-tindakan', label: 'Perlu tindakan' },
-  { id: 'draft-siap', label: 'Draft siap' },
-  { id: 'terkirim', label: 'Terkirim' },
+  { id: 'perlu-tindakan', labelKey: 'review.bucketNeedsAction' },
+  { id: 'draft-siap', labelKey: 'review.bucketDraftReady' },
+  { id: 'terkirim', labelKey: 'review.bucketSent' },
 ];
 
 /**
@@ -21,6 +27,7 @@ const BUCKETS = [
  */
 export function ReviewInboxScreen({ onNavigate }) {
   const { reputation, role, tenant } = useSession();
+  const { t, errorText } = useLocale();
   const [bucket, setBucket] = useState('perlu-tindakan');
   const [selectedId, setSelectedId] = useState(null);
   const [detail, setDetail] = useState(null);
@@ -67,19 +74,21 @@ export function ReviewInboxScreen({ onNavigate }) {
         approvedBy: tenant?.approverEmail ?? 'manajer@nusaretail.co.id',
         role,
       });
-      setNotice('Balasan terkirim dan persetujuan tercatat.');
+      setNotice(t('review.replySent'));
       await reload();
     } catch (failure) {
-      setNotice(failure?.message ?? 'Balasan gagal dikirim.');
+      setNotice(errorText(failure, 'review.replyFailed'));
     }
   };
+
+  const activeBucket = BUCKETS.find((entry) => entry.id === bucket);
 
   return (
     <>
       <div className="inbox-filters">
         {/* Radio inputs, so the control announces itself as a radiogroup —
             a tablist would promise arrow-key semantics these do not have. */}
-        <div className="seg" role="radiogroup" aria-label="Saring review">
+        <div className="seg" role="radiogroup" aria-label={t('review.filterLabel')}>
           {BUCKETS.map((entry) => (
             <label key={entry.id} className="seg-opt">
               <input
@@ -88,7 +97,7 @@ export function ReviewInboxScreen({ onNavigate }) {
                 checked={bucket === entry.id}
                 onChange={() => setBucket(entry.id)}
               />
-              {entry.label} · {data?.counts?.[entry.id] ?? '—'}
+              {t(entry.labelKey)} · {data?.counts?.[entry.id] ?? '—'}
             </label>
           ))}
         </div>
@@ -98,18 +107,20 @@ export function ReviewInboxScreen({ onNavigate }) {
         <DataPanel
           status={rows.length === 0 && status === PANEL_STATUS.READY ? PANEL_STATUS.EMPTY : status}
           className="inbox-list-panel"
-          kicker={`${data?.counts?.[bucket] ?? 0} ${BUCKETS.find((b) => b.id === bucket).label.toLowerCase()}`}
-          meta={<span className="panel-meta">urut prioritas</span>}
-          loading={{ message: 'Agen sedang membaca review terbaru…' }}
+          kicker={t('review.kicker', {
+            count: data?.counts?.[bucket] ?? 0,
+            bucket: t(activeBucket.labelKey).toLowerCase(),
+          })}
+          meta={<span className="panel-meta">{t('review.metaPriority')}</span>}
+          loading={{ message: t('review.loading') }}
           empty={{
-            title: 'Tidak ada review baru',
-            description:
-              'Semua review pekan ini sudah dibalas. Agen akan memeriksa lagi malam ini pukul 23.00.',
+            title: t('review.emptyTitle'),
+            description: t('review.emptyDescription'),
             onAction: reload,
           }}
           error={{
-            title: 'Kotak masuk tak bisa dimuat',
-            description: error?.message ?? 'Layanan review tidak menjawab.',
+            title: t('review.errorTitle'),
+            description: errorText(error, 'review.errorFallback'),
             onRetry: reload,
           }}
         >
@@ -120,21 +131,31 @@ export function ReviewInboxScreen({ onNavigate }) {
             onApprove={approve}
             onEdit={(id) => onNavigate?.(`/draft?review=${id}`)}
           />
-          <p className="inbox-hint">↑ ↓ pindah · ⏎ setujui &amp; lanjut · E ubah</p>
+          <p className="inbox-hint">{t('review.hint')}</p>
         </DataPanel>
 
         <DataPanel
           status={detail ? PANEL_STATUS.READY : status}
           className="inbox-preview-panel"
-          kicker={detail ? `Review · ${detail.review.outletName}` : 'Review'}
-          loading={{ message: 'Menyiapkan draft balasan…' }}
-          empty={{ title: 'Pilih satu review', description: 'Detail dan draft akan muncul di sini.' }}
-          error={{ title: 'Detail tak bisa dimuat', onRetry: reload }}
+          kicker={
+            detail
+              ? t('review.previewKicker', { outlet: detail.review.outletName })
+              : t('review.previewKickerPlain')
+          }
+          loading={{ message: t('review.previewLoading') }}
+          empty={{
+            title: t('review.previewEmptyTitle'),
+            description: t('review.previewEmptyDescription'),
+          }}
+          error={{ title: t('review.previewErrorTitle'), onRetry: reload }}
         >
           {detail ? (
             <>
               <p className="review-meta">
-                Google · {detail.review.author} · {detail.review.relative}
+                {t('review.reviewMeta', {
+                  author: detail.review.author,
+                  relative: detail.review.relative,
+                })}
               </p>
               <Stars rating={detail.review.rating} />
               <blockquote className="review-quote">{detail.review.text}</blockquote>
@@ -148,7 +169,7 @@ export function ReviewInboxScreen({ onNavigate }) {
                   onClick={() => approve(selectedId)}
                   disabled={!mayAct || !detail.draft?.drafted || detail.state === 'sent'}
                 >
-                  {detail.state === 'sent' ? 'Sudah terkirim' : 'Setujui & kirim ⏎'}
+                  {detail.state === 'sent' ? t('review.sent') : t('review.approveAndSend')}
                 </button>
                 <button
                   type="button"
@@ -156,21 +177,17 @@ export function ReviewInboxScreen({ onNavigate }) {
                   disabled={!mayAct}
                   onClick={() => onNavigate?.(`/draft?review=${selectedId}`)}
                 >
-                  Ubah teks
+                  {t('review.editText')}
                 </button>
                 <button type="button" className="btn btn-secondary" disabled={!mayAct}>
-                  Jadikan tiket
+                  {t('review.makeTicket')}
                 </button>
                 <button type="button" className="btn btn-ghost" disabled={!mayAct}>
-                  Abaikan
+                  {t('review.dismiss')}
                 </button>
               </div>
 
-              {!mayAct ? (
-                <p className="state-note">
-                  Peran Anda hanya bisa membaca. Persetujuan balasan dilakukan oleh manajer atau admin.
-                </p>
-              ) : null}
+              {!mayAct ? <p className="state-note">{t('common.readOnlyApproveReply')}</p> : null}
               {notice ? (
                 <p className="state-note" role="status">
                   {notice}
@@ -178,9 +195,9 @@ export function ReviewInboxScreen({ onNavigate }) {
               ) : null}
 
               <p className="inbox-foot">
-                <span>{detail.guardrail?.summary ?? 'Guardrail belum dijalankan'}</span>
+                <span>{detail.guardrail?.summary ?? t('review.guardrailNotRun')}</span>
                 <span className="inbox-foot-right">
-                  {Math.max(0, rows.length - 1)} tersisa di antrean ini
+                  {t('review.remaining', { count: Math.max(0, rows.length - 1) })}
                 </span>
               </p>
             </>

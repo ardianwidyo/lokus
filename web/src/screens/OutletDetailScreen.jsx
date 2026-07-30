@@ -4,10 +4,14 @@ import { useSession } from '../app/SessionContext.jsx';
 import { useAsyncData } from '../app/useAsyncData.js';
 import { Blueprint } from '../components/Blueprint.jsx';
 import { DataPanel, PANEL_STATUS } from '../components/states/index.js';
+import { Rich, useLocale } from '../i18n/index.js';
 import { RadiusMap } from './outlet/RadiusMap.jsx';
-import { RatingChart, formatDay } from './outlet/RatingChart.jsx';
+import { RatingChart } from './outlet/RatingChart.jsx';
 
 const DEFAULT_OUTLET = 'BKS-02';
+
+/** design/SCREENS.md screen 04: a week that moved this much gets a larger point. */
+const CHANGE_THRESHOLD = 0.15;
 
 /**
  * Screen 04 · Detail cabang.
@@ -20,6 +24,7 @@ const DEFAULT_OUTLET = 'BKS-02';
  */
 export function OutletDetailScreen({ onNavigate, query }) {
   const { outletSource, tenant } = useSession();
+  const { t, fmt, errorText } = useLocale();
   const tenantId = tenant?.tenantId ?? 'nusa-retail';
   const [chosen, setChosen] = useState(null);
 
@@ -41,7 +46,7 @@ export function OutletDetailScreen({ onNavigate, query }) {
   const status =
     detail.status === PANEL_STATUS.READY && !data ? PANEL_STATUS.EMPTY : detail.status;
 
-  const insight = useMemo(() => crossSignal(data), [data]);
+  const insight = useMemo(() => crossSignal(data, t, fmt), [data, t, fmt]);
 
   return (
     <>
@@ -49,7 +54,7 @@ export function OutletDetailScreen({ onNavigate, query }) {
           branch that fails to load must not also take away the only control
           that could get the reader to a branch that works. */}
       {branches.data ? (
-        <div className="outlet-picker" role="radiogroup" aria-label="Pilih cabang">
+        <div className="outlet-picker" role="radiogroup" aria-label={t('cabang.pickerLabel')}>
           {branches.data.map((row) => (
             <label key={row.outletId} className="map-layer">
               <input
@@ -67,15 +72,19 @@ export function OutletDetailScreen({ onNavigate, query }) {
       <DataPanel
         status={status}
         className="outlet-header"
-        kicker={data ? `${data.outlet.code} · dibuka ${monthYear(data.outlet.openedAt)}` : 'Cabang'}
-        loading={{ message: 'Mengumpulkan data cabang…' }}
-        empty={{
-          title: 'Cabang tidak ditemukan',
-          description: 'Cabang ini tidak ada, atau tidak termasuk dalam tenant yang sedang aktif.',
-        }}
+        kicker={
+          data
+            ? t('cabang.kicker', {
+                code: data.outlet.code,
+                month: fmt.monthYear(data.outlet.openedAt),
+              })
+            : t('cabang.kickerPlain')
+        }
+        loading={{ message: t('cabang.loading') }}
+        empty={{ title: t('cabang.emptyTitle'), description: t('cabang.emptyDescription') }}
         error={{
-          title: 'Detail cabang tak bisa dimuat',
-          description: error?.message ?? 'Layanan cabang tidak menjawab.',
+          title: t('cabang.errorTitle'),
+          description: errorText(error, 'cabang.errorFallback'),
           onRetry: reload,
         }}
       >
@@ -84,23 +93,32 @@ export function OutletDetailScreen({ onNavigate, query }) {
             <div>
               <h2 className="outlet-name">{data.outlet.name}</h2>
               <p className="outlet-meta">
-                {data.outlet.address} · Manajer: {data.outlet.manager}
+                {t('cabang.meta', {
+                  address: data.outlet.address,
+                  manager: data.outlet.manager,
+                })}
               </p>
             </div>
 
             <div className="outlet-figures">
               <Blueprint className="figure">
-                <span className="kicker">Rating</span>
-                <span className="figure-value">{comma(data.rating.mean)}</span>
+                <span className="kicker">{t('cabang.ratingKicker')}</span>
+                <span className="figure-value">{fmt.number(data.rating.mean) ?? '—'}</span>
                 <span className="figure-note">
-                  {signed(data.rating.delta)} vs {data.rating.blockWeeks} pekan sebelumnya
+                  {t('cabang.ratingNote', {
+                    delta: fmt.signed(data.rating.delta) ?? '—',
+                    weeks: data.rating.blockWeeks,
+                  })}
                 </span>
               </Blueprint>
               <Blueprint className="figure">
-                <span className="kicker">Skor lokasi</span>
+                <span className="kicker">{t('cabang.locationScoreKicker')}</span>
                 <span className="figure-value">{data.location.score}</span>
                 <span className="figure-note">
-                  peringkat {data.location.rank} dari {data.location.of}
+                  {t('cabang.locationScoreNote', {
+                    rank: data.location.rank,
+                    of: data.location.of,
+                  })}
                 </span>
               </Blueprint>
             </div>
@@ -112,18 +130,24 @@ export function OutletDetailScreen({ onNavigate, query }) {
         <div className="outlet-main">
           <DataPanel
             status={status}
-            kicker={data ? `Rating ${data.trend.weeks} pekan` : 'Rating'}
+            kicker={
+              data
+                ? t('cabang.trendKicker', { weeks: data.trend.weeks })
+                : t('cabang.trendKickerPlain')
+            }
             meta={
               data ? (
                 <span className="panel-meta">
-                  {data.rating.reviewCount} review · pekan terakhir{' '}
-                  {comma(data.rating.latestWeekRating)}
+                  {t('cabang.trendMeta', {
+                    count: fmt.integer(data.rating.reviewCount),
+                    rating: fmt.number(data.rating.latestWeekRating) ?? '—',
+                  })}
                 </span>
               ) : null
             }
-            loading={{ message: 'Menghitung rata-rata mingguan…' }}
-            empty={{ title: 'Belum ada review untuk digambar' }}
-            error={{ title: 'Grafik tak bisa dimuat', onRetry: reload }}
+            loading={{ message: t('cabang.trendLoading') }}
+            empty={{ title: t('cabang.trendEmpty') }}
+            error={{ title: t('cabang.trendError'), onRetry: reload }}
           >
             {data ? (
               <>
@@ -135,25 +159,37 @@ export function OutletDetailScreen({ onNavigate, query }) {
                 />
 
                 <p className="state-note">
-                  {data.trend.weeks} pekan adalah seluruh rentang review yang ada — bukan 12.
-                  Titik yang lebih besar adalah pekan dengan perubahan ≥ 0,15.
+                  {t('cabang.trendNote', {
+                    weeks: data.trend.weeks,
+                    threshold: fmt.number(CHANGE_THRESHOLD),
+                  })}
                 </p>
 
                 {data.event ? (
                   <p className="state-description">
-                    <strong>{data.event.name}</strong> buka {formatDay(data.event.openedAt)} pada
-                    jarak {data.event.distanceM} m.{' '}
+                    <Rich
+                      k="cabang.eventOpened"
+                      values={{
+                        name: <strong>{data.event.name}</strong>,
+                        day: fmt.shortDate(data.event.openedAt),
+                        distance: data.event.distanceM,
+                      }}
+                    />{' '}
                     {data.event.ratingMoved
-                      ? `Pekan itu rating bergerak ${comma(data.event.ratingMoved.from)} → ${comma(
-                          data.event.ratingMoved.to,
-                        )} (${signed(data.event.ratingMoved.delta)}).`
-                      : 'Tidak ada cukup review pekan itu untuk membandingkan.'}{' '}
-                    Keduanya terjadi di pekan yang sama; hubungan sebabnya belum diuji.
+                      ? t('cabang.eventMoved', {
+                          from: fmt.number(data.event.ratingMoved.from),
+                          to: fmt.number(data.event.ratingMoved.to),
+                          delta: fmt.signed(data.event.ratingMoved.delta),
+                        })
+                      : t('cabang.eventNotEnough')}{' '}
+                    {t('cabang.eventCaveat')}
                   </p>
                 ) : (
                   <p className="state-note">
-                    Tidak ada pembukaan pesaing tercatat di radius {data.nearby.radiusM} m selama{' '}
-                    {data.trend.weeks} pekan ini, jadi tidak ada garis peristiwa untuk digambar.
+                    {t('cabang.noEvent', {
+                      radius: data.nearby.radiusM,
+                      weeks: data.trend.weeks,
+                    })}
                   </p>
                 )}
               </>
@@ -166,18 +202,24 @@ export function OutletDetailScreen({ onNavigate, query }) {
                 ? PANEL_STATUS.EMPTY
                 : status
             }
-            kicker={data ? `Tema keluhan · ${data.trend.weeks} pekan` : 'Tema keluhan'}
+            kicker={
+              data
+                ? t('cabang.themesKicker', { weeks: data.trend.weeks })
+                : t('cabang.themesKickerPlain')
+            }
             meta={
               data ? (
-                <span className="panel-meta">{data.complaintCount} keluhan terklasifikasi</span>
+                <span className="panel-meta">
+                  {t('cabang.themesMeta', { count: data.complaintCount })}
+                </span>
               ) : null
             }
-            loading={{ message: 'Mengelompokkan keluhan…' }}
+            loading={{ message: t('cabang.themesLoading') }}
             empty={{
-              title: 'Tidak ada keluhan terklasifikasi',
-              description: 'Tidak ada review ≤ 3 bintang yang cocok dengan tema mana pun.',
+              title: t('cabang.themesEmptyTitle'),
+              description: t('cabang.themesEmptyDescription'),
             }}
-            error={{ title: 'Tema tak bisa dimuat', onRetry: reload }}
+            error={{ title: t('cabang.themesError'), onRetry: reload }}
           >
             {data?.themes.length ? (
               <>
@@ -191,14 +233,16 @@ export function OutletDetailScreen({ onNavigate, query }) {
                           style={{ width: `${Math.round(theme.share * 100)}%` }}
                         />
                       </span>
-                      <span className="theme-bar-share">{Math.round(theme.share * 100)}%</span>
+                      <span className="theme-bar-share">{fmt.percent(theme.share)}</span>
                       <span className="theme-bar-count">{theme.count}</span>
                     </li>
                   ))}
                 </ul>
                 <p className="state-note">
-                  Persentase adalah bagian dari {data.complaintCount} keluhan cabang ini, bukan dari
-                  seluruh {data.rating.reviewCount} review.
+                  {t('cabang.themesNote', {
+                    complaints: data.complaintCount,
+                    reviews: fmt.integer(data.rating.reviewCount),
+                  })}
                 </p>
               </>
             ) : null}
@@ -208,10 +252,10 @@ export function OutletDetailScreen({ onNavigate, query }) {
         <div className="outlet-side">
           <DataPanel
             status={status}
-            kicker="Sekitar cabang"
-            loading={{ message: 'Memindai radius…' }}
-            empty={{ title: 'Belum ada data sekitar' }}
-            error={{ title: 'Peta sekitar tak bisa dimuat', onRetry: reload }}
+            kicker={t('cabang.nearbyKicker')}
+            loading={{ message: t('cabang.nearbyLoading') }}
+            empty={{ title: t('cabang.nearbyEmpty') }}
+            error={{ title: t('cabang.nearbyError'), onRetry: reload }}
           >
             {data ? (
               <>
@@ -221,8 +265,11 @@ export function OutletDetailScreen({ onNavigate, query }) {
                   radiusM={data.nearby.radiusM}
                 />
                 <p className="state-note">
-                  radius {data.nearby.radiusM / 1000} km · {data.nearby.total} pesaing ·{' '}
-                  {data.nearby.newSinceCount} baru
+                  {t('cabang.nearbyNote', {
+                    km: fmt.factor(data.nearby.radiusM / 1000),
+                    total: data.nearby.total,
+                    fresh: data.nearby.newSinceCount,
+                  })}
                 </p>
               </>
             ) : null}
@@ -230,10 +277,10 @@ export function OutletDetailScreen({ onNavigate, query }) {
 
           <DataPanel
             status={status}
-            kicker="Faktor skor lokasi"
-            loading={{ message: 'Menghitung faktor…' }}
-            empty={{ title: 'Belum ada faktor' }}
-            error={{ title: 'Faktor tak bisa dimuat', onRetry: reload }}
+            kicker={t('cabang.factorsKicker')}
+            loading={{ message: t('cabang.factorsLoading') }}
+            empty={{ title: t('cabang.factorsEmpty') }}
+            error={{ title: t('cabang.factorsError'), onRetry: reload }}
           >
             {data ? (
               <>
@@ -243,7 +290,9 @@ export function OutletDetailScreen({ onNavigate, query }) {
                       <span className="factor-label">
                         {data.location.factorLabels[key]}
                         <span className="factor-origin">
-                          {data.location.surveyedFactors.includes(key) ? ' · survei' : ' · terukur'}
+                          {data.location.surveyedFactors.includes(key)
+                            ? t('common.surveyed')
+                            : t('common.measured')}
                         </span>
                       </span>
                       <span className="factor-track" aria-hidden="true">
@@ -266,14 +315,14 @@ export function OutletDetailScreen({ onNavigate, query }) {
                 className="btn btn-primary btn-block"
                 onClick={() => onNavigate?.('/review')}
               >
-                Lihat {data.queue.unreplied} review belum dibalas
+                {t('cabang.openQueue', { count: data.queue.unreplied })}
               </button>
               <button
                 type="button"
                 className="btn btn-secondary btn-block"
                 onClick={() => onNavigate?.('/chat')}
               >
-                Tanya agen soal cabang ini
+                {t('cabang.askAgent')}
               </button>
             </>
           ) : null}
@@ -289,6 +338,9 @@ export function OutletDetailScreen({ onNavigate, query }) {
  * them, and inventing a correspondence — "category mix" as an explanation for
  * price complaints — would be the unearned inference this screen exists to
  * avoid. One honest pair beats four plausible ones.
+ *
+ * Keyed by factor id and theme id, both stable in either language: matching on
+ * the labels would have worked only in Indonesian.
  */
 const THEME_FOR_FACTOR = { access: 'parkir' };
 
@@ -300,7 +352,7 @@ const CORROBORATION_RANK = 3;
  * and also the second complaint theme" — derived instead of asserted, so it
  * only appears on a branch where it is true.
  */
-function crossSignal(data) {
+function crossSignal(data, t, fmt) {
   if (!data) return null;
 
   const [weakestKey] = Object.entries(data.location.factors)
@@ -316,35 +368,17 @@ function crossSignal(data) {
   // "sixth complaint theme, two mentions" does not confirm anything.
   if (rank < 0 || rank >= CORROBORATION_RANK) return null;
 
-  const factorLabel = data.location.factorLabels[weakestKey].toLowerCase();
   const theme = data.themes[rank];
 
-  return (
-    `${capitalise(factorLabel)} adalah faktor skor terlemah (${data.location.factors[weakestKey]}) ` +
-    `dan sekaligus tema keluhan nomor ${rank + 1} (${theme.count} keluhan) — dua sinyal berbeda ` +
-    'menunjuk hal yang sama.'
-  );
+  return t('cabang.crossSignal', {
+    factor: capitalise(data.location.factorLabels[weakestKey]),
+    value: fmt.integer(data.location.factors[weakestKey]),
+    rank: rank + 1,
+    count: theme.count,
+  });
 }
 
 function capitalise(text) {
-  return text.charAt(0).toUpperCase() + text.slice(1);
-}
-
-const MONTHS = [
-  'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
-];
-
-function monthYear(iso) {
-  const [year, month] = String(iso).split('-');
-  return `${MONTHS[Number(month) - 1] ?? ''} ${year}`.trim();
-}
-
-function comma(value) {
-  return value === null || value === undefined ? '—' : value.toFixed(2).replace('.', ',');
-}
-
-function signed(value) {
-  if (value === null || value === undefined) return '—';
-  return `${value > 0 ? '+' : '−'}${Math.abs(value).toFixed(2).replace('.', ',')}`;
+  const value = String(text ?? '');
+  return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
 }

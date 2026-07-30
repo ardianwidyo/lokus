@@ -1,9 +1,13 @@
+import { useT } from '../../i18n/index.js';
+
 /**
  * 90x20 sparkline, stroke only, no fill — design/UI-GUIDELINES.md "Kartu
  * metrik". A flat series still draws a flat line rather than disappearing, so
  * an empty row is visibly empty rather than ambiguous.
  */
 export function Sparkline({ values, width = 90, height = 20, label }) {
+  const t = useT();
+
   if (!values?.length) return null;
 
   const max = Math.max(...values, 1);
@@ -23,7 +27,7 @@ export function Sparkline({ values, width = 90, height = 20, label }) {
       height={height}
       viewBox={`0 0 ${width} ${height}`}
       role="img"
-      aria-label={label ?? `Tren ${values.length} pekan, nilai terakhir ${values.at(-1)}`}
+      aria-label={label ?? t('sparkline.label', { weeks: values.length, last: values.at(-1) })}
     >
       <polyline
         points={points}

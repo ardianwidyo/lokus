@@ -1,3 +1,5 @@
+import { useLocale } from '../../i18n/index.js';
+
 /**
  * Weekly mean rating, with the change points the analytics found and — when
  * Places recorded one — a dashed line on the week a competitor opened.
@@ -16,6 +18,8 @@ const FLOOR = 2.5;
 const CEILING = 5;
 
 export function RatingChart({ points, changePoints = [], event = null, weeks }) {
+  const { t, fmt } = useLocale();
+
   if (!points?.length) return null;
 
   const rated = points.filter((point) => point.rating !== null);
@@ -37,14 +41,18 @@ export function RatingChart({ points, changePoints = [], event = null, weeks }) 
       className="rating-chart"
       viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
       role="img"
-      aria-label={`Rating rata-rata per pekan selama ${weeks} pekan, dari ${rated[0].rating} ke ${rated.at(-1).rating}`}
+      aria-label={t('chart.ratingLabel', {
+        weeks,
+        from: fmt.number(rated[0].rating),
+        to: fmt.number(rated.at(-1).rating),
+      })}
     >
       <g className="chart-grid" aria-hidden="true">
         {[FLOOR, (FLOOR + CEILING) / 2, CEILING].map((value) => (
           <g key={value}>
             <line x1={PADDING.left} y1={y(value)} x2={WIDTH - PADDING.right} y2={y(value)} />
             <text className="chart-axis" x={PADDING.left - 6} y={y(value) + 3} textAnchor="end">
-              {value.toFixed(1).replace('.', ',')}
+              {fmt.number(value, 1)}
             </text>
           </g>
         ))}
@@ -59,7 +67,7 @@ export function RatingChart({ points, changePoints = [], event = null, weeks }) 
             y2={PADDING.top + innerH}
           />
           <text className="chart-event-label" x={x(event.week) + 5} y={PADDING.top + 9}>
-            {formatDay(event.openedAt)} · {event.name} buka
+            {t('chart.eventLabel', { day: fmt.shortDate(event.openedAt), name: event.name })}
           </text>
         </g>
       ) : null}
@@ -75,18 +83,22 @@ export function RatingChart({ points, changePoints = [], event = null, weeks }) 
           r={changeWeeks.has(point.week) ? 3.5 : 2}
         >
           <title>
-            Pekan {point.week} · {point.startsAt} · rating{' '}
-            {point.rating.toFixed(2).replace('.', ',')} dari {point.reviewCount} review
+            {t('chart.pointLabel', {
+              week: point.week,
+              date: point.startsAt,
+              rating: fmt.number(point.rating),
+              reviews: point.reviewCount,
+            })}
           </title>
         </circle>
       ))}
 
       <g className="chart-axis" aria-hidden="true">
         <text x={PADDING.left} y={HEIGHT - 6}>
-          {formatDay(points[0].startsAt)}
+          {fmt.shortDate(points[0].startsAt)}
         </text>
         <text x={WIDTH - PADDING.right} y={HEIGHT - 6} textAnchor="end">
-          {formatDay(points.at(-1).startsAt)}
+          {fmt.shortDate(points.at(-1).startsAt)}
         </text>
       </g>
     </svg>
@@ -95,12 +107,4 @@ export function RatingChart({ points, changePoints = [], event = null, weeks }) 
 
 function clamp(rating) {
   return Math.min(CEILING, Math.max(FLOOR, rating));
-}
-
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-
-/** "2026-06-28" -> "28 Jun", the form design/SCREENS.md uses on this chart. */
-export function formatDay(iso) {
-  const [, month, day] = String(iso).split('-');
-  return `${Number(day)} ${MONTHS[Number(month) - 1] ?? ''}`.trim();
 }

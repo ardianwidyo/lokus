@@ -10,6 +10,7 @@ import { createSeededBriefingSource } from '../src/data/briefingSource.js';
 import { createSeededReputationSource } from '../src/data/reputationSource.js';
 import { createSeededSessionSource } from '../src/data/sessionSource.js';
 import { ACTIVE_TENANT_KEY } from '../src/data/tenantCache.js';
+import { WEB_MESSAGES } from '../src/i18n/index.js';
 import { contrastRatio, parseColor } from '../src/lib/contrast.js';
 
 /**
@@ -57,7 +58,11 @@ describe('T056 · accessibility', () => {
     renderScreen(screenDef.path);
 
     await waitFor(() => expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1));
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(screenDef.title);
+    // The default locale is Indonesian; the title now lives in the dictionary
+    // rather than on the screen record itself (spec.md US-8).
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+      WEB_MESSAGES.id.screen[screenDef.id].title,
+    );
   });
 
   it.each(BUILT)('screen %s gives every button and link an accessible name', async (id) => {

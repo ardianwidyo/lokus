@@ -1,3 +1,5 @@
+import { useT } from '../../i18n/index.js';
+
 /**
  * The 1 km neighbourhood around one branch.
  *
@@ -11,6 +13,8 @@ const CENTRE = SIZE / 2;
 const RING = 78;
 
 export function RadiusMap({ outlet, pois = [], radiusM = 1000 }) {
+  const t = useT();
+
   if (!outlet?.geo) return null;
 
   const place = (poi) => {
@@ -31,7 +35,7 @@ export function RadiusMap({ outlet, pois = [], radiusM = 1000 }) {
       className="radius-map"
       viewBox={`0 0 ${SIZE} ${SIZE}`}
       role="img"
-      aria-label={`${outlet.name} dengan ${pois.length} pesaing dalam radius ${radiusM} meter`}
+      aria-label={t('radiusMap.label', { name: outlet.name, count: pois.length, radius: radiusM })}
     >
       <rect width={SIZE} height={SIZE} className="map-bg" />
 
@@ -49,7 +53,13 @@ export function RadiusMap({ outlet, pois = [], radiusM = 1000 }) {
             r="4"
           >
             <title>
-              {poi.name} · {poi.distanceM} m{poi.openedAt ? ` · buka ${poi.openedAt}` : ''}
+              {poi.openedAt
+                ? t('radiusMap.competitorTitle', {
+                    name: poi.name,
+                    distance: poi.distanceM,
+                    date: poi.openedAt,
+                  })
+                : t('radiusMap.competitorTitleNoDate', { name: poi.name, distance: poi.distanceM })}
             </title>
           </circle>
         );

@@ -5,8 +5,11 @@ import { canWrite } from '../app/roles.js';
 import { useSession } from '../app/SessionContext.jsx';
 import { Blueprint } from '../components/Blueprint.jsx';
 import { DataPanel, PANEL_STATUS } from '../components/states/index.js';
-import { SUGGESTED_QUESTIONS } from '../data/agentSource.js';
+import { useLocale, useT } from '../i18n/index.js';
 import { TraceChips, TraceTable } from './chat/TraceChips.jsx';
+
+/** The three prompts screen 10 offers below the composer. */
+const SUGGESTION_KEYS = ['chat.suggestion1', 'chat.suggestion2', 'chat.suggestion3'];
 
 /**
  * Screen 10 · Chat agen.
@@ -20,6 +23,7 @@ import { TraceChips, TraceTable } from './chat/TraceChips.jsx';
  */
 export function ChatScreen({ onNavigate }) {
   const { agent, role } = useSession();
+  const { t, fmt, errorText } = useLocale();
   const [turns, setTurns] = useState([]);
   const [pending, setPending] = useState(null);
   const [failure, setFailure] = useState(null);
@@ -35,12 +39,16 @@ export function ChatScreen({ onNavigate }) {
       const ticket = await agent.createTicket(payload);
       setReceipts((previous) => ({
         ...previous,
-        [run.id]: `Tiket ${ticket.id} dibuat untuk ${ticket.owner ?? 'tim ops'} · tenggat ${formatDate(ticket.dueAt)}.`,
+        [run.id]: t('chat.ticketCreatedWithDue', {
+          id: ticket.id,
+          owner: ticket.owner ?? t('chat.ticketOwnerFallback'),
+          due: fmt.shortDate(ticket.dueAt),
+        }),
       }));
     } catch (error) {
       setReceipts((previous) => ({
         ...previous,
-        [run.id]: error?.message ?? 'Tiket gagal dibuat.',
+        [run.id]: errorText(error, 'common.ticketFailed'),
       }));
     }
   };
@@ -56,7 +64,7 @@ export function ChatScreen({ onNavigate }) {
       const run = await agent.ask(asked);
       setTurns((previous) => [...previous, { question: asked, run }]);
     } catch (error) {
-      setFailure(error?.message ?? 'Agen tidak menjawab.');
+      setFailure(errorText(error, 'chat.failed'));
     } finally {
       setPending(null);
       if (inputRef.current) inputRef.current.value = '';
@@ -69,10 +77,7 @@ export function ChatScreen({ onNavigate }) {
     <>
       <Blueprint className="chat-panel">
         {turns.length === 0 && !pending ? (
-          <p className="state-description chat-intro">
-            Tanya apa saja tentang cabang, review, atau SOP. Setiap jawaban membawa jejak
-            eksekusinya, sumbernya, dan biayanya.
-          </p>
+          <p className="state-description chat-intro">{t('chat.intro')}</p>
         ) : null}
 
         <ol className="chat-thread">
@@ -80,15 +85,18 @@ export function ChatScreen({ onNavigate }) {
             <li key={index} className="chat-turn">
               <p className="chat-bubble-user">{turn.question}</p>
 
-              <article className="chat-answer" aria-label="Jawaban agen">
+              <article className="chat-answer" aria-label={t('chat.answerLabel')}>
                 <header className="chat-answer-head">
                   <span className="chat-answer-agents">
                     <Bot size={13} strokeWidth={1.5} aria-hidden="true" />
-                    Supervisor → {turn.run.agents.join(' + ')}
+                    {t('chat.agents', { agents: turn.run.agents.join(' + ') })}
                   </span>
                   <span className="chat-answer-meta">
-                    {turn.run.steps.length} langkah · {(turn.run.latencyMs / 1000).toFixed(1)} s ·
-                    Rp {turn.run.costIdr}
+                    {t('chat.answerMeta', {
+                      steps: turn.run.steps.length,
+                      seconds: fmt.number(turn.run.latencyMs / 1000, 1),
+                      cost: fmt.integer(turn.run.costIdr),
+                    })}
                   </span>
                 </header>
 
@@ -109,9 +117,7 @@ export function ChatScreen({ onNavigate }) {
                     ))}
                   </ul>
                 ) : (
-                  <p className="state-note">
-                    Tidak ada sumber yang menopang jawaban ini, jadi agen menolak menjawab.
-                  </p>
+                  <p className="state-note">{t('chat.noSources')}</p>
                 )}
 
                 <AnswerActions
@@ -139,7 +145,7 @@ export function ChatScreen({ onNavigate }) {
               <i />
               <i />
             </span>
-            Agen sedang bekerja untuk “{pending}”…
+            {t('chat.working', { question: pending })}
           </p>
         ) : null}
 
@@ -157,31 +163,31 @@ export function ChatScreen({ onNavigate }) {
           }}
         >
           <label className="sr-only" htmlFor="chat-input">
-            Pertanyaan untuk agen
+            {t('chat.inputLabel')}
           </label>
           <input
             id="chat-input"
             ref={inputRef}
             className="input"
-            placeholder="Tanya apa saja tentang cabang, review, lokasi, atau SOP…"
+            placeholder={t('chat.inputPlaceholder')}
             disabled={Boolean(pending)}
           />
           <button type="submit" className="btn btn-primary" disabled={Boolean(pending)}>
             <Send size={14} strokeWidth={1.5} aria-hidden="true" />
-            Kirim
+            {t('chat.send')}
           </button>
         </form>
 
         <ul className="chat-suggestions">
-          {SUGGESTED_QUESTIONS.map((question) => (
-            <li key={question}>
+          {SUGGESTION_KEYS.map((key) => (
+            <li key={key}>
               <button
                 type="button"
                 className="btn btn-secondary"
-                onClick={() => submit(question)}
+                onClick={() => submit(t(key))}
                 disabled={Boolean(pending)}
               >
-                {question}
+                {t(key)}
               </button>
             </li>
           ))}
@@ -191,22 +197,18 @@ export function ChatScreen({ onNavigate }) {
       <div className="chat-footer-grid">
         <DataPanel
           status={latest ? PANEL_STATUS.READY : PANEL_STATUS.EMPTY}
-          kicker="Jejak eksekusi lengkap"
-          meta={latest ? <span className="panel-meta">run {latest.id}</span> : null}
+          kicker={t('chat.traceKicker')}
+          meta={latest ? <span className="panel-meta">{t('chat.traceMeta', { id: latest.id })}</span> : null}
           empty={{
-            title: 'Belum ada jejak',
-            description: 'Ajukan satu pertanyaan; setiap langkah agen akan tercatat di sini.',
+            title: t('chat.traceEmptyTitle'),
+            description: t('chat.traceEmptyDescription'),
           }}
         >
           {latest ? (
             <>
               <TraceTable steps={latest.steps} />
-              <button
-                type="button"
-                className="btn btn-ghost"
-                onClick={() => onNavigate?.('/admin')}
-              >
-                Buka trace lengkap di Cloud Trace →
+              <button type="button" className="btn btn-ghost" onClick={() => onNavigate?.('/admin')}>
+                {t('chat.openTrace')}
               </button>
             </>
           ) : null}
@@ -214,17 +216,19 @@ export function ChatScreen({ onNavigate }) {
 
         <DataPanel
           status={latest ? PANEL_STATUS.READY : PANEL_STATUS.EMPTY}
-          kicker="Biaya percakapan ini"
-          empty={{ title: 'Belum ada biaya', description: 'Biaya dihitung per jawaban.' }}
+          kicker={t('chat.costKicker')}
+          empty={{ title: t('chat.costEmptyTitle'), description: t('chat.costEmptyDescription') }}
         >
           {latest ? (
             <>
               <p className="cost-figure">
-                Rp {turns.reduce((sum, turn) => sum + turn.run.costIdr, 0)}
+                Rp {fmt.integer(turns.reduce((sum, turn) => sum + turn.run.costIdr, 0))}
               </p>
               <p className="state-description">
-                {turns.length} jawaban · {turns.reduce((sum, t) => sum + t.run.steps.length, 0)}{' '}
-                langkah tool. Batas keras anggaran tenant diatur di halaman Admin.
+                {t('chat.costNote', {
+                  answers: turns.length,
+                  steps: turns.reduce((sum, turn) => sum + turn.run.steps.length, 0),
+                })}
               </p>
               <p className="state-note">{latest.guardrail.summary}</p>
             </>
@@ -239,12 +243,16 @@ export function ChatScreen({ onNavigate }) {
  * AC-7.3: at least one action on every answer, derived from what the run
  * actually found rather than from a fixed menu. A refused answer still offers
  * the knowledge-gap route, so a dead end leads somewhere.
+ *
+ * The labels come from the domain, already in the reader's language.
  */
 function AnswerActions({ run, actions, canAct, onNavigate, onTicket }) {
+  const t = useT();
+
   if (!actions.length) return null;
 
   return (
-    <div className="state-actions" role="group" aria-label="Tindakan untuk jawaban ini">
+    <div className="state-actions" role="group" aria-label={t('chat.actionsLabel')}>
       {actions.map((action) => (
         <button
           key={action.id}
@@ -264,6 +272,4 @@ function AnswerActions({ run, actions, canAct, onNavigate, onTicket }) {
   );
 }
 
-function formatDate(iso) {
-  return new Date(iso).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
-}
+export { SUGGESTION_KEYS };

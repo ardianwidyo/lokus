@@ -4,12 +4,13 @@ import { useSession } from '../app/SessionContext.jsx';
 import { useAsyncData } from '../app/useAsyncData.js';
 import { Blueprint } from '../components/Blueprint.jsx';
 import { DataPanel, PANEL_STATUS } from '../components/states/index.js';
+import { useLocale } from '../i18n/index.js';
 import { MapField } from './map/MapField.jsx';
 
 const LAYERS = [
-  { id: 'skor', label: 'Skor lokasi' },
-  { id: 'reputasi', label: 'Kesehatan reputasi' },
-  { id: 'pesaing', label: 'Kepadatan pesaing' },
+  { id: 'skor', labelKey: 'peta.layerScore' },
+  { id: 'reputasi', labelKey: 'peta.layerReputation' },
+  { id: 'pesaing', labelKey: 'peta.layerCompetitors' },
 ];
 
 /**
@@ -22,10 +23,13 @@ const LAYERS = [
  * status.
  *
  * Every score, every marker position and the agent note are computed; nothing
- * on this screen is drawn from a fixture.
+ * on this screen is drawn from a fixture. The factor labels come back on the
+ * score itself, so the panel and the domain cannot disagree about what a factor
+ * is called.
  */
 export function NetworkMapScreen({ onNavigate }) {
   const { locationSource, tenant } = useSession();
+  const { t, fmt, errorText } = useLocale();
   // The rail shows the tenant's whole estate; this map shows the branches the
   // dataset actually covers. Both numbers are true and they differ, so the
   // panel says which is which rather than leaving the reader to guess.
@@ -47,31 +51,28 @@ export function NetworkMapScreen({ onNavigate }) {
       <DataPanel
         status={outlets.length === 0 && status === PANEL_STATUS.READY ? PANEL_STATUS.EMPTY : status}
         className="map-panel"
-        kicker="Peta jaringan"
+        kicker={t('peta.kicker')}
         meta={
           data ? (
             <span className="panel-meta">
               {declared && declared > outlets.length
-                ? `${outlets.length} dari ${declared} cabang ada di dataset contoh`
-                : `${outlets.length} cabang`}{' '}
-              · {data.sourceCount} POI dianalisis
+                ? t('peta.metaSubset', { shown: outlets.length, declared })
+                : t('peta.metaAll', { count: outlets.length })}{' '}
+              · {t('peta.metaPoi', { count: fmt.integer(data.sourceCount) })}
             </span>
           ) : null
         }
-        loading={{ message: 'Agen Lokasi sedang memindai area cabang…' }}
-        empty={{
-          title: 'Belum ada cabang untuk dipetakan',
-          description: 'Tenant ini belum punya cabang yang terdaftar.',
-        }}
+        loading={{ message: t('peta.loading') }}
+        empty={{ title: t('peta.emptyTitle'), description: t('peta.emptyDescription') }}
         error={{
-          title: 'Peta tak bisa dimuat',
-          description: error?.message ?? 'Layanan lokasi tidak menjawab.',
+          title: t('peta.errorTitle'),
+          description: errorText(error, 'peta.errorFallback'),
           onRetry: reload,
         }}
       >
         {data ? (
           <>
-            <div className="map-layers" role="radiogroup" aria-label="Lapisan peta">
+            <div className="map-layers" role="radiogroup" aria-label={t('peta.layersLabel')}>
               {LAYERS.map((entry) => (
                 <label key={entry.id} className="map-layer">
                   <input
@@ -80,7 +81,7 @@ export function NetworkMapScreen({ onNavigate }) {
                     checked={layer === entry.id}
                     onChange={() => setLayer(entry.id)}
                   />
-                  {entry.label}
+                  {t(entry.labelKey)}
                 </label>
               ))}
             </div>
@@ -95,13 +96,16 @@ export function NetworkMapScreen({ onNavigate }) {
 
             <ul className="map-legend">
               <li>
-                <span className="legend-mark legend-outlet" aria-hidden="true" /> Cabang sendiri
+                <span className="legend-mark legend-outlet" aria-hidden="true" />{' '}
+                {t('peta.legendOutlet')}
               </li>
               <li>
-                <span className="legend-mark legend-competitor" aria-hidden="true" /> Pesaing
+                <span className="legend-mark legend-competitor" aria-hidden="true" />{' '}
+                {t('peta.legendCompetitor')}
               </li>
               <li>
-                <span className="legend-mark legend-radius" aria-hidden="true" /> Radius 1 km
+                <span className="legend-mark legend-radius" aria-hidden="true" />{' '}
+                {t('peta.legendRadius')}
               </li>
             </ul>
           </>
@@ -111,10 +115,10 @@ export function NetworkMapScreen({ onNavigate }) {
       <div className="map-side">
         <DataPanel
           status={status}
-          kicker="Urut menurut · skor terendah"
-          loading={{ message: 'Menghitung skor lokasi…' }}
-          empty={{ title: 'Belum ada skor' }}
-          error={{ title: 'Skor tak bisa dimuat', onRetry: reload }}
+          kicker={t('peta.scoresKicker')}
+          loading={{ message: t('peta.scoresLoading') }}
+          empty={{ title: t('peta.scoresEmpty') }}
+          error={{ title: t('peta.scoresError'), onRetry: reload }}
         >
           {data ? (
             <>
@@ -128,7 +132,7 @@ export function NetworkMapScreen({ onNavigate }) {
                     >
                       <span className="score-name">{outlet.name}</span>
                       <span className="score-rating">
-                        {outlet.rating === null ? '—' : outlet.rating.toFixed(1).replace('.', ',')}
+                        {outlet.rating === null ? '—' : fmt.number(outlet.rating, 1)}
                       </span>
                       <span className="score-value">{outlet.score}</span>
                     </button>
@@ -142,7 +146,7 @@ export function NetworkMapScreen({ onNavigate }) {
                   className="btn btn-secondary btn-block"
                   onClick={() => onNavigate?.(`/cabang?outlet=${selected.outletId}`)}
                 >
-                  Buka detail {selected.name}
+                  {t('peta.openDetail', { name: selected.name })}
                 </button>
               ) : null}
             </>
@@ -151,13 +155,13 @@ export function NetworkMapScreen({ onNavigate }) {
 
         <DataPanel
           status={status}
-          kicker="Catatan agen lokasi"
-          loading={{ message: 'Agen sedang menyusun catatan…' }}
+          kicker={t('peta.noteKicker')}
+          loading={{ message: t('peta.noteLoading') }}
           empty={{
-            title: 'Tidak ada temuan',
-            description: 'Tidak ada cabang berdekatan dan tidak ada pesaing baru pekan ini.',
+            title: t('peta.noteEmptyTitle'),
+            description: t('peta.noteEmptyDescription'),
           }}
-          error={{ title: 'Catatan tak bisa dimuat', onRetry: reload }}
+          error={{ title: t('peta.noteError'), onRetry: reload }}
         >
           {data?.agentNote ? (
             <>
@@ -176,19 +180,19 @@ export function NetworkMapScreen({ onNavigate }) {
 
         {selected ? (
           <Blueprint className="factor-card">
-            <span className="kicker">Faktor skor · {selected.name}</span>
+            <span className="kicker">{t('peta.factorsKicker', { name: selected.name })}</span>
             <ul className="factor-list">
               {Object.entries(selected.factors).map(([key, value]) => (
                 <li key={key}>
                   <span className="factor-label">
-                    {FACTOR_LABELS[key]}
+                    {selected.labels?.[key] ?? key}
                     {/* Saying which figures are measured and which surveyed is
                         the difference between a score and a guess. */}
-                    {selected.surveyedFactors?.includes(key) ? (
-                      <span className="factor-origin"> · survei</span>
-                    ) : (
-                      <span className="factor-origin"> · dari Places</span>
-                    )}
+                    <span className="factor-origin">
+                      {selected.surveyedFactors?.includes(key)
+                        ? t('common.surveyed')
+                        : t('common.fromPlaces')}
+                    </span>
                   </span>
                   <span className="factor-track" aria-hidden="true">
                     <span className="factor-fill" style={{ width: `${value}%` }} />
@@ -203,10 +207,3 @@ export function NetworkMapScreen({ onNavigate }) {
     </div>
   );
 }
-
-const FACTOR_LABELS = {
-  traffic: 'Lalu lintas pejalan',
-  mix: 'Bauran kategori sekitar',
-  competitors: 'Kepadatan pesaing',
-  access: 'Ketersediaan parkir',
-};

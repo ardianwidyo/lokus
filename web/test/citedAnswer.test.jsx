@@ -55,7 +55,8 @@ describe('Screen 12 · Jawaban bersitasi (AC-4.1, AC-4.2, AC-4.3)', () => {
 
     expect(cards.length).toBeGreaterThan(0);
     expect(within(cards[0]).getByText(/hal\. \d+/)).toBeInTheDocument();
-    expect(within(cards[0]).getByText(/skor 0\.\d\d|skor 1\.00/)).toBeInTheDocument();
+    // Indonesian decimal comma, since US-8.
+    expect(within(cards[0]).getByText(/skor 0,\d\d|skor 1,00/)).toBeInTheDocument();
     expect(within(cards[0]).getByRole('button', { name: /Buka halaman \d+/ })).toBeInTheDocument();
   });
 
@@ -72,7 +73,7 @@ describe('Screen 12 · Jawaban bersitasi (AC-4.1, AC-4.2, AC-4.3)', () => {
     await renderAnswer();
 
     expect(screen.getByText(/Potongan yang dipertimbangkan tapi tidak dipakai/)).toBeInTheDocument();
-    expect(screen.getByText(/semuanya di bawah ambang 0\.70/)).toBeInTheDocument();
+    expect(screen.getByText(/semuanya di bawah ambang 0,70/)).toBeInTheDocument();
   });
 
   it('reports how confident it is rather than implying certainty', async () => {

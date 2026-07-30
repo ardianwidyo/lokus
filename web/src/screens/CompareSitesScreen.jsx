@@ -4,6 +4,7 @@ import { canWrite } from '../app/roles.js';
 import { useSession } from '../app/SessionContext.jsx';
 import { useAsyncData } from '../app/useAsyncData.js';
 import { DataPanel, PANEL_STATUS } from '../components/states/index.js';
+import { Rich, useLocale } from '../i18n/index.js';
 
 /**
  * Screen 09 · Bandingkan lokasi — AC-5.3.
@@ -16,6 +17,7 @@ import { DataPanel, PANEL_STATUS } from '../components/states/index.js';
  */
 export function CompareSitesScreen({ onNavigate, query }) {
   const { locationSource, agent, role, tenant } = useSession();
+  const { t, fmt, errorText } = useLocale();
   const [receipt, setReceipt] = useState(null);
 
   const ids = [query?.get('a'), query?.get('b')].filter(Boolean);
@@ -33,14 +35,14 @@ export function CompareSitesScreen({ onNavigate, query }) {
   const raiseSurvey = async (candidate) => {
     try {
       const ticket = await agent.createTicket({
-        title: `Survei lahan kandidat ${candidate.name}`,
-        owner: 'Tim Ekspansi',
+        title: t('scout.surveyTitle', { name: candidate.name }),
+        owner: t('scout.ownerExpansion'),
         sourceInsightId: `compare-${candidate.id}`,
         sourceKind: 'agent_run',
       });
-      setReceipt(`Tiket ${ticket.id} dibuat untuk ${ticket.owner}.`);
+      setReceipt(t('common.ticketCreated', { id: ticket.id, owner: ticket.owner }));
     } catch (failure) {
-      setReceipt(failure?.message ?? 'Tiket gagal dibuat.');
+      setReceipt(errorText(failure, 'common.ticketFailed'));
     }
   };
 
@@ -48,18 +50,20 @@ export function CompareSitesScreen({ onNavigate, query }) {
     <>
       <DataPanel
         status={status === PANEL_STATUS.READY && !data ? PANEL_STATUS.EMPTY : status}
-        kicker="Bandingkan kandidat"
-        meta={data ? <span className="panel-meta">{data.rows.length} faktor</span> : null}
-        loading={{ message: 'Agen Lokasi sedang membandingkan kandidat…' }}
+        kicker={t('compare.kicker')}
+        meta={
+          data ? <span className="panel-meta">{t('compare.meta', { count: data.rows.length })}</span> : null
+        }
+        loading={{ message: t('compare.loading') }}
         empty={{
-          title: 'Belum ada kandidat untuk dibandingkan',
-          description: 'Pilih dua kandidat dari Site Scout.',
-          actionLabel: 'Buka Site Scout',
+          title: t('compare.emptyTitle'),
+          description: t('compare.emptyDescription'),
+          actionLabel: t('compare.emptyAction'),
           onAction: () => onNavigate?.('/site-scout'),
         }}
         error={{
-          title: 'Perbandingan tak bisa dimuat',
-          description: error?.message ?? 'Layanan lokasi tidak menjawab.',
+          title: t('compare.errorTitle'),
+          description: errorText(error, 'compare.errorFallback'),
           onRetry: reload,
         }}
       >
@@ -67,17 +71,17 @@ export function CompareSitesScreen({ onNavigate, query }) {
           <div className="table-scroll">
             <table className="table compare-table">
               <caption className="sr-only">
-                Perbandingan {data.a.name} dan {data.b.name}, faktor demi faktor
+                {t('compare.caption', { a: data.a.name, b: data.b.name })}
               </caption>
               <thead>
                 <tr>
-                  <th scope="col">Faktor</th>
+                  <th scope="col">{t('compare.colFactor')}</th>
                   <th scope="col" className="compare-col-a">
-                    <span className="kicker">Kandidat A · direkomendasikan</span>
+                    <span className="kicker">{t('compare.colA')}</span>
                     <span className="compare-name">{data.a.name}</span>
                   </th>
                   <th scope="col">
-                    <span className="kicker">Kandidat B</span>
+                    <span className="kicker">{t('compare.colB')}</span>
                     <span className="compare-name">{data.b.name}</span>
                   </th>
                 </tr>
@@ -98,7 +102,7 @@ export function CompareSitesScreen({ onNavigate, query }) {
                   </tr>
                 ))}
                 <tr className="compare-conclusion">
-                  <th scope="row">Kesimpulan agen</th>
+                  <th scope="row">{t('compare.conclusion')}</th>
                   <td className="compare-col-a">{data.a.conclusion}</td>
                   <td>{data.b.conclusion}</td>
                 </tr>
@@ -117,21 +121,17 @@ export function CompareSitesScreen({ onNavigate, query }) {
               onClick={() => raiseSurvey(data.a)}
               disabled={!mayAct}
             >
-              Ajukan survei {data.a.name}
+              {t('compare.raiseSurvey', { name: data.a.name })}
             </button>
             <button
               type="button"
               className="btn btn-secondary"
               onClick={() => onNavigate?.('/site-scout')}
             >
-              Ganti kandidat
+              {t('compare.swap')}
             </button>
-            <button
-              type="button"
-              className="btn btn-ghost"
-              onClick={() => onNavigate?.('/chat')}
-            >
-              Tanya agen: “bagaimana kalau target volume?”
+            <button type="button" className="btn btn-ghost" onClick={() => onNavigate?.('/chat')}>
+              {t('compare.askAgent')}
             </button>
           </div>
 
@@ -142,12 +142,17 @@ export function CompareSitesScreen({ onNavigate, query }) {
           ) : null}
 
           <p className="state-note compare-foot">
-            Baris bertanda <strong>terukur</strong> dihitung dari Places dan jarak geografis.{' '}
-            <strong>Survei</strong> berasal dari data lapangan yang belum kami miliki penuh.{' '}
-            <strong>Model</strong> adalah estimasi: kunjungan/hari ≈ skor lalu lintas ×{' '}
-            {data.visitsModel.perTrafficPoint}, dibagi{' '}
-            {`1 + pesaing × ${data.visitsModel.competitorWeight}`}, dengan rentang ±
-            {Math.round(data.visitsModel.band * 100)}%. Angka model bukan hasil pengukuran.
+            <Rich
+              k="compare.foot"
+              values={{
+                measured: <strong>{t('compare.footMeasured')}</strong>,
+                surveyed: <strong>{t('compare.footSurveyed')}</strong>,
+                model: <strong>{t('compare.footModel')}</strong>,
+                perPoint: data.visitsModel.perTrafficPoint,
+                weight: fmt.factor(data.visitsModel.competitorWeight),
+                band: fmt.percent(data.visitsModel.band),
+              }}
+            />
           </p>
         </>
       ) : null}

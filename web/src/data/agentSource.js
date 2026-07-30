@@ -1,4 +1,5 @@
 import {
+  DEFAULT_LOCALE,
   createKnowledgeAgent,
   createLocationAgent,
   createMemoryRunStore,
@@ -20,8 +21,16 @@ import {
  *
  * That matters for the demo: the execution trace on screen is a record of work
  * that actually happened, not a scripted animation.
+ *
+ * `locale` is closed over at construction; `SessionContext` rebuilds this
+ * source when the reader's language changes, the same way it rebuilds on a
+ * tenant switch.
  */
-export function createSeededAgentSource({ tenantId = 'nusa-retail', ticketStore = null } = {}) {
+export function createSeededAgentSource({
+  tenantId = 'nusa-retail',
+  ticketStore = null,
+  locale = DEFAULT_LOCALE,
+} = {}) {
   const runStore = createMemoryRunStore();
   const places = createSeededPlacesAdapter();
   const tickets = ticketStore ?? createMemoryTicketStore();
@@ -38,7 +47,7 @@ export function createSeededAgentSource({ tenantId = 'nusa-retail', ticketStore 
   );
 
   async function ask(question) {
-    return supervisor.ask({ tenantId, question });
+    return supervisor.ask({ tenantId, question, locale });
   }
 
   async function getRun(id) {
@@ -51,19 +60,12 @@ export function createSeededAgentSource({ tenantId = 'nusa-retail', ticketStore 
 
   /** AC-7.3: what this particular answer makes possible. */
   function actionsFor(run) {
-    return answerActions(run);
+    return answerActions(run, locale);
   }
 
   async function createTicket(payload) {
-    return tickets.create(tenantId, { ...payload, createdBy: 'agen' });
+    return tickets.create(tenantId, { ...payload, createdBy: 'agent', createdByKind: 'agent' });
   }
 
   return { isSeeded: true, ask, getRun, recentRuns, actionsFor, createTicket, tickets };
 }
-
-/** The three prompts screen 10 offers below the composer. */
-export const SUGGESTED_QUESTIONS = Object.freeze([
-  'Ringkas keluhan pekan ini',
-  'Kenapa rating cabang Bekasi Timur turun bulan ini?',
-  'Apa kata SOP soal refund?',
-]);

@@ -4,15 +4,14 @@
  */
 export const ROLES = Object.freeze({ ADMIN: 'admin', MANAGER: 'manager', VIEWER: 'viewer' });
 
-/** Display labels, from design/SCREENS.md screen 01. */
-export const ROLE_LABELS = Object.freeze({
-  admin: 'Admin',
-  manager: 'Area Manager',
-  viewer: 'Viewer',
-});
-
-export function roleLabel(role) {
-  return ROLE_LABELS[role] ?? role;
+/**
+ * The dictionary key for a role's display label, from design/SCREENS.md screen
+ * 01. The label itself lives in `web/src/i18n`, so a component reads it through
+ * `t(roleLabelKey(role))` — a map of labels here would be a second place for
+ * "Area Manager" to be written and one of the two would drift.
+ */
+export function roleLabelKey(role) {
+  return `role.${role}`;
 }
 
 /** Viewers are read-only, so any action that changes data is hidden from them. */

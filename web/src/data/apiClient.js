@@ -19,16 +19,21 @@ export class ApiError extends Error {
 /** Codes the panel layer treats as "needs permission" rather than "error". */
 const PERMISSION_CODES = new Set(['TENANT_FORBIDDEN', 'ROLE_FORBIDDEN', 'AUTH_TENANT_CLAIM_MISSING']);
 
-export function createApiClient({ baseUrl, getToken, getTenantId, fetchImpl = fetch }) {
+export function createApiClient({ baseUrl, getToken, getTenantId, getLocale = null, fetchImpl = fetch }) {
   async function request(path, { method = 'GET', body = null, tenantId = null } = {}) {
     const tenant = tenantId ?? getTenantId?.() ?? null;
     const token = await getToken?.();
+    // The reader's language, on every request rather than baked into a client
+    // built once — `api/src/plugins/locale.js` reads this same header per
+    // request, so switching languages needs no new connection.
+    const locale = getLocale?.() ?? null;
 
     const response = await fetchImpl(`${baseUrl}${path}`, {
       method,
       headers: {
         ...(token ? { authorization: `Bearer ${token}` } : {}),
         ...(tenant ? { 'x-lokus-tenant': tenant } : {}),
+        ...(locale ? { 'accept-language': locale } : {}),
         ...(body ? { 'content-type': 'application/json' } : {}),
       },
       ...(body ? { body: JSON.stringify(body) } : {}),

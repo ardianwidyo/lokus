@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import { App } from '../src/App.jsx';
 import { BOTTOM_NAV_IDS, SCREENS, screenNumber } from '../src/app/screens.js';
+import { WEB_MESSAGES } from '../src/i18n/index.js';
 
 describe('screen registry', () => {
   it('has exactly the 14 screens design/SCREENS.md lists', () => {
@@ -17,11 +18,19 @@ describe('screen registry', () => {
     ]);
   });
 
-  it('gives every screen a unique path and a subtitle', () => {
+  it('gives every screen a unique path and a subtitle in both languages', () => {
     const paths = SCREENS.map((s) => s.path);
 
     expect(new Set(paths).size).toBe(14);
-    expect(SCREENS.every((s) => s.title && s.subtitle && s.railLabel)).toBe(true);
+
+    for (const locale of ['id', 'en']) {
+      const dict = WEB_MESSAGES[locale].screen;
+      expect(
+        SCREENS.every(
+          (s) => dict[s.id]?.title && dict[s.id]?.subtitle && dict[s.id]?.railLabel,
+        ),
+      ).toBe(true);
+    }
   });
 
   it('draws the bottom nav from real screens', () => {

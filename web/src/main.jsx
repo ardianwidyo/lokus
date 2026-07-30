@@ -9,6 +9,8 @@ import './styles/shell.css';
 
 import { App } from './App.jsx';
 
+// LocaleProvider lives inside App.jsx, wrapping SessionProvider — see the
+// comment there for why.
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <App />

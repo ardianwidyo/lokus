@@ -5,11 +5,12 @@ import { useSession } from '../app/SessionContext.jsx';
 import { useAsyncData } from '../app/useAsyncData.js';
 import { Blueprint } from '../components/Blueprint.jsx';
 import { DataPanel, PANEL_STATUS } from '../components/states/index.js';
+import { useLocale } from '../i18n/index.js';
 
 const FILTERS = [
-  { id: 'semua', label: 'Semua' },
-  { id: 'dari-agen', label: 'Dari agen' },
-  { id: 'milik-saya', label: 'Milik saya' },
+  { id: 'semua', labelKey: 'board.filterAll' },
+  { id: 'dari-agen', labelKey: 'board.filterFromAgent' },
+  { id: 'milik-saya', labelKey: 'board.filterMine' },
 ];
 
 /**
@@ -24,28 +25,23 @@ const FILTERS = [
  */
 export function ActionBoardScreen({ onNavigate }) {
   const { ticketStore, tenant } = useSession();
+  const { locale, t, fmt, errorText } = useLocale();
   const [filter, setFilter] = useState('semua');
 
   const load = useCallback(async () => {
     const tenantId = tenant?.tenantId ?? 'nusa-retail';
     const [board, stats] = await Promise.all([
-      ticketStore.board(tenantId),
+      ticketStore.board(tenantId, { locale }),
       ticketStore.closeTimeStats(tenantId),
     ]);
     return { board, stats };
-  }, [ticketStore, tenant?.tenantId]);
+  }, [ticketStore, tenant?.tenantId, locale]);
 
   const { status, data, error, reload } = useAsyncData(load);
 
-  const matches = (ticket) => {
-    if (filter === 'dari-agen') return ticket.createdBy?.startsWith('Agen');
-    if (filter === 'milik-saya') return ticket.sourceKind === 'briefing_decision';
-    return true;
-  };
-
   const columns = (data?.board ?? []).map((column) => ({
     ...column,
-    tickets: column.tickets.filter(matches),
+    tickets: column.tickets.filter((ticket) => matchesFilter(ticket, filter)),
   }));
 
   const total = columns.reduce((sum, column) => sum + column.tickets.length, 0);
@@ -53,7 +49,7 @@ export function ActionBoardScreen({ onNavigate }) {
   return (
     <>
       <div className="board-filters">
-        <div className="seg" role="radiogroup" aria-label="Saring tiket">
+        <div className="seg" role="radiogroup" aria-label={t('board.filterLabel')}>
           {FILTERS.map((entry) => (
             <label key={entry.id} className="seg-opt">
               <input
@@ -62,38 +58,37 @@ export function ActionBoardScreen({ onNavigate }) {
                 checked={filter === entry.id}
                 onChange={() => setFilter(entry.id)}
               />
-              {entry.label} · {entry.id === 'semua' ? total : countFor(data?.board, entry.id)}
+              {t(entry.labelKey)} · {entry.id === 'semua' ? total : countFor(data?.board, entry.id)}
             </label>
           ))}
         </div>
 
         {data?.stats ? (
           <p className="board-stats">
-            Rata-rata waktu tutup tiket:{' '}
-            <strong>
-              {data.stats.averageDays === null
-                ? 'belum ada tiket selesai'
-                : `${String(data.stats.averageDays).replace('.', ',')} hari`}
-            </strong>{' '}
-            · SLA {data.stats.slaDays} hari
+            {t('board.stats', {
+              average:
+                data.stats.averageDays === null
+                  ? t('board.statsNone')
+                  : t('board.statsDays', { days: fmt.factor(data.stats.averageDays) }),
+              sla: data.stats.slaDays,
+            })}
           </p>
         ) : null}
       </div>
 
       <DataPanel
         status={total === 0 && status === PANEL_STATUS.READY ? PANEL_STATUS.EMPTY : status}
-        kicker="Papan tindakan"
-        loading={{ message: 'Memuat tiket dari insight agen…' }}
+        kicker={t('board.kicker')}
+        loading={{ message: t('board.loading') }}
         empty={{
-          title: 'Belum ada tiket',
-          description:
-            'Setujui satu keputusan di Briefing Pagi atau satu jawaban di Chat agen, dan tiketnya muncul di sini.',
-          actionLabel: 'Buka Briefing Pagi',
+          title: t('board.emptyTitle'),
+          description: t('board.emptyDescription'),
+          actionLabel: t('board.emptyAction'),
           onAction: () => onNavigate?.('/briefing'),
         }}
         error={{
-          title: 'Papan tak bisa dimuat',
-          description: error?.message ?? 'Layanan tiket tidak menjawab.',
+          title: t('board.errorTitle'),
+          description: errorText(error, 'board.errorFallback'),
           onRetry: reload,
         }}
       >
@@ -130,15 +125,24 @@ export function ActionBoardScreen({ onNavigate }) {
                       </ul>
 
                       <p className="ticket-meta">
-                        {ticket.owner ?? 'belum ada pemilik'} ·{' '}
+                        {ticket.owner ?? t('board.noOwner')} ·{' '}
                         {ticket.status === 'selesai'
-                          ? `ditutup ${daysBetween(ticket.createdAt, ticket.closedAt)} hari`
-                          : `tenggat ${formatDate(ticket.dueAt)}`}
+                          ? t('board.closedIn', {
+                              days: fmt.factor(daysBetween(ticket.createdAt, ticket.closedAt)),
+                            })
+                          : t('board.dueAt', { date: fmt.shortDate(ticket.dueAt) })}
                       </p>
 
                       {/* The link back to the insight — the point of the board. */}
                       <p className="ticket-source">
-                        dari {sourceLabel(ticket)} · {ticket.sourceInsightId}
+                        {t('board.source', {
+                          source: t(
+                            ticket.sourceKind === 'briefing_decision'
+                              ? 'board.sourceBriefing'
+                              : 'board.sourceAgent',
+                          ),
+                          id: ticket.sourceInsightId,
+                        })}
                       </p>
 
                       {ticket.impact ? (
@@ -156,31 +160,29 @@ export function ActionBoardScreen({ onNavigate }) {
         </div>
       </DataPanel>
 
-      <p className="state-note board-foot">
-        Setiap tiket menyimpan tautan ke insight yang melahirkannya dan mencatat dampaknya setelah
-        ditutup. Itu yang membuat LOKUS bisa membuktikan nilai gunanya dengan angka, bukan cerita.
-      </p>
+      <p className="state-note board-foot">{t('board.foot')}</p>
     </>
   );
 }
 
-function countFor(board, filterId) {
-  if (!board) return 0;
-  const all = board.flatMap((column) => column.tickets);
-  if (filterId === 'dari-agen') return all.filter((t) => t.createdBy?.startsWith('Agen')).length;
-  if (filterId === 'milik-saya') return all.filter((t) => t.sourceKind === 'briefing_decision').length;
-  return all.length;
+/**
+ * Filters on `createdByKind`, which the ticket store states, rather than on the
+ * display name. The old test was `createdBy.startsWith('Agen')`, which silently
+ * matched nothing once the agent could be called "Reputation Agent".
+ */
+function matchesFilter(ticket, filter) {
+  if (filter === 'dari-agen') return ticket.createdByKind === 'agent';
+  if (filter === 'milik-saya') return ticket.sourceKind === 'briefing_decision';
+  return true;
 }
 
-function sourceLabel(ticket) {
-  return ticket.sourceKind === 'briefing_decision' ? 'keputusan briefing' : 'jawaban agen';
+function countFor(board, filterId) {
+  if (!board) return 0;
+  return board.flatMap((column) => column.tickets).filter((ticket) => matchesFilter(ticket, filterId))
+    .length;
 }
 
 function daysBetween(from, to) {
   const days = (new Date(to).getTime() - new Date(from).getTime()) / 86400000;
-  return String(Number(days.toFixed(1))).replace('.', ',');
-}
-
-function formatDate(iso) {
-  return new Date(iso).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+  return Number(days.toFixed(1));
 }

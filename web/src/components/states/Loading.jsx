@@ -1,3 +1,5 @@
+import { useT } from '../../i18n/index.js';
+
 /**
  * Loading — "Memuat".
  *
@@ -11,7 +13,9 @@
 
 const SKELETON_WIDTHS = ['70%', '92%', '48%'];
 
-export function Loading({ message = 'Agen sedang membaca data…' }) {
+export function Loading({ message = null }) {
+  const t = useT();
+
   return (
     <div className="state state-loading" role="status" aria-live="polite" aria-busy="true">
       <div className="skeleton" aria-hidden="true">
@@ -19,7 +23,7 @@ export function Loading({ message = 'Agen sedang membaca data…' }) {
           <span key={width} className="skeleton-bar" style={{ width }} />
         ))}
       </div>
-      <p className="state-description">{message}</p>
+      <p className="state-description">{message ?? t('state.loadingDefault')}</p>
     </div>
   );
 }

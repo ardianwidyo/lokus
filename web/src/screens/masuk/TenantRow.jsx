@@ -1,5 +1,6 @@
 import { Blueprint } from '../../components/Blueprint.jsx';
-import { roleLabel } from '../../app/roles.js';
+import { roleLabelKey } from '../../app/roles.js';
+import { useLocale } from '../../i18n/index.js';
 
 /**
  * One tenant row: name, "N cabang · segmen · peran: X", and a single tag.
@@ -9,7 +10,9 @@ import { roleLabel } from '../../app/roles.js';
  * countdown, then read-only.
  */
 export function TenantRow({ tenant, isLastOpened, onSelect, disabled = false }) {
-  const tag = tenantTag(tenant, isLastOpened);
+  const { t, fmt } = useLocale();
+  const tag = tenantTag(tenant, isLastOpened, t);
+  const role = t(roleLabelKey(tenant.role));
 
   return (
     <Blueprint
@@ -18,12 +21,16 @@ export function TenantRow({ tenant, isLastOpened, onSelect, disabled = false }) 
       className={`tenant-row${isLastOpened ? ' is-last-opened' : ''}`}
       onClick={() => onSelect(tenant.tenantId)}
       disabled={disabled}
-      aria-label={`Buka ${tenant.name}, peran ${roleLabel(tenant.role)}`}
+      aria-label={t('masuk.rowLabel', { name: tenant.name, role })}
     >
       <span className="tenant-row-text">
         <span className="tenant-name">{tenant.name}</span>
         <span className="tenant-meta">
-          {tenant.outletCount} cabang · {tenant.segment} · peran: {roleLabel(tenant.role)}
+          {t('masuk.rowMeta', {
+            count: fmt.integer(tenant.outletCount),
+            segment: tenant.segment,
+            role,
+          })}
         </span>
       </span>
       {tag ? <span className={`tag ${tag.className}`}>{tag.label}</span> : null}
@@ -31,12 +38,19 @@ export function TenantRow({ tenant, isLastOpened, onSelect, disabled = false }) 
   );
 }
 
-function tenantTag(tenant, isLastOpened) {
-  if (isLastOpened) return { label: 'Terakhir dibuka', className: 'tag-accent' };
+/**
+ * Takes `t` rather than calling a hook, so it stays a plain function the row
+ * test can drive directly with either language.
+ */
+function tenantTag(tenant, isLastOpened, t) {
+  if (isLastOpened) return { label: t('masuk.tagLastOpened'), className: 'tag-accent' };
   if (tenant.plan === 'trial' && tenant.trialDaysLeft !== null) {
-    return { label: `Uji coba · ${tenant.trialDaysLeft} hari`, className: 'tag-neutral' };
+    return {
+      label: t('masuk.tagTrial', { days: tenant.trialDaysLeft }),
+      className: 'tag-neutral',
+    };
   }
-  if (tenant.role === 'viewer') return { label: 'Baca saja', className: 'tag-neutral' };
+  if (tenant.role === 'viewer') return { label: t('masuk.tagReadOnly'), className: 'tag-neutral' };
   return null;
 }
 

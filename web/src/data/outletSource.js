@@ -1,4 +1,4 @@
-import { createOutletService, createSeededGbpAdapter, createSeededPlacesAdapter } from '@lokus/core';
+import { DEFAULT_LOCALE, createOutletService, createSeededGbpAdapter, createSeededPlacesAdapter } from '@lokus/core';
 
 /**
  * Branch detail for screen 04.
@@ -6,8 +6,12 @@ import { createOutletService, createSeededGbpAdapter, createSeededPlacesAdapter 
  * Runs the same service the API exposes over `/v1/outlets`, so the rating,
  * score and rank on this screen are the ones the network map and the review
  * inbox already show for the same branch.
+ *
+ * `locale` is closed over at construction; `SessionContext` rebuilds this
+ * source when the reader's language changes, the same way it rebuilds on a
+ * tenant switch.
  */
-export function createSeededOutletSource({ tenantId = 'nusa-retail' } = {}) {
+export function createSeededOutletSource({ tenantId = 'nusa-retail', locale = DEFAULT_LOCALE } = {}) {
   const service = createOutletService({
     gbp: createSeededGbpAdapter(),
     places: createSeededPlacesAdapter(),
@@ -16,6 +20,6 @@ export function createSeededOutletSource({ tenantId = 'nusa-retail' } = {}) {
   return {
     isSeeded: true,
     list: (forTenantId = tenantId) => service.list(forTenantId),
-    detail: (forTenantId = tenantId, outletId) => service.detail(forTenantId, outletId),
+    detail: (forTenantId = tenantId, outletId) => service.detail(forTenantId, outletId, { locale }),
   };
 }

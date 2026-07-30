@@ -6,14 +6,19 @@ import { useSession } from '../app/SessionContext.jsx';
 import { useAsyncData } from '../app/useAsyncData.js';
 import { Blueprint } from '../components/Blueprint.jsx';
 import { DataPanel, PANEL_STATUS } from '../components/states/index.js';
+import { useLocale } from '../i18n/index.js';
 import { Stars } from './review/ReviewList.jsx';
 
-/** design/SCREENS.md screen 06 names the four checks in Indonesian. */
-const CHECK_LABELS = {
-  unsourced_claim: 'Tanpa klaim tak bersumber',
-  personal_data: 'Tanpa data pribadi',
-  tone_compliance: 'Nada sesuai panduan',
-  compensation_promise: 'Tanpa janji kompensasi',
+/**
+ * design/SCREENS.md screen 06 names the four checks. The keys here are the
+ * guardrail ids the domain returns, so a check the domain adds shows its raw
+ * name rather than disappearing from the panel.
+ */
+const CHECK_LABEL_KEYS = {
+  unsourced_claim: 'draft.checkUnsourced',
+  personal_data: 'draft.checkPersonalData',
+  tone_compliance: 'draft.checkTone',
+  compensation_promise: 'draft.checkCompensation',
 };
 
 /**
@@ -26,6 +31,7 @@ const CHECK_LABELS = {
  */
 export function ReplyDraftScreen({ reviewId, onNavigate }) {
   const { reputation, role } = useSession();
+  const { t, fmt, errorText } = useLocale();
   const [notice, setNotice] = useState(null);
 
   const load = useCallback(async () => {
@@ -47,10 +53,10 @@ export function ReplyDraftScreen({ reviewId, onNavigate }) {
         approvedBy: 'manajer@nusaretail.co.id',
         role,
       });
-      setNotice('Balasan terkirim. Penyetuju dan waktunya tercatat.');
+      setNotice(t('draft.sentReceipt'));
       await reload();
     } catch (failure) {
-      setNotice(failure?.message ?? 'Balasan gagal dikirim.');
+      setNotice(errorText(failure, 'draft.sendFailed'));
     }
   };
 
@@ -60,24 +66,26 @@ export function ReplyDraftScreen({ reviewId, onNavigate }) {
     <div className="draft-grid">
       <DataPanel
         status={panelStatus}
-        kicker="Review asal"
-        loading={{ message: 'Agen sedang menyusun draft balasan…' }}
+        kicker={t('draft.sourceKicker')}
+        loading={{ message: t('draft.loading') }}
         empty={{
-          title: 'Tidak ada draft menunggu',
-          description:
-            'Semua review pekan ini sudah dibalas. Agen akan memeriksa lagi malam ini pukul 23.00.',
+          title: t('draft.emptyTitle'),
+          description: t('draft.emptyDescription'),
           onAction: reload,
         }}
         error={{
-          title: 'Draft tak bisa dimuat',
-          description: error?.message ?? 'Layanan draft tidak menjawab.',
+          title: t('draft.errorTitle'),
+          description: errorText(error, 'draft.errorFallback'),
           onRetry: reload,
         }}
       >
         {data ? (
           <>
             <p className="review-meta">
-              Google · {data.review.outletName} · {data.review.relative}
+              {t('draft.reviewMeta', {
+                outlet: data.review.outletName,
+                relative: data.review.relative,
+              })}
             </p>
             <Stars rating={data.review.rating} />
             <blockquote className="review-quote">{data.review.text}</blockquote>
@@ -87,15 +95,15 @@ export function ReplyDraftScreen({ reviewId, onNavigate }) {
             {data.draft?.drafted ? (
               <>
                 <div className="draft-head">
-                  <span className="tag tag-accent">Draft balasan</span>
-                  <span className="draft-tone">Gemini · nada: {data.draft.tone}</span>
+                  <span className="tag tag-accent">{t('draft.draftTag')}</span>
+                  <span className="draft-tone">{t('draft.draftTone', { tone: data.draft.tone })}</span>
                 </div>
                 <p className="draft-text draft-text-lg">{data.draft.text}</p>
               </>
             ) : (
               <>
-                <span className="tag tag-outline">Agen menolak menjawab</span>
-                <p className="draft-refusal">Tidak ada di dokumen.</p>
+                <span className="tag tag-outline">{t('draft.refusedTag')}</span>
+                <p className="draft-refusal">{t('draft.refusal')}</p>
                 <p className="state-description">{data.draft?.reason}</p>
               </>
             )}
@@ -107,16 +115,16 @@ export function ReplyDraftScreen({ reviewId, onNavigate }) {
                 onClick={send}
                 disabled={!mayAct || !data.draft?.drafted || data.state === 'sent'}
               >
-                {data.state === 'sent' ? 'Sudah terkirim' : 'Setujui & kirim'}
+                {data.state === 'sent' ? t('draft.sent') : t('draft.approveAndSend')}
               </button>
               <button type="button" className="btn btn-secondary" disabled={!mayAct}>
-                Ubah teks
+                {t('draft.editText')}
               </button>
               <button type="button" className="btn btn-secondary" disabled={!mayAct}>
-                Minta versi lain
+                {t('draft.regenerate')}
               </button>
               <button type="button" className="btn btn-ghost" disabled={!mayAct}>
-                Tolak
+                {t('draft.reject')}
               </button>
             </div>
 
@@ -126,17 +134,10 @@ export function ReplyDraftScreen({ reviewId, onNavigate }) {
               </p>
             ) : null}
 
-            <p className="state-note">
-              Balasan tidak pernah terkirim otomatis. Persetujuan manusia wajib untuk semua review
-              bintang 1–2 — aturan ini ditetapkan di halaman Admin.
-            </p>
+            <p className="state-note">{t('draft.approvalNote')}</p>
 
-            <button
-              type="button"
-              className="btn btn-ghost"
-              onClick={() => onNavigate('/review')}
-            >
-              ← Kembali ke kotak masuk
+            <button type="button" className="btn btn-ghost" onClick={() => onNavigate('/review')}>
+              {t('draft.backToInbox')}
             </button>
           </>
         ) : null}
@@ -145,10 +146,10 @@ export function ReplyDraftScreen({ reviewId, onNavigate }) {
       <div className="draft-side">
         <DataPanel
           status={panelStatus}
-          kicker="Bersumber pada"
-          loading={{ message: 'Mengambil kutipan SOP…' }}
-          empty={{ title: 'Belum ada sumber' }}
-          error={{ title: 'Sumber tak bisa dimuat', onRetry: reload }}
+          kicker={t('draft.sourcesKicker')}
+          loading={{ message: t('draft.sourcesLoading') }}
+          empty={{ title: t('draft.sourcesEmpty') }}
+          error={{ title: t('draft.sourcesError'), onRetry: reload }}
         >
           {data?.draft?.citations?.length ? (
             <ul className="source-list">
@@ -157,28 +158,28 @@ export function ReplyDraftScreen({ reviewId, onNavigate }) {
                   <Blueprint className="source-card">
                     <p className="source-title">
                       <FileText size={12} strokeWidth={1.5} aria-hidden="true" />
-                      {citation.title} · hal. {citation.page}
+                      {citation.title} · {t('common.page', { page: citation.page })}
                     </p>
-                    <p className="source-score">skor {citation.score.toFixed(2)}</p>
+                    <p className="source-score">
+                      {t('common.score', { score: fmt.number(citation.score) })}
+                    </p>
                     <p className="source-quote">“{citation.quote}”</p>
                   </Blueprint>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="state-description">
-              Draft ini tidak bersandar pada dokumen mana pun, jadi tidak ada yang bisa dikutip.
-            </p>
+            <p className="state-description">{t('draft.noSources')}</p>
           )}
         </DataPanel>
 
         <DataPanel
           status={panelStatus}
-          kicker="Pemeriksaan guardrail"
+          kicker={t('draft.guardrailKicker')}
           meta={data?.guardrail ? <span className="panel-meta">{data.guardrail.summary}</span> : null}
-          loading={{ message: 'Menjalankan pemeriksaan…' }}
-          empty={{ title: 'Belum diperiksa' }}
-          error={{ title: 'Pemeriksaan gagal', onRetry: reload }}
+          loading={{ message: t('draft.guardrailLoading') }}
+          empty={{ title: t('draft.guardrailEmpty') }}
+          error={{ title: t('draft.guardrailError'), onRetry: reload }}
         >
           {data?.guardrail ? (
             <ul className="guardrail-list">
@@ -192,10 +193,14 @@ export function ReplyDraftScreen({ reviewId, onNavigate }) {
                     )}
                   </span>
                   <span className="guardrail-text">
-                    <span className="guardrail-name">{CHECK_LABELS[check.name] ?? check.name}</span>
+                    <span className="guardrail-name">
+                      {CHECK_LABEL_KEYS[check.name] ? t(CHECK_LABEL_KEYS[check.name]) : check.name}
+                    </span>
                     <span className="guardrail-detail">{check.detail}</span>
                   </span>
-                  <span className="guardrail-verdict">{check.passed ? 'lolos' : 'gagal'}</span>
+                  <span className="guardrail-verdict">
+                    {check.passed ? t('common.passed') : t('common.failed')}
+                  </span>
                 </li>
               ))}
             </ul>

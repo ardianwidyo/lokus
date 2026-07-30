@@ -8,11 +8,12 @@ import { ApiError, createApiClient, createDevTokenProvider } from './apiClient.j
  * Selected by `VITE_LOKUS_API_URL`. Unset, the console keeps running entirely
  * on the seeded dataset in the browser.
  */
-export function createHttpSources({ baseUrl, getTenant, user = 'demo', fetchImpl = fetch }) {
+export function createHttpSources({ baseUrl, getTenant, getLocale = null, user = 'demo', fetchImpl = fetch }) {
   const api = createApiClient({
     baseUrl: baseUrl.replace(/\/$/, ''),
     getToken: createDevTokenProvider({ getTenant, user }),
     getTenantId: () => getTenant()?.tenantId ?? null,
+    getLocale,
     fetchImpl,
   });
 

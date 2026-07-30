@@ -1,3 +1,5 @@
+import { useLocale } from '../../i18n/index.js';
+
 /**
  * The map surface. Real coordinates projected into the viewbox — no tile
  * layer, no map library, and no invented positions.
@@ -34,6 +36,8 @@ export function project(points, width = WIDTH, height = HEIGHT, padding = PADDIN
 }
 
 export function MapField({ outlets, competitors = [], layer, selectedId, onSelect }) {
+  const { t, fmt } = useLocale();
+
   if (outlets.length === 0) return null;
 
   const to = project(outlets);
@@ -44,7 +48,7 @@ export function MapField({ outlets, competitors = [], layer, selectedId, onSelec
       className="map-field"
       viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
       role="img"
-      aria-label={`Peta ${outlets.length} cabang dan ${competitors.length} pesaing`}
+      aria-label={t('peta.fieldLabel', { outlets: outlets.length, competitors: competitors.length })}
     >
       <rect width={WIDTH} height={HEIGHT} className="map-bg" />
 
@@ -77,8 +81,9 @@ export function MapField({ outlets, competitors = [], layer, selectedId, onSelec
             r="5"
           >
             <title>
-              {poi.name}
-              {poi.openedAt ? ` · buka ${poi.openedAt}` : ''} · {poi.distanceM} m
+              {poi.openedAt
+                ? t('peta.competitorTitle', { name: poi.name, date: poi.openedAt, distance: poi.distanceM })
+                : t('peta.competitorTitleNoDate', { name: poi.name, distance: poi.distanceM })}
             </title>
           </circle>
         );
@@ -95,7 +100,7 @@ export function MapField({ outlets, competitors = [], layer, selectedId, onSelec
             onClick={() => onSelect?.(outlet.outletId)}
             role="button"
             tabIndex={0}
-            aria-label={`${outlet.name}, skor ${outlet.score}`}
+            aria-label={t('peta.outletLabel', { name: outlet.name, score: outlet.score })}
             onKeyDown={(event) => {
               if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault();
@@ -108,7 +113,7 @@ export function MapField({ outlets, competitors = [], layer, selectedId, onSelec
               {outlet.code} {outlet.name}
             </text>
             <text x={point.x + 12} y={point.y + 15} className="map-sublabel">
-              {labelFor(outlet, layer)}
+              {labelFor(outlet, layer, t, fmt)}
             </text>
           </g>
         );
@@ -118,16 +123,16 @@ export function MapField({ outlets, competitors = [], layer, selectedId, onSelec
 }
 
 /** The layer chip decides what the second line says, not what the map draws. */
-function labelFor(outlet, layer) {
+function labelFor(outlet, layer, t, fmt) {
   if (layer === 'reputasi') {
     return outlet.rating === null
-      ? 'rating belum tersedia'
-      : `rating ${outlet.rating.toFixed(1).replace('.', ',')}`;
+      ? t('peta.labelRatingUnavailable')
+      : t('peta.labelRating', { rating: fmt.number(outlet.rating, 1) });
   }
   if (layer === 'pesaing') {
-    return `${outlet.competitorCount} pesaing${
-      outlet.newCompetitorCount > 0 ? ` · ${outlet.newCompetitorCount} baru` : ''
-    }`;
+    return outlet.newCompetitorCount > 0
+      ? t('peta.labelCompetitorsNew', { count: outlet.competitorCount, new: outlet.newCompetitorCount })
+      : t('peta.labelCompetitors', { count: outlet.competitorCount });
   }
-  return `skor ${outlet.score}`;
+  return t('peta.labelScore', { score: outlet.score });
 }

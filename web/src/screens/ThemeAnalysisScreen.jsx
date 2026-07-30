@@ -4,8 +4,10 @@ import { useSession } from '../app/SessionContext.jsx';
 import { useAsyncData } from '../app/useAsyncData.js';
 import { Blueprint } from '../components/Blueprint.jsx';
 import { DataPanel, PANEL_STATUS } from '../components/states/index.js';
+import { useLocale } from '../i18n/index.js';
 import { Sparkline, intensityStyle } from './theme/Sparkline.jsx';
 
+/** Branch codes and their column abbreviations: names, not copy. */
 const OUTLET_COLUMNS = [
   { outletId: 'BKS-02', short: 'Bks' },
   { outletId: 'CKR-01', short: 'Ckr' },
@@ -27,6 +29,7 @@ const OUTLET_COLUMNS = [
  */
 export function ThemeAnalysisScreen() {
   const { reputation } = useSession();
+  const { t, fmt, errorText } = useLocale();
 
   const load = useCallback(() => reputation.themeMatrix(), [reputation]);
   const { status, data, error, reload } = useAsyncData(load);
@@ -38,43 +41,43 @@ export function ThemeAnalysisScreen() {
     <>
       <DataPanel
         status={themes.length === 0 && status === PANEL_STATUS.READY ? PANEL_STATUS.EMPTY : status}
-        kicker="Tema keluhan × cabang"
-        title="Matriks tema, 8 pekan terakhir"
+        kicker={t('tema.kicker')}
+        title={t('tema.title')}
         meta={
           data ? (
             <span className="panel-meta">
-              {data.reviewsConsidered} review dianalisis · {data.sourceCount} sitasi
+              {t('tema.meta', {
+                reviews: fmt.integer(data.reviewsConsidered),
+                sources: fmt.integer(data.sourceCount),
+              })}
             </span>
           ) : null
         }
-        loading={{ message: 'Agen sedang mengelompokkan tema dari teks review…' }}
+        loading={{ message: t('tema.loading') }}
         empty={{
-          title: 'Belum ada tema terdeteksi',
-          description:
-            'Tidak ada keluhan pada jendela 8 pekan ini. Agen akan memeriksa lagi malam ini pukul 23.00.',
+          title: t('tema.emptyTitle'),
+          description: t('tema.emptyDescription'),
           onAction: reload,
         }}
         error={{
-          title: 'Analisis tema tak bisa dimuat',
-          description: error?.message ?? 'Layanan analitik tidak menjawab.',
+          title: t('tema.errorTitle'),
+          description: errorText(error, 'tema.errorFallback'),
           onRetry: reload,
         }}
       >
         <div className="table-scroll">
           <table className="table theme-matrix">
-            <caption className="sr-only">
-              Jumlah review keluhan per tema dan cabang selama delapan pekan terakhir
-            </caption>
+            <caption className="sr-only">{t('tema.caption')}</caption>
             <thead>
               <tr>
-                <th scope="col">Tema keluhan</th>
+                <th scope="col">{t('tema.colTheme')}</th>
                 {OUTLET_COLUMNS.map((column) => (
                   <th key={column.outletId} scope="col">
                     {column.short}
                   </th>
                 ))}
-                <th scope="col">Tren 8 pekan</th>
-                <th scope="col">Sistemik</th>
+                <th scope="col">{t('tema.colTrend')}</th>
+                <th scope="col">{t('tema.colSystemic')}</th>
               </tr>
             </thead>
             <tbody>
@@ -96,17 +99,20 @@ export function ThemeAnalysisScreen() {
                   <td>
                     <Sparkline
                       values={theme.weekly}
-                      label={`${theme.label}: tren 8 pekan, pekan ini ${theme.weekly?.at(-1) ?? 0}`}
+                      label={t('tema.sparklineLabel', {
+                        theme: theme.label,
+                        count: theme.weekly?.at(-1) ?? 0,
+                      })}
                     />
                   </td>
                   <td>
                     {theme.systemic ? (
                       <span className="tag tag-accent" title={theme.systemicReason}>
-                        {theme.regionCount} wilayah
+                        {t('tema.regions', { count: theme.regionCount })}
                       </span>
                     ) : (
                       <span className="tag tag-neutral" title={theme.systemicReason}>
-                        lokal
+                        {t('tema.local')}
                       </span>
                     )}
                   </td>
@@ -120,10 +126,10 @@ export function ThemeAnalysisScreen() {
       <div className="theme-cards">
         <DataPanel
           status={status}
-          kicker="Temuan agen · prioritas jaringan"
-          loading={{ message: 'Menilai sebaran wilayah…' }}
-          empty={{ title: 'Tidak ada temuan sistemik' }}
-          error={{ title: 'Temuan tak bisa dimuat', onRetry: reload }}
+          kicker={t('tema.findingKicker')}
+          loading={{ message: t('tema.findingLoading') }}
+          empty={{ title: t('tema.findingEmpty') }}
+          error={{ title: t('tema.findingError'), onRetry: reload }}
         >
           {data?.finding ? (
             <>
@@ -131,29 +137,33 @@ export function ThemeAnalysisScreen() {
               <p className="state-description">{data.finding.detail}</p>
               <ul className="finding-tags">
                 <li>
-                  <span className="tag tag-neutral">{data.finding.count} keluhan</span>
+                  <span className="tag tag-neutral">
+                    {t('tema.findingComplaints', { count: data.finding.count })}
+                  </span>
                 </li>
                 <li>
-                  <span className="tag tag-neutral">{data.finding.regionCount} wilayah</span>
+                  <span className="tag tag-neutral">
+                    {t('tema.regions', { count: data.finding.regionCount })}
+                  </span>
                 </li>
                 <li>
-                  <span className="tag tag-neutral">terburuk: {data.finding.worstOutlet?.name}</span>
+                  <span className="tag tag-neutral">
+                    {t('tema.findingWorst', { name: data.finding.worstOutlet?.name })}
+                  </span>
                 </li>
               </ul>
             </>
           ) : (
-            <p className="state-description">
-              Tidak ada tema yang menyentuh 4 wilayah. Semua keluhan masih bersifat lokal.
-            </p>
+            <p className="state-description">{t('tema.noSystemic')}</p>
           )}
         </DataPanel>
 
         <DataPanel
           status={status}
-          kicker="Sentimen jaringan · 8 pekan"
-          loading={{ message: 'Menghitung proporsi review negatif…' }}
-          empty={{ title: 'Belum ada data sentimen' }}
-          error={{ title: 'Sentimen tak bisa dimuat', onRetry: reload }}
+          kicker={t('tema.sentimentKicker')}
+          loading={{ message: t('tema.sentimentLoading') }}
+          empty={{ title: t('tema.sentimentEmpty') }}
+          error={{ title: t('tema.sentimentError'), onRetry: reload }}
         >
           {data ? (
             <>
@@ -163,15 +173,19 @@ export function ThemeAnalysisScreen() {
                     <span
                       className="sentiment-bar"
                       style={{ height: `${Math.max(4, share * 160)}px` }}
-                      title={`Pekan ${index + 1}: ${(share * 100).toFixed(0)}% negatif`}
+                      title={t('tema.sentimentBarLabel', {
+                        week: index + 1,
+                        share: fmt.percent(share),
+                      })}
                     />
                   </li>
                 ))}
               </ul>
               <p className="state-description">
-                Proporsi review negatif per pekan ·{' '}
-                {(data.sentimentByWeek[0] * 100).toFixed(0)}% →{' '}
-                {(data.sentimentByWeek.at(-1) * 100).toFixed(0)}%
+                {t('tema.sentimentNote', {
+                  first: fmt.percent(data.sentimentByWeek[0]),
+                  last: fmt.percent(data.sentimentByWeek.at(-1)),
+                })}
               </p>
             </>
           ) : null}
@@ -179,24 +193,22 @@ export function ThemeAnalysisScreen() {
 
         <DataPanel
           status={status}
-          kicker="Praktik baik terdeteksi"
-          loading={{ message: 'Mencari cabang pembanding…' }}
-          empty={{ title: 'Belum ada pembanding' }}
-          error={{ title: 'Pembanding tak bisa dimuat', onRetry: reload }}
+          kicker={t('tema.practiceKicker')}
+          loading={{ message: t('tema.practiceLoading') }}
+          empty={{ title: t('tema.practiceEmpty') }}
+          error={{ title: t('tema.practiceError'), onRetry: reload }}
         >
           {data?.bestPractice ? (
             <>
               <h3 className="finding-headline">{data.bestPractice.outletName}</h3>
               <p className="state-description">
-                Cabang dengan keluhan “{data.bestPractice.label}” paling sedikit di jaringan (
-                {data.bestPractice.count} dalam 8 pekan). Agen mengusulkan menelaah pola kerjanya
-                untuk disalin ke cabang terlemah.
+                {t('tema.practiceDescription', {
+                  theme: data.bestPractice.label,
+                  count: data.bestPractice.count,
+                })}
               </p>
               <Blueprint className="practice-note">
-                <p className="state-description">
-                  Usulan ini berdasar perbandingan jumlah keluhan, bukan wawancara lapangan —
-                  verifikasi sebelum direplikasi.
-                </p>
+                <p className="state-description">{t('tema.practiceCaveat')}</p>
               </Blueprint>
             </>
           ) : null}

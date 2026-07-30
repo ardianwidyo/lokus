@@ -44,7 +44,11 @@ describe('Screen 14 · Admin (AC-6.2)', () => {
   it('shows the confidence threshold the refusal rule uses', async () => {
     await renderAdmin();
 
-    expect(screen.getByText('0.70')).toBeInTheDocument();
+    // Indonesian decimal comma, matching the guardrail toggle's own label a few
+    // lines up — the two used to disagree (0.70 here, 0,70 there) because this
+    // figure was formatted with a bare `.toFixed(2)`. Since US-8 both read off
+    // the same locale-aware formatter.
+    expect(screen.getByText('0,70')).toBeInTheDocument();
   });
 
   it('shows spend against the hard ceiling and the degrade point', async () => {

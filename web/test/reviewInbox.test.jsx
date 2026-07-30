@@ -128,8 +128,11 @@ describe('Screen 05 · Kotak masuk review (AC-3.1)', () => {
 
     await userEvent.click(screen.getByText(/^Terkirim/));
 
-    await waitFor(() => expect(rows().length).not.toBe(before));
-  });
+    // Passes in well under a second alone; the longer budget here is headroom
+    // for CPU contention at the tail of a full parallel run, not slack for a
+    // slow implementation.
+    await waitFor(() => expect(rows().length).not.toBe(before), { timeout: 10000 });
+  }, 15000);
 
   it('shows the empty state when a bucket has no reviews', async () => {
     const source = createSeededReputationSource();

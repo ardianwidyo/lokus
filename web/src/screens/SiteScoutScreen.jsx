@@ -6,6 +6,7 @@ import { useSession } from '../app/SessionContext.jsx';
 import { useAsyncData } from '../app/useAsyncData.js';
 import { Blueprint } from '../components/Blueprint.jsx';
 import { DataPanel, PANEL_STATUS } from '../components/states/index.js';
+import { useLocale } from '../i18n/index.js';
 
 /**
  * Screen 08 · Site Scout.
@@ -20,6 +21,7 @@ import { DataPanel, PANEL_STATUS } from '../components/states/index.js';
  */
 export function SiteScoutScreen({ onNavigate }) {
   const { locationSource, agent, role, tenant } = useSession();
+  const { t, errorText } = useLocale();
   const [receipts, setReceipts] = useState({});
 
   const load = useCallback(
@@ -33,20 +35,20 @@ export function SiteScoutScreen({ onNavigate }) {
   const raiseSurvey = async (candidate) => {
     try {
       const ticket = await agent.createTicket({
-        title: `Survei lahan kandidat ${candidate.name}`,
+        title: t('scout.surveyTitle', { name: candidate.name }),
         outletId: null,
-        owner: 'Tim Ekspansi',
+        owner: t('scout.ownerExpansion'),
         sourceInsightId: `site-scout-${candidate.id}`,
         sourceKind: 'agent_run',
       });
       setReceipts((previous) => ({
         ...previous,
-        [candidate.id]: `Tiket ${ticket.id} dibuat untuk ${ticket.owner}.`,
+        [candidate.id]: t('common.ticketCreated', { id: ticket.id, owner: ticket.owner }),
       }));
     } catch (failure) {
       setReceipts((previous) => ({
         ...previous,
-        [candidate.id]: failure?.message ?? 'Tiket gagal dibuat.',
+        [candidate.id]: errorText(failure, 'common.ticketFailed'),
       }));
     }
   };
@@ -59,17 +61,16 @@ export function SiteScoutScreen({ onNavigate }) {
         status={
           recommended.length === 0 && status === PANEL_STATUS.READY ? PANEL_STATUS.EMPTY : status
         }
-        kicker="Permintaan ke Agen Lokasi"
-        loading={{ message: 'Agen Lokasi sedang menilai kandidat lokasi…' }}
+        kicker={t('scout.kicker')}
+        loading={{ message: t('scout.loading') }}
         empty={{
-          title: 'Tidak ada kandidat yang lolos',
-          description:
-            'Semua lokasi yang dipertimbangkan berada di bawah ambang jarak 1,2 km dari cabang yang sudah ada.',
+          title: t('scout.emptyTitle'),
+          description: t('scout.emptyDescription'),
           onAction: reload,
         }}
         error={{
-          title: 'Site Scout tak bisa dimuat',
-          description: error?.message ?? 'Layanan lokasi tidak menjawab.',
+          title: t('scout.errorTitle'),
+          description: errorText(error, 'scout.errorFallback'),
           onRetry: reload,
         }}
       >
@@ -78,15 +79,15 @@ export function SiteScoutScreen({ onNavigate }) {
             <blockquote className="scout-request">{data.request}</blockquote>
             <dl className="scout-stats">
               <div>
-                <dt>POI dianalisis</dt>
+                <dt>{t('scout.statPoi')}</dt>
                 <dd>{data.poiCount}</dd>
               </div>
               <div>
-                <dt>Lolos filter</dt>
+                <dt>{t('scout.statPassed')}</dt>
                 <dd>{data.passedFilter}</dd>
               </div>
               <div>
-                <dt>Direkomendasikan</dt>
+                <dt>{t('scout.statRecommended')}</dt>
                 <dd>{recommended.length}</dd>
               </div>
             </dl>
@@ -100,7 +101,7 @@ export function SiteScoutScreen({ onNavigate }) {
             key={candidate.id}
             className={`scout-card${candidate.rank === 1 ? ' is-top' : ''}`}
           >
-            <span className="kicker">Peringkat {candidate.rank}</span>
+            <span className="kicker">{t('scout.rank', { rank: candidate.rank })}</span>
             <div className="scout-head">
               <h3 className="scout-name">{candidate.name}</h3>
               <span className="scout-score">{candidate.total}</span>
@@ -113,7 +114,9 @@ export function SiteScoutScreen({ onNavigate }) {
                   <span className="factor-label">
                     {candidate.labels[key]}
                     <span className="factor-origin">
-                      {candidate.surveyedFactors.includes(key) ? ' · survei' : ' · terukur'}
+                      {candidate.surveyedFactors.includes(key)
+                        ? t('common.surveyed')
+                        : t('common.measured')}
                     </span>
                   </span>
                   <span className="factor-track" aria-hidden="true">
@@ -132,7 +135,7 @@ export function SiteScoutScreen({ onNavigate }) {
                 className="btn btn-secondary"
                 onClick={() => onNavigate?.(`/bandingkan?a=${candidate.id}`)}
               >
-                Bandingkan
+                {t('scout.compare')}
               </button>
               <button
                 type="button"
@@ -140,7 +143,7 @@ export function SiteScoutScreen({ onNavigate }) {
                 onClick={() => raiseSurvey(candidate)}
                 disabled={!mayAct}
               >
-                Jadikan tiket survei
+                {t('scout.raiseSurvey')}
               </button>
             </div>
 
@@ -154,28 +157,25 @@ export function SiteScoutScreen({ onNavigate }) {
       </div>
 
       {data?.rejected?.length ? (
-        <DataPanel status={PANEL_STATUS.READY} kicker="Ditolak filter">
+        <DataPanel status={PANEL_STATUS.READY} kicker={t('scout.rejectedKicker')}>
           <ul className="rejected-list">
             {data.rejected.map((candidate) => (
               <li key={candidate.id}>
                 <span className="rejected-name">{candidate.name}</span>
-                <span className="tag tag-outline">skor {candidate.total}</span>
+                <span className="tag tag-outline">
+                  {t('common.score', { score: candidate.total })}
+                </span>
                 <span className="rejected-reason">{candidate.reason}</span>
               </li>
             ))}
           </ul>
-          <p className="state-note">
-            Lokasi ini bukan gagal dinilai — skornya bagus. Ia ditolak karena terlalu dekat dengan
-            cabang sendiri, jadi sebagian pelanggannya hanya akan berpindah.
-          </p>
+          <p className="state-note">{t('scout.rejectedNote')}</p>
         </DataPanel>
       ) : null}
 
       <p className="state-note scout-foot">
         <Info size={13} strokeWidth={1.5} aria-hidden="true" />
-        Kepadatan pesaing dihitung dari Places dalam radius yang tertera; jarak antar cabang sendiri
-        dari perhitungan geografis. Lalu lintas pejalan dan bauran kategori masih berupa survei —
-        ditandai di setiap baris. Bobot keempat faktor bisa diubah di Admin.
+        {t('scout.foot')}
       </p>
     </>
   );

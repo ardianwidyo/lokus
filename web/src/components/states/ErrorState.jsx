@@ -1,3 +1,5 @@
+import { useT } from '../../i18n/index.js';
+
 /**
  * Error — "Gagal".
  *
@@ -12,26 +14,23 @@
  * Failing loudly is the point: the panel never silently shows stale numbers
  * without saying they are stale.
  */
-export function ErrorState({
-  title = 'Permintaan gagal',
-  description = null,
-  onRetry = null,
-  onViewLog = null,
-}) {
+export function ErrorState({ title = null, description = null, onRetry = null, onViewLog = null }) {
+  const t = useT();
+
   return (
     <div className="state state-error" role="alert">
-      <p className="state-title">{title}</p>
+      <p className="state-title">{title ?? t('state.errorDefault')}</p>
       {description ? <p className="state-description">{description}</p> : null}
       {onRetry || onViewLog ? (
         <div className="state-actions">
           {onRetry ? (
             <button type="button" className="btn btn-secondary" onClick={onRetry}>
-              Coba lagi
+              {t('state.retry')}
             </button>
           ) : null}
           {onViewLog ? (
             <button type="button" className="btn btn-ghost" onClick={onViewLog}>
-              Lihat log
+              {t('state.viewLog')}
             </button>
           ) : null}
         </div>
