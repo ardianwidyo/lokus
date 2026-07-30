@@ -140,12 +140,14 @@ flowchart TB
     api["<b>api</b> · Fastify<br/>Identity Platform · isolasi tenant · RBAC"]
   end
 
-  subgraph agen["Vertex AI Agent Engine"]
+  subgraph agen["Supervisor + 3 agen · packages/core"]
     sup["<b>supervisor</b><br/>route · delegasi paralel · merge · guardrail"]
     rep["Agen Reputasi"]
     loc["Agen Lokasi"]
     kno["Agen Pengetahuan"]
   end
+
+  gem["<b>Gemini</b> · AI Studio REST<br/>draft balasan · jawaban bersitasi"]
 
   subgraph data["Data"]
     bq[("BigQuery + GIS<br/>fakta review · rollup tema")]
@@ -171,11 +173,44 @@ flowchart TB
   api --> fs
 
   sched["Cloud Scheduler 23.00 WIB"] --> pubsub["Pub/Sub"] --> api
+  kno --> gem
+
+  classDef pending stroke-dasharray: 4 3;
+  class bq,fs,vs,gcs,gbp,places,sched,pubsub pending;
 ```
 
 Ketiga agen berjalan. Setiap tool yang mereka panggil muncul sebagai langkah
 bernomor di jejak eksekusi layar 10, dan setiap angka yang dihasilkannya
 menempel pada sumber yang bisa dibuka.
+
+### Apa yang benar-benar berjalan, dan apa yang belum
+
+Kotak bergaris putus-putus di diagram di atas **belum tersambung**. Kami
+memisahkannya secara eksplisit karena kriteria penilaian menuntut stack yang
+*terpakai*, bukan disebut — dan diagram yang menggambarkan layanan yang tidak
+pernah dipanggil adalah klaim yang tidak bisa dipertanggungjawabkan.
+
+| Berjalan sungguhan | Belum tersambung |
+|---|---|
+| **Gemini** (`gemini-2.0-flash` / `-lite`) menulis draft balasan dan jawaban bersitasi lewat AI Studio REST — [`gemini.js`](packages/core/src/adapters/gemini.js) | **Vertex AI Agent Engine** & **Vertex AI Search**: butuh billing account aktif |
+| Supervisor: routing, delegasi paralel, merge, guardrail, jejak langkah bernomor | **BigQuery + GIS**: klasterisasi, tren, dan jarak dihitung deterministik di `packages/core` |
+| Retrieval berambang 0,70, penolakan, dan pencatatan celah pengetahuan | **Firestore** & **Cloud Storage**: state di memori |
+| Isolasi tenant, RBAC, guardrail, batas biaya | **Business Profile** & **Places**: adapter sengaja tidak diimplementasi, bukan dipalsukan |
+
+**Datanya sintetis.** 713 review, 6 cabang, POI pesaing, dan pasal SOP
+dihasilkan generator deterministik di `packages/core/src/seed`. Tidak ada
+review Google sungguhan, dan adapter Google-nya
+[melempar error alih-alih mengarang](packages/core/src/adapters/gbp.js) bila
+dipanggil tanpa kredensial.
+
+**Yang membuat Gemini di sini bukan sekadar tempelan:** keluarannya diperiksa,
+bukan dipercaya. Jawaban yang tidak menyebut sumber dibuang; jawaban yang
+menyebut `[9]` padahal hanya ada tiga kutipan dibuang; yang sampai ke pembaca
+adalah jawaban deterministik. Layar 12 menyebutkan mana yang terjadi —
+*"ditulis gemini-2.0-flash, lolos cek sitasi"* atau *"dikutip apa adanya dari
+SOP"*. Tanpa `GEMINI_API_KEY` seluruh sistem berjalan di jalur deterministik,
+dan itulah yang dilayani demo publik, karena key di dalam bundel browser adalah
+key yang bocor.
 
 ---
 
@@ -216,7 +251,7 @@ test sehingga layar baru yang lupa satu state akan menggagalkan build.
 
 | Bukti | Di mana |
 |---|---|
-| **840 test** lulus di 4 workspace | `npm test` |
+| **873 test** lulus di 4 workspace | `npm test` |
 | **24 dari 24 acceptance criteria** di spec.md punya test yang menyebutnya per nama | `grep -r AC- */test eval` |
 | **Eval agen**: 60 kasus, 5 ambang konstitusi, CI memblokir merge bila satu gagal | [`eval/`](eval/) · `npm run eval` |
 | **Terraform**: Cloud Run, Firestore, BigQuery, Storage, Secret Manager, Scheduler, WIF | [`infra/`](infra/) |
