@@ -3,6 +3,7 @@ import { themeCluster } from '../analytics/themeCluster.js';
 import { relativeLabel } from '../domain/clock.js';
 import { findOutlet } from '../domain/outlets.js';
 import { themeLabel } from '../domain/themes.js';
+import { DEFAULT_LOCALE } from '../i18n/locales.js';
 import { assertTenant } from '../lib/tenantScope.js';
 import {
   approveDraft,
@@ -38,10 +39,12 @@ export function createReputationService({ gbp, approvalStore = null, gemini = nu
   }
 
   const draftCache = new Map();
-  async function draftFor(tenantId, review) {
-    const key = `${tenantId}:${review.id}`;
+  // Keyed by locale as well as review: the reply body is Indonesian either way,
+  // but the tone label and the refusal reason shown beside it are not.
+  async function draftFor(tenantId, review, locale = DEFAULT_LOCALE) {
+    const key = `${tenantId}:${review.id}:${locale}`;
     if (!draftCache.has(key)) {
-      const result = await draftReply({ tenantId, review, gemini });
+      const result = await draftReply({ tenantId, review, gemini, locale });
       draftCache.set(key, result.data);
     }
     return draftCache.get(key);
@@ -68,14 +71,14 @@ export function createReputationService({ gbp, approvalStore = null, gemini = nu
     };
   }
 
-  async function reviewDetail(tenantId, reviewId) {
+  async function reviewDetail(tenantId, reviewId, { locale = DEFAULT_LOCALE } = {}) {
     assertTenant(tenantId);
     const review = (await allReviews(tenantId)).find((row) => row.id === reviewId);
     if (!review) return null;
 
-    const draft = await draftFor(tenantId, review);
+    const draft = await draftFor(tenantId, review, locale);
     const guardrail = draft.drafted
-      ? guardrailCheck({ draftText: draft.text, citations: draft.citations }).data
+      ? guardrailCheck({ draftText: draft.text, citations: draft.citations, locale }).data
       : null;
     const persisted = await store.get(tenantId, reviewId);
 
@@ -88,12 +91,12 @@ export function createReputationService({ gbp, approvalStore = null, gemini = nu
     };
   }
 
-  async function approveAndSend(tenantId, { reviewId, approvedBy, role }) {
+  async function approveAndSend(tenantId, { reviewId, approvedBy, role, locale = DEFAULT_LOCALE }) {
     assertTenant(tenantId);
     const review = (await allReviews(tenantId)).find((row) => row.id === reviewId);
     if (!review) return null;
 
-    const draft = await draftFor(tenantId, review);
+    const draft = await draftFor(tenantId, review, locale);
 
     if (!(await store.get(tenantId, reviewId))) {
       await saveDraft({ tenantId, review, draft, store });
@@ -108,20 +111,20 @@ export function createReputationService({ gbp, approvalStore = null, gemini = nu
     return sent.data;
   }
 
-  async function themeMatrix(tenantId) {
+  async function themeMatrix(tenantId, { locale = DEFAULT_LOCALE } = {}) {
     assertTenant(tenantId);
     const reviews = await allReviews(tenantId);
     const { data, sources } = await themeCluster({ tenantId, reviews });
-    const themes = flagSystemicThemes(data.themes);
+    const themes = flagSystemicThemes(data.themes, { locale });
 
     return {
-      themes: themes.map((theme) => ({ ...theme, label: themeLabel(theme.theme) })),
-      finding: systemicFinding(data.themes),
+      themes: themes.map((theme) => ({ ...theme, label: themeLabel(theme.theme, locale) })),
+      finding: systemicFinding(data.themes, { locale }),
       weeks: data.weeks,
       reviewsConsidered: data.reviewsConsidered,
       sourceCount: sources.length,
       sentimentByWeek: sentimentByWeek(reviews, data.weeks),
-      bestPractice: bestPractice(themes),
+      bestPractice: bestPractice(themes, locale),
     };
   }
 
@@ -155,7 +158,7 @@ function sentimentByWeek(reviews, weeks) {
 }
 
 /** The branch coping best with the leading theme — something to copy, not fix. */
-function bestPractice(themes) {
+function bestPractice(themes, locale = DEFAULT_LOCALE) {
   const leading = themes[0];
   if (!leading) return null;
 
@@ -167,7 +170,7 @@ function bestPractice(themes) {
     outletId,
     outletName: findOutlet(outletId)?.name ?? outletId,
     theme: leading.theme,
-    label: themeLabel(leading.theme),
+    label: themeLabel(leading.theme, locale),
     count,
   };
 }

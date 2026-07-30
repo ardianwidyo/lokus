@@ -1,8 +1,11 @@
-import { cannibalisation } from '../location/cannibalisation.js';
+import { CANNIBALISATION_THRESHOLD_KM, cannibalisation } from '../location/cannibalisation.js';
 import { locationScore } from '../location/locationScore.js';
 import { compareSites } from '../location/compareSites.js';
 import { scoutSites } from '../location/siteScout.js';
 import { outletsForTenant } from '../domain/outlets.js';
+import { DEFAULT_LOCALE } from '../i18n/locales.js';
+import { localeFactor } from '../i18n/format.js';
+import { t } from '../i18n/index.js';
 import { assertTenant } from '../lib/tenantScope.js';
 
 /**
@@ -15,14 +18,14 @@ import { assertTenant } from '../lib/tenantScope.js';
  * cannibalisation check actually found.
  */
 export function createLocationService({ places, weights = undefined } = {}) {
-  async function networkMap(tenantId, { ratingsByOutlet = {} } = {}) {
+  async function networkMap(tenantId, { ratingsByOutlet = {}, locale = DEFAULT_LOCALE } = {}) {
     assertTenant(tenantId);
     const outlets = outletsForTenant(tenantId);
 
     const scored = await Promise.all(
       outlets.map(async (outlet) => {
         const [score, nearby] = await Promise.all([
-          locationScore({ tenantId, outletId: outlet.outletId, places, weights }),
+          locationScore({ tenantId, outletId: outlet.outletId, places, weights, locale }),
           places.nearbyCompetitors({ geo: outlet.geo }),
         ]);
 
@@ -40,13 +43,15 @@ export function createLocationService({ places, weights = undefined } = {}) {
           surveyedFactors: score.data.surveyedFactors,
           competitorCount: score.data.competitorCount,
           newCompetitorCount: score.data.newCompetitorCount,
+          radiusM: score.data.radiusM,
+          labels: score.data.labels,
           rating: ratingsByOutlet[outlet.outletId] ?? null,
           competitors: nearby.data.pois,
         };
       }),
     );
 
-    const pairs = await nearbyOwnPairs(tenantId, outlets);
+    const pairs = await nearbyOwnPairs(tenantId, outlets, locale);
 
     return {
       // Ascending: the branch that needs attention is the one at the top.
@@ -55,20 +60,20 @@ export function createLocationService({ places, weights = undefined } = {}) {
         outlet.competitors.map((poi) => ({ ...poi, nearOutletId: outlet.outletId })),
       ),
       cannibalisationPairs: pairs,
-      agentNote: agentNote(scored, pairs),
+      agentNote: agentNote(scored, pairs, locale),
       sourceCount: scored.reduce((sum, outlet) => sum + outlet.competitorCount, 0),
     };
   }
 
-  async function siteScout(tenantId) {
+  async function siteScout(tenantId, { locale = DEFAULT_LOCALE } = {}) {
     assertTenant(tenantId);
-    const { data } = await scoutSites({ tenantId, places, weights: undefined });
+    const { data } = await scoutSites({ tenantId, places, weights: undefined, locale });
     return data;
   }
 
-  async function compare(tenantId, ids = null) {
+  async function compare(tenantId, ids = null, { locale = DEFAULT_LOCALE } = {}) {
     assertTenant(tenantId);
-    const { data } = await compareSites({ tenantId, places, ids, weights });
+    const { data } = await compareSites({ tenantId, places, ids, weights, locale });
     return data;
   }
 
@@ -79,7 +84,7 @@ export function createLocationService({ places, weights = undefined } = {}) {
  * Own outlets close enough to compete with each other. Checked pairwise and
  * de-duplicated, so A-B and B-A are one finding rather than two.
  */
-async function nearbyOwnPairs(tenantId, outlets) {
+async function nearbyOwnPairs(tenantId, outlets, locale) {
   const seen = new Set();
   const pairs = [];
 
@@ -88,6 +93,7 @@ async function nearbyOwnPairs(tenantId, outlets) {
       tenantId,
       geo: outlet.geo,
       excludeOutletId: outlet.outletId,
+      locale,
     });
 
     if (!data.flagged || !data.nearestOwn) continue;
@@ -103,29 +109,45 @@ async function nearbyOwnPairs(tenantId, outlets) {
 }
 
 /** Written from what was found; there is no note when there is nothing to say. */
-function agentNote(scored, pairs) {
+function agentNote(scored, pairs, locale = DEFAULT_LOCALE) {
+  const threshold = localeFactor(locale, CANNIBALISATION_THRESHOLD_KM);
+
   if (pairs.length > 0) {
     const [pair] = pairs;
+    const km = localeFactor(locale, pair.km);
+
     return {
-      headline: 'Dua cabang berdekatan terdeteksi',
-      body:
-        `${pair.a} dan ${pair.b} hanya berjarak ${pair.km} km — di bawah ambang 1,2 km. ` +
-        'Sebagian pelanggan berpindah antar keduanya, bukan bertambah. Catchment keduanya ' +
-        'sudah dihitung ulang.',
-      evidence: [`${pair.km} km`, 'ambang 1,2 km', `${pairs.length} pasang`],
+      headline: t(locale, 'mapNote.pairsHeadline'),
+      body: t(locale, 'mapNote.pairsBody', { a: pair.a, b: pair.b, km, threshold }),
+      evidence: [
+        t(locale, 'mapNote.pairsEvidenceKm', { km }),
+        t(locale, 'mapNote.pairsEvidenceThreshold', { threshold }),
+        t(locale, 'mapNote.pairsEvidenceCount', { count: pairs.length }),
+      ],
     };
   }
 
   const withNew = scored.filter((outlet) => outlet.newCompetitorCount > 0);
   if (withNew.length > 0) {
     const worst = withNew.sort((a, b) => a.score - b.score)[0];
+    // The radius the score actually used, rather than "1 km" written by hand and
+    // left behind the first time the default changed.
+    const radius = `${localeFactor(locale, (worst.radiusM ?? 1000) / 1000)} km`;
+
     return {
-      headline: `Pesaing baru di sekitar ${worst.name}`,
-      body:
-        `${worst.newCompetitorCount} pesaing baru muncul dalam radius 1 km. Skor lokasi ` +
-        `${worst.name} kini ${worst.score}, terendah di jaringan. Faktor kepadatan pesaing ` +
-        `turun ke ${worst.factors.competitors}.`,
-      evidence: [`skor ${worst.score}`, `${worst.competitorCount} pesaing`, 'radius 1 km'],
+      headline: t(locale, 'mapNote.newCompetitorsHeadline', { outlet: worst.name }),
+      body: t(locale, 'mapNote.newCompetitorsBody', {
+        count: worst.newCompetitorCount,
+        outlet: worst.name,
+        score: worst.score,
+        factor: worst.factors.competitors,
+        radius,
+      }),
+      evidence: [
+        t(locale, 'mapNote.evidenceScore', { score: worst.score }),
+        t(locale, 'mapNote.evidenceCompetitors', { count: worst.competitorCount }),
+        t(locale, 'mapNote.evidenceRadius', { radius }),
+      ],
     };
   }
 

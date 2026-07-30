@@ -5,6 +5,7 @@ import { createDevVerifier, isDevAuthEnabled } from './auth/devPrincipal.js';
 import { createTokenVerifier } from './auth/verifyIdToken.js';
 import { HttpError } from './lib/errors.js';
 import { registerAuth } from './plugins/auth.js';
+import { registerLocale } from './plugins/locale.js';
 import { createSeededTenantDirectory } from './repositories/tenantDirectory.js';
 import { createServices } from './services/index.js';
 import { adminRoutes } from './routes/admin.js';
@@ -59,10 +60,16 @@ export function buildServer({
   fastify.register(cors, {
     origin: config?.allowedOrigins?.length ? config.allowedOrigins : false,
     methods: ['GET', 'POST', 'OPTIONS'],
-    allowedHeaders: ['authorization', 'content-type', 'x-lokus-tenant'],
+    // `accept-language` is on the list because the console sends it explicitly
+    // rather than relying on the browser's own; without it the preflight fails
+    // and every request falls back to Indonesian.
+    allowedHeaders: ['accept-language', 'authorization', 'content-type', 'x-lokus-tenant'],
     maxAge: 600,
   });
 
+  // Before auth: a request rejected for its token should still have been logged
+  // with the locale it asked for.
+  registerLocale(fastify);
   registerAuth(fastify, { verifyIdToken: verifier });
 
   fastify.setErrorHandler((error, request, reply) => {

@@ -1,3 +1,6 @@
+import { DEFAULT_LOCALE } from '../i18n/locales.js';
+import { t } from '../i18n/index.js';
+
 /**
  * The complaint themes and the Indonesian keywords that identify them.
  *
@@ -8,11 +11,15 @@
  *
  * `weight` lets a strong signal ("antre 25 menit") outrank an incidental
  * mention ("pegawainya ramah sih") in the same sentence.
+ *
+ * The keywords stay Indonesian in both locales and always will: they are matched
+ * against review text written by Indonesian customers, so translating them would
+ * stop the clusterer finding anything. Only the `label` — what a reader sees —
+ * follows the locale, and it now lives in the dictionaries rather than here.
  */
 export const THEMES = Object.freeze([
   {
     id: 'antrean-kasir',
-    label: 'Antrean kasir',
     keywords: [
       { term: 'antre', weight: 3 },
       { term: 'antri', weight: 3 },
@@ -26,7 +33,6 @@ export const THEMES = Object.freeze([
   },
   {
     id: 'kebersihan',
-    label: 'Kebersihan',
     keywords: [
       { term: 'kotor', weight: 3 },
       { term: 'jorok', weight: 3 },
@@ -45,7 +51,6 @@ export const THEMES = Object.freeze([
   },
   {
     id: 'stok-kosong',
-    label: 'Stok kosong',
     keywords: [
       { term: 'stok', weight: 3 },
       { term: 'kosong', weight: 2 },
@@ -57,7 +62,6 @@ export const THEMES = Object.freeze([
   },
   {
     id: 'parkir',
-    label: 'Parkir',
     keywords: [
       { term: 'parkir', weight: 3 },
       { term: 'parkiran', weight: 3 },
@@ -67,7 +71,6 @@ export const THEMES = Object.freeze([
   },
   {
     id: 'harga-vs-pesaing',
-    label: 'Harga vs pesaing',
     keywords: [
       { term: 'mahal', weight: 3 },
       { term: 'harga', weight: 2 },
@@ -78,7 +81,6 @@ export const THEMES = Object.freeze([
   },
   {
     id: 'keramahan-staf',
-    label: 'Keramahan staf',
     keywords: [
       { term: 'jutek', weight: 3 },
       { term: 'judes', weight: 3 },
@@ -101,6 +103,12 @@ export function findTheme(themeId) {
   return BY_ID.get(themeId) ?? null;
 }
 
-export function themeLabel(themeId) {
-  return BY_ID.get(themeId)?.label ?? themeId;
+/**
+ * The reader-facing name of a theme. An unknown id returns itself, which is what
+ * lets a theme the dictionary has not caught up with still render as something
+ * rather than as a blank cell.
+ */
+export function themeLabel(themeId, locale = DEFAULT_LOCALE) {
+  if (!BY_ID.has(themeId)) return themeId;
+  return t(locale, `theme.${themeId}`);
 }

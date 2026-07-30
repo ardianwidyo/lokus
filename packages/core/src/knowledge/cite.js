@@ -1,4 +1,6 @@
-import { idNumber } from '../lib/format.js';
+import { DEFAULT_LOCALE } from '../i18n/locales.js';
+import { localeNumber } from '../i18n/format.js';
+import { t } from '../i18n/index.js';
 import { assertTenant, scopeToTenant } from '../lib/tenantScope.js';
 import { writeGroundedAnswer } from './groundedWriter.js';
 import { toolResult } from '../lib/toolResult.js';
@@ -18,7 +20,22 @@ import { CONFIDENCE_THRESHOLD, firstSentence, searchPassages } from './retrieval
  * uncited claim reaches the reader.
  */
 
+/**
+ * The refusal sentence, Indonesian.
+ *
+ * It stays a constant rather than becoming locale-dependent because it is also a
+ * *protocol* value, not only copy: `knowledge/groundedWriter.js` matches the
+ * model's output against it to decide whether the model refused, and the eval
+ * golden set asserts on it. Translating the sentinel would put the guard on a
+ * string the model was never asked to produce (plan.md, "Localisation").
+ *
+ * `refusalText(locale)` is what a reader sees; this is what the code compares.
+ */
 export const REFUSAL_TEXT = 'Tidak ada di dokumen.';
+
+export function refusalText(locale = DEFAULT_LOCALE) {
+  return t(locale, 'cite.refusal');
+}
 
 export class KnowledgeGapLog {
   constructor() {
@@ -96,6 +113,7 @@ export async function ragCite({
   // themselves, which is what the public demo serves.
   gemini = null,
   tier = undefined,
+  locale = DEFAULT_LOCALE,
 } = {}) {
   const startedAt = Date.now();
   assertTenant(tenantId);
@@ -122,10 +140,11 @@ export async function ragCite({
     return toolResult({
       data: {
         answered: false,
-        text: REFUSAL_TEXT,
-        reason:
-          `Tidak ada kutipan yang mencapai ambang keyakinan ${idNumber(threshold)}. ` +
-          `Kutipan terdekat hanya ${idNumber(rejected[0]?.score ?? 0)}.`,
+        text: refusalText(locale),
+        reason: t(locale, 'cite.reasonBelowThreshold', {
+          threshold: localeNumber(locale, threshold),
+          best: localeNumber(locale, rejected[0]?.score ?? 0),
+        }),
         citations: [],
         confidence: rejected[0]?.score ?? 0,
         rejectedCount,
@@ -173,8 +192,8 @@ export async function ragCite({
     return toolResult({
       data: {
         answered: false,
-        text: REFUSAL_TEXT,
-        reason: 'Model membaca kutipan yang lolos ambang dan menilai tidak ada yang menjawab pertanyaan ini.',
+        text: refusalText(locale),
+        reason: t(locale, 'cite.reasonModelRefused'),
         citations: [],
         confidence,
         rejectedCount,
@@ -196,7 +215,10 @@ export async function ragCite({
       paragraphs,
       citations,
       confidence,
-      confidenceLabel: confidence >= 0.85 ? 'keyakinan tinggi' : 'keyakinan sedang',
+      confidenceLabel: t(
+        locale,
+        confidence >= 0.85 ? 'cite.confidenceHigh' : 'cite.confidenceMedium',
+      ),
       rejectedCount,
       threshold,
       knowledgeGap: null,

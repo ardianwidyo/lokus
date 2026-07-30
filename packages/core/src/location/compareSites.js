@@ -1,3 +1,6 @@
+import { DEFAULT_LOCALE } from '../i18n/locales.js';
+import { localeFactor, localeInteger } from '../i18n/format.js';
+import { t } from '../i18n/index.js';
 import { assertTenant } from '../lib/tenantScope.js';
 import { toolResult } from '../lib/toolResult.js';
 import { CANDIDATE_POOL, scoutSites } from './siteScout.js';
@@ -54,7 +57,13 @@ export class CompareError extends Error {
   }
 }
 
-export async function compareSites({ tenantId, places, ids = null, weights = undefined } = {}) {
+export async function compareSites({
+  tenantId,
+  places,
+  ids = null,
+  weights = undefined,
+  locale = DEFAULT_LOCALE,
+} = {}) {
   const startedAt = Date.now();
   assertTenant(tenantId);
 
@@ -64,6 +73,7 @@ export async function compareSites({ tenantId, places, ids = null, weights = und
     places,
     weights,
     limit: CANDIDATE_POOL.length,
+    locale,
   });
   const byId = new Map(scouted.data.recommended.map((candidate) => [candidate.id, candidate]));
 
@@ -78,12 +88,12 @@ export async function compareSites({ tenantId, places, ids = null, weights = und
     throw new CompareError('SAME_CANDIDATE', 'Pilih dua kandidat yang berbeda');
   }
 
-  const rows = buildRows(a, b);
+  const rows = buildRows(a, b, locale);
 
   return toolResult({
     data: {
-      a: summarise(a, rows, 'a'),
-      b: summarise(b, rows, 'b'),
+      a: summarise(a, rows, 'a', locale),
+      b: summarise(b, rows, 'b', locale),
       rows,
       // Named so the UI can footnote it rather than presenting a model as
       // a measurement.
@@ -99,51 +109,58 @@ export async function compareSites({ tenantId, places, ids = null, weights = und
   });
 }
 
-function buildRows(a, b) {
+function buildRows(a, b, locale) {
   const visitsA = estimateDailyVisits({ traffic: a.factors.traffic, competitorCount: a.competitorCount });
   const visitsB = estimateDailyVisits({ traffic: b.factors.traffic, competitorCount: b.competitorCount });
   const rentA = RENT_IDR_PER_MONTH[a.id] ?? null;
   const rentB = RENT_IDR_PER_MONTH[b.id] ?? null;
 
+  const measured = t(locale, 'origin.measured');
+  const surveyed = t(locale, 'origin.surveyed');
+  const modelled = t(locale, 'origin.model');
+
   return [
-    row('Skor lokasi', a.total, b.total, 'higher', 'terukur', {
+    row(t(locale, 'compare.rowLocationScore'), a.total, b.total, 'higher', measured, {
       a: String(a.total),
       b: String(b.total),
     }),
-    row('Lalu lintas pejalan', a.factors.traffic, b.factors.traffic, 'higher', 'survei', {
+    row(t(locale, 'compare.rowTraffic'), a.factors.traffic, b.factors.traffic, 'higher', surveyed, {
       a: `${a.factors.traffic} · ${a.context}`,
       b: `${b.factors.traffic} · ${b.context}`,
     }),
     row(
-      `Pesaing dalam ${a.radiusM} m`,
+      t(locale, 'compare.rowCompetitors', { radius: a.radiusM }),
       a.competitorCount,
       b.competitorCount,
       'lower',
-      'terukur',
-      { a: `${a.competitorCount} minimarket`, b: `${b.competitorCount} minimarket` },
+      measured,
+      {
+        a: t(locale, 'compare.minimarkets', { count: a.competitorCount }),
+        b: t(locale, 'compare.minimarkets', { count: b.competitorCount }),
+      },
     ),
     row(
-      'Cabang sendiri terdekat',
+      t(locale, 'compare.rowNearestOwn'),
       a.nearestOwnKm,
       b.nearestOwnKm,
       'higher',
-      'terukur',
+      measured,
       {
-        a: `${km(a.nearestOwnKm)} km · ${riskLabel(a)}`,
-        b: `${km(b.nearestOwnKm)} km · ${riskLabel(b)}`,
+        a: `${localeFactor(locale, a.nearestOwnKm)} km · ${riskLabel(a, locale)}`,
+        b: `${localeFactor(locale, b.nearestOwnKm)} km · ${riskLabel(b, locale)}`,
       },
     ),
-    row('Estimasi kunjungan/hari', visitsA.centre, visitsB.centre, 'higher', 'model', {
-      a: `${visitsA.low}–${visitsA.high}`,
-      b: `${visitsB.low}–${visitsB.high}`,
+    row(t(locale, 'compare.rowVisits'), visitsA.centre, visitsB.centre, 'higher', modelled, {
+      a: `${localeInteger(locale, visitsA.low)}–${localeInteger(locale, visitsA.high)}`,
+      b: `${localeInteger(locale, visitsB.low)}–${localeInteger(locale, visitsB.high)}`,
     }),
     row(
-      'Sewa pasaran',
+      t(locale, 'compare.rowRent'),
       rentA ? rentA.low : null,
       rentB ? rentB.low : null,
       'lower',
-      'survei',
-      { a: rentText(rentA), b: rentText(rentB) },
+      surveyed,
+      { a: rentText(rentA, locale), b: rentText(rentB, locale) },
     ),
   ];
 }
@@ -159,20 +176,24 @@ function row(label, valueA, valueB, better, origin, display) {
   return { label, origin, valueA, valueB, better, favours, display };
 }
 
-/** Indonesian decimal separator; 9.14 reads as nine-point-one-four elsewhere. */
-function km(value) {
-  return String(value).replace('.', ',');
+function riskLabel(candidate, locale) {
+  if (candidate.cannibalFlagged) return t(locale, 'compare.riskCannibalisation');
+  if (candidate.nearestOwnKm < 2) return t(locale, 'compare.riskMedium');
+  return t(locale, 'compare.riskSafe');
 }
 
-function riskLabel(candidate) {
-  if (candidate.cannibalFlagged) return 'risiko kanibalisasi';
-  if (candidate.nearestOwnKm < 2) return 'risiko sedang';
-  return 'aman';
-}
+/**
+ * Rent stays in rupiah in both locales. Converting it would need an exchange
+ * rate LOKUS does not have and would turn a broker quote into an invented
+ * number — the millions unit is what changes, not the currency.
+ */
+function rentText(rent, locale) {
+  if (!rent) return t(locale, 'compare.rentUnavailable');
 
-function rentText(rent) {
-  if (!rent) return 'tidak tersedia';
-  return `Rp ${(rent.low / 1_000_000).toFixed(0)}–${(rent.high / 1_000_000).toFixed(0)} jt/bln`;
+  return t(locale, 'compare.rentRange', {
+    low: localeInteger(locale, rent.low / 1_000_000),
+    high: localeInteger(locale, rent.high / 1_000_000),
+  });
 }
 
 /**
@@ -180,7 +201,7 @@ function rentText(rent) {
  * comparison where both conclusions could be swapped without anyone noticing
  * is not a conclusion.
  */
-function summarise(candidate, rows, side) {
+function summarise(candidate, rows, side, locale) {
   const won = rows.filter((entry) => entry.favours === side).map((entry) => entry.label);
   const lost = rows.filter((entry) => entry.favours && entry.favours !== side).map((entry) => entry.label);
 
@@ -188,33 +209,26 @@ function summarise(candidate, rows, side) {
     ...candidate,
     wins: won,
     losses: lost,
-    conclusion: conclusionFor(candidate, won, lost),
+    conclusion: conclusionFor(candidate, won, lost, locale),
   };
 }
 
-function conclusionFor(candidate, won, lost) {
+function conclusionFor(candidate, won, lost, locale) {
   if (candidate.cannibalFlagged) {
-    return (
-      `Terlalu dekat dengan ${candidate.nearestOwn.name} (${km(candidate.nearestOwnKm)} km). ` +
-      'Sebagian pendapatannya diambil dari cabang sendiri, jadi angka di atas melebih-lebihkan pertumbuhan.'
-    );
+    return t(locale, 'compare.conclusionCannibal', {
+      outlet: candidate.nearestOwn.name,
+      km: localeFactor(locale, candidate.nearestOwnKm),
+    });
   }
 
   const crowded = candidate.factors.competitors < 60;
   const busy = candidate.factors.traffic >= 90;
 
-  if (busy && crowded) {
-    return (
-      'Volume lebih tinggi tapi perang harga hampir pasti. Pilih ini hanya jika siap bersaing harga.'
-    );
-  }
-  if (!crowded && won.length >= lost.length) {
-    return (
-      'Pendapatan lebih stabil dan mudah diprediksi. Pilih ini jika target margin, bukan volume.'
-    );
-  }
-  return (
-    `Unggul pada ${won.join(', ') || 'tidak ada faktor'}; tertinggal pada ${lost.join(', ') || 'tidak ada'}. ` +
-    'Keputusannya bergantung pada bobot yang Anda pakai di Admin.'
-  );
+  if (busy && crowded) return t(locale, 'compare.conclusionBusyCrowded');
+  if (!crowded && won.length >= lost.length) return t(locale, 'compare.conclusionStable');
+
+  return t(locale, 'compare.conclusionMixed', {
+    won: won.join(', ') || t(locale, 'compare.noFactor'),
+    lost: lost.join(', ') || t(locale, 'compare.none'),
+  });
 }

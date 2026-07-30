@@ -1,5 +1,7 @@
 import { classifyReview } from '../analytics/themeCluster.js';
 import { findOutlet } from '../domain/outlets.js';
+import { DEFAULT_LOCALE } from '../i18n/locales.js';
+import { t } from '../i18n/index.js';
 import { assertTenant } from '../lib/tenantScope.js';
 import { toolResult } from '../lib/toolResult.js';
 import { CONFIDENCE_THRESHOLD, firstSentence, searchPassages } from '../knowledge/retrieval.js';
@@ -20,7 +22,16 @@ import { writeReply } from './writeReply.js';
  * the model was asked is auditable next to what it produced.
  */
 
-/** Per-theme scaffolding. The action clause comes from the SOP, not from here. */
+/**
+ * Per-theme scaffolding. The action clause comes from the SOP, not from here.
+ *
+ * None of this is translated and none of it ever will be: every sentence below
+ * ends up in a public reply that an Indonesian customer reads under their Google
+ * review. The console language is the operator's choice; the customer's language
+ * is not the operator's to change (spec.md AC-8.5). What *is* translated on this
+ * screen is the reviewer-facing metadata — the tone label, and the reason a draft
+ * was refused.
+ */
 const THEME_FRAMING = Object.freeze({
   'antrean-kasir': {
     acknowledgement: 'Antrean sepanjang itu tidak sesuai standar kami.',
@@ -116,6 +127,7 @@ export async function draftReply({
   // Absent by default: the assembled template is what the public demo sends.
   gemini = null,
   tier = undefined,
+  locale = DEFAULT_LOCALE,
 } = {}) {
   const startedAt = Date.now();
   assertTenant(tenantId);
@@ -161,10 +173,10 @@ export async function draftReply({
       data: {
         drafted: false,
         text: null,
-        refusal: 'tidak ada di dokumen',
+        refusal: t(locale, 'draft.refusal'),
         reason: classified
-          ? `Tidak ada pasal SOP di atas ambang ${threshold} untuk tema "${classified.theme}".`
-          : 'Tema keluhan tidak dikenali dari teks review.',
+          ? t(locale, 'draft.reasonNoPassage', { threshold, theme: classified.theme })
+          : t(locale, 'draft.reasonNoTheme'),
         theme: classified?.theme ?? null,
         knowledgeGap: recorded
           ? { ...recorded, reviewId: review.id, theme: classified?.theme ?? null }
@@ -218,7 +230,7 @@ export async function draftReply({
     data: {
       drafted: true,
       text,
-      tone: 'hangat, bertanggung jawab',
+      tone: t(locale, 'draft.tone'),
       theme: classified.theme,
       themeConfidence: classified.score,
       citations,

@@ -1,5 +1,7 @@
 import { findOutlet } from '../domain/outlets.js';
 import { themeLabel } from '../domain/themes.js';
+import { DEFAULT_LOCALE } from '../i18n/locales.js';
+import { t } from '../i18n/index.js';
 
 /**
  * AC-7.3: every answer offers at least one action.
@@ -12,7 +14,7 @@ import { themeLabel } from '../domain/themes.js';
  * A refused answer still gets one action — reporting the knowledge gap — so the
  * dead end is a route to fixing the corpus rather than a full stop.
  */
-export function answerActions(run) {
+export function answerActions(run, locale = run?.locale ?? DEFAULT_LOCALE) {
   if (!run) return [];
 
   const outlet = run.outletId ? findOutlet(run.outletId) : null;
@@ -23,7 +25,7 @@ export function answerActions(run) {
     return [
       {
         id: 'report-gap',
-        label: 'Laporkan celah pengetahuan',
+        label: t(locale, 'action.reportGap'),
         kind: 'gap',
         variant: 'primary',
       },
@@ -32,11 +34,13 @@ export function answerActions(run) {
 
   actions.push({
     id: 'create-ticket',
-    label: outlet ? `Buat tiket ke manajer ${outlet.name}` : 'Buat tiket tindak lanjut',
+    label: outlet
+      ? t(locale, 'action.createTicketAt', { outlet: outlet.name })
+      : t(locale, 'action.createTicket'),
     kind: 'ticket',
     variant: 'primary',
     payload: {
-      title: ticketTitle(run, outlet),
+      title: ticketTitle(run, outlet, locale),
       outletId: run.outletId ?? null,
       owner: outlet?.manager ?? null,
       sourceInsightId: run.id,
@@ -48,7 +52,7 @@ export function answerActions(run) {
   if (reviewSources.length > 0) {
     actions.push({
       id: 'open-reviews',
-      label: `Lihat ${reviewSources.length} review`,
+      label: t(locale, 'action.openReviews', { count: reviewSources.length }),
       kind: 'navigate',
       variant: 'secondary',
       href: '/review',
@@ -58,7 +62,7 @@ export function answerActions(run) {
   if (outlet) {
     actions.push({
       id: 'show-on-map',
-      label: 'Tunjukkan di peta',
+      label: t(locale, 'action.showOnMap'),
       kind: 'navigate',
       variant: 'secondary',
       href: `/peta?outlet=${outlet.outletId}`,
@@ -68,21 +72,26 @@ export function answerActions(run) {
   return actions;
 }
 
+/**
+ * The theme the reputation agent led with.
+ *
+ * This used to recover it by running `/adalah ([A-Za-z\s]+):/` over the agent's
+ * own sentence, which worked only while there was exactly one language for that
+ * sentence to be written in — and would have returned the *English* label as a
+ * theme id, so the ticket carried a theme nothing else could match. The finding
+ * now states the id, and prose is left to readers.
+ */
 function leadingTheme(run) {
-  const finding = (run.findings ?? []).find((entry) => entry.agent === 'reputation');
-  if (!finding) return null;
-
-  const match = /adalah ([A-Za-z\s]+):/.exec(finding.text);
-  return match ? match[1].trim() : null;
+  return (run.findings ?? []).find((entry) => entry.agent === 'reputation')?.themeId ?? null;
 }
 
-function ticketTitle(run, outlet) {
+function ticketTitle(run, outlet, locale) {
   const theme = leadingTheme(run);
-  const where = outlet ? ` di ${outlet.name}` : '';
+  const where = outlet ? t(locale, 'action.ticketWhere', { outlet: outlet.name }) : '';
 
   return theme
-    ? `Tindak lanjut keluhan ${themeLabel(theme).toLowerCase()}${where}`
-    : `Tindak lanjut: ${truncate(run.question, 60)}`;
+    ? t(locale, 'action.ticketTitleTheme', { theme: themeLabel(theme, locale).toLowerCase(), where })
+    : t(locale, 'action.ticketTitleQuestion', { question: truncate(run.question, 60) });
 }
 
 function truncate(text, max) {

@@ -10,6 +10,6 @@ export function adminRoutes(fastify, { admin }) {
     {
       preHandler: [fastify.authenticate, fastify.withTenant, fastify.requireRole(ROLES.ADMIN)],
     },
-    async (request) => admin.overview(request.tenant.id),
+    async (request) => admin.overview(request.tenant.id, { locale: request.locale }),
   );
 }

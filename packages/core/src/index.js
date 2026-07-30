@@ -1,3 +1,31 @@
+// US-8. `t` is the domain's translator; the locale is always a parameter, never
+// module state, so one process serves both languages at once.
+export {
+  CORE_MESSAGES,
+  DEFAULT_LOCALE,
+  INTL_TAG,
+  LOCALE,
+  LOCALES,
+  createTranslator,
+  dictionaryParity,
+  flatten,
+  interpolate,
+  isLocale,
+  localeDateTime,
+  localeFactor,
+  localeFromAcceptLanguage,
+  localeFullDate,
+  localeInteger,
+  localeMillionIdr,
+  localeMonthYear,
+  localeNumber,
+  localePercent,
+  localeShortDate,
+  localeSigned,
+  normaliseLocale,
+  t,
+} from './i18n/index.js';
+
 export { DEMO_NOW, TREND_WEEKS, relativeLabel, weekIndexOf, weekStart } from './domain/clock.js';
 export { OUTLETS, findOutlet, outletsForTenant, regionCount } from './domain/outlets.js';
 export { THEMES, THEME_IDS, findTheme, themeLabel } from './domain/themes.js';
@@ -41,7 +69,7 @@ export { createKnowledgeAgent, createLocationAgent, createReputationAgent, creat
 export { createSupervisor, estimateCostIdr } from './agents/supervisor.js';
 export { MIN_ANSWERABLE_TERMS } from './knowledge/retrieval.js';
 export { createMemoryRunStore, withRunPersistence } from './agents/runStore.js';
-export { SLA_DAYS, TICKET_STATUS, TICKET_STATUS_LABEL, TICKET_STATUS_ORDER, TicketError, createMemoryTicketStore } from './tickets/ticketStore.js';
+export { SLA_DAYS, TICKET_STATUS, TICKET_STATUS_LABEL, TICKET_STATUS_ORDER, TicketError, createMemoryTicketStore, ticketStatusLabels } from './tickets/ticketStore.js';
 export { answerActions } from './agents/answerActions.js';
 export { MAX_DECISIONS, runNightlyCycle } from './briefing/nightlyCycle.js';
 export { DecisionApprovalError, NETWORK_OWNER, approveBriefingDecision, dueDateFor, ownerFor } from './briefing/approveDecision.js';
@@ -52,17 +80,17 @@ export { COMPLAINT_TEMPLATES, POSITIVE_TEMPLATES } from './seed/reviewTemplates.
 export { BudgetExceededError, DEFAULT_BUDGET_IDR, DEGRADE_AT, MODEL_TIER, createBudgetGuard } from './cost/budget.js';
 
 export { createReputationService } from './services/reputationService.js';
-export { createBriefingService } from './services/briefingService.js';
+export { createBriefingService, networkMetrics } from './services/briefingService.js';
 export { createAdminService } from './services/adminService.js';
 
 export { CACHE_TTL_MS, COMPETING_CATEGORIES, GRID_DEGREES, PlacesError, createGooglePlacesAdapter, createSeededPlacesAdapter, distanceMetres, gridCell } from './adapters/places.js';
-export { COMPETITOR_PENALTY, DEFAULT_WEIGHTS, FACTOR_LABELS, LocationScoreError, competitorFactor, locationScore, normaliseWeights, scoreFrom } from './location/locationScore.js';
+export { COMPETITOR_PENALTY, DEFAULT_WEIGHTS, FACTOR_KEYS, FACTOR_LABELS, LocationScoreError, competitorFactor, factorLabels, locationScore, normaliseWeights, scoreFrom } from './location/locationScore.js';
 export { CANNIBALISATION_THRESHOLD_KM, cannibalisation } from './location/cannibalisation.js';
 export { createLocationService } from './services/locationService.js';
-export { CANDIDATE_FACTOR_LABELS, CANDIDATE_POOL, CANDIDATE_WEIGHTS, CLEAR_DISTANCE_KM, cannibalisationFactor, scoutSites } from './location/siteScout.js';
+export { CANDIDATE_FACTOR_KEYS, CANDIDATE_FACTOR_LABELS, CANDIDATE_POOL, CANDIDATE_WEIGHTS, CLEAR_DISTANCE_KM, candidateFactorLabels, cannibalisationFactor, scoutSites } from './location/siteScout.js';
 export { COMPETITOR_SHARE_WEIGHT, CompareError, VISITS_BAND, VISITS_PER_TRAFFIC_POINT, compareSites, estimateDailyVisits } from './location/compareSites.js';
 export { CHUNK_OVERLAP_TOKENS, CHUNK_TOKENS, EMBEDDING_DIMENSIONS, EMBEDDING_MODEL, INDEX_STATE, IngestError, RETRIEVABLE_STATES, chunkText, createSeededKnowledgeStore, createVertexKnowledgeStore, estimateTokens } from './knowledge/ingest.js';
-export { KnowledgeGapLog, REFUSAL_TEXT, ragCite } from './knowledge/cite.js';
+export { KnowledgeGapLog, REFUSAL_TEXT, ragCite, refusalText } from './knowledge/cite.js';
 export { CLAUSE_PROPOSAL_THRESHOLD, classifyGap, gapReport } from './knowledge/gapReport.js';
 export { createKnowledgeService } from './services/knowledgeService.js';
 export { BLOCK_WEEKS, RADIUS_M, createOutletService } from './services/outletService.js';

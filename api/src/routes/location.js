@@ -3,13 +3,13 @@ export function locationRoutes(fastify, { location }) {
   fastify.get(
     '/v1/map',
     { preHandler: [fastify.authenticate, fastify.withTenant] },
-    async (request) => location.networkMap(request.tenant.id),
+    async (request) => location.networkMap(request.tenant.id, { locale: request.locale }),
   );
 
   fastify.get(
     '/v1/scout',
     { preHandler: [fastify.authenticate, fastify.withTenant] },
-    async (request) => location.siteScout(request.tenant.id),
+    async (request) => location.siteScout(request.tenant.id, { locale: request.locale }),
   );
 
   fastify.get(
@@ -17,7 +17,9 @@ export function locationRoutes(fastify, { location }) {
     { preHandler: [fastify.authenticate, fastify.withTenant] },
     async (request) => {
       const { a, b } = request.query;
-      return location.compare(request.tenant.id, a && b ? [a, b] : null);
+      return location.compare(request.tenant.id, a && b ? [a, b] : null, {
+        locale: request.locale,
+      });
     },
   );
 }

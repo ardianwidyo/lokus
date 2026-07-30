@@ -1,4 +1,6 @@
 import { findOutlet } from '../domain/outlets.js';
+import { DEFAULT_LOCALE } from '../i18n/locales.js';
+import { t } from '../i18n/index.js';
 import { assertTenant, scopeToTenant } from '../lib/tenantScope.js';
 
 /**
@@ -24,12 +26,20 @@ export const TICKET_STATUS_ORDER = Object.freeze([
   TICKET_STATUS.SELESAI,
 ]);
 
-export const TICKET_STATUS_LABEL = Object.freeze({
-  baru: 'Baru',
-  dikerjakan: 'Dikerjakan',
-  menunggu: 'Menunggu',
-  selesai: 'Selesai',
-});
+/**
+ * The status *ids* stay Indonesian in both locales, because they are stored
+ * values: a ticket written `status: 'selesai'` by yesterday's build must still
+ * read as done tomorrow, and a status id that changed with the reader's language
+ * would make the board's own filters locale-dependent. The column headings are
+ * what a reader sees, and those come from the dictionary.
+ */
+export function ticketStatusLabels(locale = DEFAULT_LOCALE) {
+  return Object.fromEntries(
+    TICKET_STATUS_ORDER.map((status) => [status, t(locale, `ticketStatus.${status}`)]),
+  );
+}
+
+export const TICKET_STATUS_LABEL = Object.freeze(ticketStatusLabels(DEFAULT_LOCALE));
 
 /** Default SLA from spec.md success metrics: close within 5 days. */
 export const SLA_DAYS = 5;
@@ -80,6 +90,11 @@ export function createMemoryTicketStore({ seed = [], now = () => new Date() } = 
       sourceInsightId: input.sourceInsightId,
       sourceKind: input.sourceKind ?? 'agent_run',
       createdBy: input.createdBy ?? 'agent',
+      // Who raised it, as a value rather than as something to be inferred from
+      // the display name. Screen 13's "from an agent" filter used to test
+      // `createdBy.startsWith('Agen')`, which stops being true the moment the
+      // agent has an English name.
+      createdByKind: input.createdByKind ?? 'agent',
       createdAt: createdAt.toISOString(),
       dueAt,
       closedAt: null,
@@ -117,13 +132,14 @@ export function createMemoryTicketStore({ seed = [], now = () => new Date() } = 
   }
 
   /** Board columns for screen 13, in the fixed four-column order. */
-  async function board(tenantId) {
+  async function board(tenantId, { locale = DEFAULT_LOCALE } = {}) {
     assertTenant(tenantId);
     const rows = await list(tenantId);
+    const labels = ticketStatusLabels(locale);
 
     return TICKET_STATUS_ORDER.map((status) => ({
       status,
-      label: TICKET_STATUS_LABEL[status],
+      label: labels[status],
       tickets: rows.filter((ticket) => ticket.status === status),
     }));
   }

@@ -3,8 +3,10 @@ import { flagSystemicThemes, systemicFinding } from '../analytics/systemic.js';
 import { themeCluster } from '../analytics/themeCluster.js';
 import { findOutlet } from '../domain/outlets.js';
 import { themeLabel } from '../domain/themes.js';
+import { DEFAULT_LOCALE } from '../i18n/locales.js';
+import { localeFactor, localeNumber } from '../i18n/format.js';
+import { t } from '../i18n/index.js';
 import { ragSearch } from '../knowledge/retrieval.js';
-import { idFactor, idNumber } from '../lib/format.js';
 import { cannibalisation } from '../location/cannibalisation.js';
 import { locationScore } from '../location/locationScore.js';
 
@@ -16,6 +18,12 @@ import { locationScore } from '../location/locationScore.js';
  *
  * A finding without at least one source is never produced. That is what lets
  * the supervisor refuse mechanically instead of judging plausibility.
+ *
+ * A finding's `text` is prose for a reader and nothing downstream may parse it.
+ * `answerActions` used to recover the leading theme with a regex over the
+ * Indonesian sentence below, which worked only for as long as there was one
+ * language; findings now carry `themeId` alongside the text, and the id is what
+ * code reads.
  */
 
 function step(n, tool, result, note) {
@@ -31,45 +39,63 @@ function step(n, tool, result, note) {
 export function createReputationAgent({ gbp }) {
   return {
     name: 'reputation',
-    label: 'Agen Reputasi',
+    label: t(DEFAULT_LOCALE, 'agent.reputation'),
+    labelFor: (locale) => t(locale, 'agent.reputation'),
 
-    async run({ tenantId, outletId = null, question, startStep = 1 }) {
+    async run({ tenantId, outletId = null, question, startStep = 1, locale = DEFAULT_LOCALE }) {
       const steps = [];
       const findings = [];
       const sources = [];
       let n = startStep;
 
       const listed = await gbp.listReviews({ tenantId, outletId, limit: 5000 });
-      steps.push(step(n++, 'gbp.listReviews', listed, `${listed.data.total} review dibaca`));
+      steps.push(
+        step(n++, 'gbp.listReviews', listed, t(locale, 'step.reviewsRead', { count: listed.data.total })),
+      );
       const reviews = listed.data.reviews;
 
       const clustered = await themeCluster({ tenantId, reviews, outletId });
       steps.push(
-        step(n++, 'bq.themeCluster', clustered, `${clustered.data.themes.length} tema terdeteksi`),
+        step(
+          n++,
+          'bq.themeCluster',
+          clustered,
+          t(locale, 'step.themesDetected', { count: clustered.data.themes.length }),
+        ),
       );
 
-      const themes = flagSystemicThemes(clustered.data.themes);
+      const themes = flagSystemicThemes(clustered.data.themes, { locale });
       const leading = themes[0];
 
       if (leading) {
         const outlet = outletId ? findOutlet(outletId) : null;
-        const where = outlet ? ` di ${outlet.name}` : ' di jaringan';
         const thisWeek = leading.weekly?.at(-1) ?? 0;
 
         findings.push({
           agent: 'reputation',
+          // The id downstream code reads, beside the prose a reader reads.
+          themeId: leading.theme,
           text:
-            `Tema keluhan terbesar${where} adalah ${themeLabel(leading.theme)}: ` +
-            `${leading.count} keluhan dalam 8 pekan, ${thisWeek} di antaranya pekan ini` +
-            (leading.delta ? `, naik ${idFactor(leading.delta)}× dibanding sebulan lalu.` : '.'),
+            t(locale, 'finding.leadingTheme', {
+              where: outlet
+                ? t(locale, 'finding.leadingThemeAt', { outlet: outlet.name })
+                : t(locale, 'finding.leadingThemeNetwork'),
+              theme: themeLabel(leading.theme, locale),
+              count: leading.count,
+              thisWeek,
+            }) +
+            (leading.delta
+              ? t(locale, 'finding.leadingThemeRising', { delta: localeFactor(locale, leading.delta) })
+              : t(locale, 'finding.leadingThemeFlat')),
           sourceCount: clustered.sources.length,
         });
         sources.push(...clustered.sources.slice(0, 20));
 
         if (leading.systemic) {
-          const finding = systemicFinding(clustered.data.themes);
+          const finding = systemicFinding(clustered.data.themes, { locale });
           findings.push({
             agent: 'reputation',
+            themeId: finding.theme,
             text: `${finding.headline}. ${finding.detail}`,
             sourceCount: clustered.sources.length,
           });
@@ -79,7 +105,12 @@ export function createReputationAgent({ gbp }) {
       if (outletId) {
         const trend = await ratingTrend({ tenantId, outletId, reviews });
         steps.push(
-          step(n++, 'bq.ratingTrend', trend, `${trend.data.changePoints.length} titik perubahan`),
+          step(
+            n++,
+            'bq.ratingTrend',
+            trend,
+            t(locale, 'step.changePoints', { count: trend.data.changePoints.length }),
+          ),
         );
 
         if (trend.data.current !== null) {
@@ -87,10 +118,15 @@ export function createReputationAgent({ gbp }) {
           findings.push({
             agent: 'reputation',
             text:
-              `Rating berjalan ${idNumber(trend.data.current)}` +
+              t(locale, 'finding.ratingCurrent', {
+                rating: localeNumber(locale, trend.data.current),
+              }) +
               (drop !== null
-                ? `, ${drop < 0 ? 'turun' : 'naik'} ${idNumber(Math.abs(drop))} poin selama 8 pekan.`
-                : '.'),
+                ? t(locale, 'finding.ratingMoved', {
+                    direction: t(locale, drop < 0 ? 'finding.ratingDown' : 'finding.ratingUp'),
+                    points: localeNumber(locale, Math.abs(drop)),
+                  })
+                : t(locale, 'finding.ratingFlat')),
             sourceCount: trend.sources.length,
           });
           sources.push(...trend.sources.slice(0, 20));
@@ -105,9 +141,10 @@ export function createReputationAgent({ gbp }) {
 export function createKnowledgeAgent({ passages = null } = {}) {
   return {
     name: 'knowledge',
-    label: 'Agen Pengetahuan',
+    label: t(DEFAULT_LOCALE, 'agent.knowledge'),
+    labelFor: (locale) => t(locale, 'agent.knowledge'),
 
-    async run({ tenantId, question, startStep = 1 }) {
+    async run({ tenantId, question, startStep = 1, locale = DEFAULT_LOCALE }) {
       const steps = [];
       const findings = [];
       let n = startStep;
@@ -118,16 +155,26 @@ export function createKnowledgeAgent({ passages = null } = {}) {
           n++,
           'rag.search',
           found,
-          `${found.data.chunks.length} kutipan lolos ambang · ${found.data.rejectedCount} ditolak`,
+          t(locale, 'step.passagesKept', {
+            kept: found.data.chunks.length,
+            rejected: found.data.rejectedCount,
+          }),
         ),
       );
 
       // Constitution I: below the floor the agent says so rather than
       // paraphrasing the nearest paragraph.
+      //
+      // The passage inside the quotation marks is the document's own wording and
+      // stays in the document's language; only the frame around it is translated.
       for (const chunk of found.data.chunks) {
         findings.push({
           agent: 'knowledge',
-          text: `${chunk.title} hal. ${chunk.page}: “${chunk.text}”`,
+          text: t(locale, 'finding.passage', {
+            title: chunk.title,
+            page: chunk.page,
+            text: chunk.text,
+          }),
           sourceCount: 1,
         });
       }
@@ -147,9 +194,10 @@ export function createKnowledgeAgent({ passages = null } = {}) {
 export function createLocationAgent({ places, weights = undefined } = {}) {
   return {
     name: 'location',
-    label: 'Agen Lokasi',
+    label: t(DEFAULT_LOCALE, 'agent.location'),
+    labelFor: (locale) => t(locale, 'agent.location'),
 
-    async run({ tenantId, outletId = null, startStep = 1 }) {
+    async run({ tenantId, outletId = null, startStep = 1, locale = DEFAULT_LOCALE }) {
       const steps = [];
       const findings = [];
       const sources = [];
@@ -162,13 +210,23 @@ export function createLocationAgent({ places, weights = undefined } = {}) {
           agent: 'location',
           findings: [],
           sources: [],
-          steps: [{ n, tool: 'location.skip', resultSize: 0, ms: 0, note: 'tidak ada cabang yang disebut' }],
+          steps: [
+            {
+              n,
+              tool: 'location.skip',
+              resultSize: 0,
+              ms: 0,
+              note: t(locale, 'step.noOutlet'),
+            },
+          ],
           nextStep: n + 1,
         };
       }
 
-      const scored = await locationScore({ tenantId, outletId, places, weights });
-      steps.push(step(n++, 'bq.locationScore', scored, `skor ${scored.data.total}`));
+      const scored = await locationScore({ tenantId, outletId, places, weights, locale });
+      steps.push(
+        step(n++, 'bq.locationScore', scored, t(locale, 'step.score', { score: scored.data.total })),
+      );
       sources.push(...scored.sources);
 
       const outlet = findOutlet(outletId);
@@ -177,12 +235,17 @@ export function createLocationAgent({ places, weights = undefined } = {}) {
       findings.push({
         agent: 'location',
         text:
-          `Skor lokasi ${outlet?.name ?? outletId} adalah ${scored.data.total} dari 100. ` +
-          `Penahan terbesar: ${scored.data.labels[weakest[0]].toLowerCase()} di angka ${weakest[1]}, ` +
-          `dengan ${scored.data.competitorCount} pesaing dalam radius ${scored.data.radiusM} m` +
+          t(locale, 'finding.locationScore', {
+            outlet: outlet?.name ?? outletId,
+            score: scored.data.total,
+            factor: scored.data.labels[weakest[0]].toLowerCase(),
+            value: weakest[1],
+            competitors: scored.data.competitorCount,
+            radius: scored.data.radiusM,
+          }) +
           (scored.data.newCompetitorCount > 0
-            ? `, ${scored.data.newCompetitorCount} di antaranya baru.`
-            : '.'),
+            ? t(locale, 'finding.locationScoreNew', { count: scored.data.newCompetitorCount })
+            : t(locale, 'finding.locationScoreFlat')),
         sourceCount: scored.sources.length,
       });
 
@@ -190,6 +253,7 @@ export function createLocationAgent({ places, weights = undefined } = {}) {
         tenantId,
         geo: scored.data.geo,
         excludeOutletId: outletId,
+        locale,
       });
       steps.push(step(n++, 'bq.cannibalisation', cannibal, cannibal.data.verdict));
 

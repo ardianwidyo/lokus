@@ -13,6 +13,7 @@ export function knowledgeRoutes(fastify, { knowledge }) {
     const { principal, tenant } = request;
     return knowledge.ask(tenant.id, String(request.body?.question ?? ''), {
       askedBy: principal.name ?? principal.email ?? principal.userId,
+      locale: request.locale,
     });
   });
 

@@ -1,5 +1,8 @@
 import { approveBriefingDecision } from '../briefing/approveDecision.js';
 import { runNightlyCycle } from '../briefing/nightlyCycle.js';
+import { DEFAULT_LOCALE } from '../i18n/locales.js';
+import { localeNumber } from '../i18n/format.js';
+import { t } from '../i18n/index.js';
 import { assertTenant } from '../lib/tenantScope.js';
 import { createMemoryWarehouse } from '../pipeline/warehouse.js';
 
@@ -14,32 +17,54 @@ import { createMemoryWarehouse } from '../pipeline/warehouse.js';
 export function createBriefingService({ gbp, places = null, ticketStore, warehouse = null } = {}) {
   const cache = new Map();
 
-  async function briefing(tenantId) {
+  /**
+   * The cycle is keyed by tenant *and* locale: two readers of the same tenant in
+   * different languages must not be served each other's prose, and caching on
+   * the tenant alone would hand whichever of them asked second the other's
+   * timeline.
+   */
+  async function briefing(tenantId, { locale = DEFAULT_LOCALE } = {}) {
     assertTenant(tenantId);
+    const key = `${tenantId}:${locale}`;
 
-    if (!cache.has(tenantId)) {
+    if (!cache.has(key)) {
       cache.set(
-        tenantId,
-        runNightlyCycle({ tenantId, gbp, places, warehouse: warehouse ?? createMemoryWarehouse() }),
+        key,
+        runNightlyCycle({
+          tenantId,
+          gbp,
+          places,
+          warehouse: warehouse ?? createMemoryWarehouse(),
+          locale,
+        }),
       );
     }
 
-    const result = await cache.get(tenantId);
+    const result = await cache.get(key);
     const { data } = await gbp.listReviews({ tenantId, limit: 5000 });
 
-    return { ...result, metrics: networkMetrics(data.reviews, result) };
+    return { ...result, metrics: networkMetrics(data.reviews, result, locale) };
   }
 
-  async function approveDecision(tenantId, decision, { approvedBy, role }) {
+  async function approveDecision(tenantId, decision, { approvedBy, role, locale = DEFAULT_LOCALE }) {
     assertTenant(tenantId);
-    return approveBriefingDecision({ tenantId, decision, approvedBy, role, ticketStore });
+    return approveBriefingDecision({ tenantId, decision, approvedBy, role, ticketStore, locale });
   }
 
   return { briefing, approveDecision };
 }
 
-/** The four metric cards, all derived from the same review set as the timeline. */
-function networkMetrics(reviews, briefing) {
+/** Below this weekly mean a branch is flagged as needing attention. */
+const ATTENTION_RATING = 4;
+
+/**
+ * The four metric cards, all derived from the same review set as the timeline —
+ * so a number on a card and a number in the timeline can never disagree.
+ *
+ * Exported because the console's seeded source needs exactly these four, and two
+ * implementations of "the network rating" is how they drift apart.
+ */
+export function networkMetrics(reviews, briefing, locale = DEFAULT_LOCALE) {
   const rating = reviews.reduce((sum, review) => sum + review.rating, 0) / (reviews.length || 1);
   const unanswered = reviews.filter((review) => review.replyState === 'none').length;
 
@@ -51,32 +76,37 @@ function networkMetrics(reviews, briefing) {
     byOutlet.set(review.outletId, bucket);
   }
 
-  const needsAttention = [...byOutlet.values()].filter((b) => b.sum / b.count < 4).length;
+  const needsAttention = [...byOutlet.values()].filter(
+    (b) => b.sum / b.count < ATTENTION_RATING,
+  ).length;
 
   return [
     {
       id: 'rating',
-      kicker: 'Rating jaringan',
-      value: rating.toFixed(2).replace('.', ','),
-      note: `rata-rata ${reviews.length} review dalam 8 pekan`,
+      kicker: t(locale, 'metric.ratingKicker'),
+      value: localeNumber(locale, rating),
+      note: t(locale, 'metric.ratingNote', { count: reviews.length }),
     },
     {
       id: 'unanswered',
-      kicker: 'Belum dibalas',
+      kicker: t(locale, 'metric.unansweredKicker'),
       value: String(unanswered),
-      note: `${briefing.heldForApproval} menunggu persetujuan Anda`,
+      note: t(locale, 'metric.unansweredNote', { held: briefing.heldForApproval }),
     },
     {
       id: 'replied',
-      kicker: 'Dibalas otomatis',
+      kicker: t(locale, 'metric.repliedKicker'),
       value: String(briefing.repliesSent),
-      note: 'semua bintang 3–5, tanpa persetujuan manual',
+      note: t(locale, 'metric.repliedNote'),
     },
     {
       id: 'attention',
-      kicker: 'Cabang perlu perhatian',
+      kicker: t(locale, 'metric.attentionKicker'),
       value: String(needsAttention),
-      note: `dari ${byOutlet.size} cabang · rating di bawah 4,0`,
+      note: t(locale, 'metric.attentionNote', {
+        count: byOutlet.size,
+        threshold: localeNumber(locale, ATTENTION_RATING, 1),
+      }),
     },
   ];
 }

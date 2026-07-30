@@ -1,5 +1,8 @@
 import { distanceMetres } from '../adapters/places.js';
 import { OUTLETS } from '../domain/outlets.js';
+import { DEFAULT_LOCALE } from '../i18n/locales.js';
+import { localeFactor } from '../i18n/format.js';
+import { t } from '../i18n/index.js';
 import { assertTenant } from '../lib/tenantScope.js';
 import { toolResult } from '../lib/toolResult.js';
 import { LocationScoreError } from './locationScore.js';
@@ -14,7 +17,12 @@ import { LocationScoreError } from './locationScore.js';
  */
 export const CANNIBALISATION_THRESHOLD_KM = 1.2;
 
-export async function cannibalisation({ tenantId, geo, excludeOutletId = null } = {}) {
+export async function cannibalisation({
+  tenantId,
+  geo,
+  excludeOutletId = null,
+  locale = DEFAULT_LOCALE,
+} = {}) {
   const startedAt = Date.now();
   assertTenant(tenantId);
 
@@ -43,7 +51,7 @@ export async function cannibalisation({ tenantId, geo, excludeOutletId = null } 
       nearestOwnKm: nearest?.km ?? null,
       flagged,
       threshold: CANNIBALISATION_THRESHOLD_KM,
-      verdict: verdictFor(nearest, flagged),
+      verdict: verdictFor(nearest, flagged, locale),
       others: ranked.slice(1, 4),
     },
     // The tenant's own outlets are the evidence; a claim about cannibalisation
@@ -58,10 +66,12 @@ export async function cannibalisation({ tenantId, geo, excludeOutletId = null } 
   });
 }
 
-function verdictFor(nearest, flagged) {
-  if (!nearest) return 'Tidak ada cabang sendiri untuk dibandingkan.';
-  if (flagged) {
-    return `Cabang sendiri terdekat ${nearest.name} hanya ${nearest.km} km — sebagian pelanggan akan berpindah, bukan bertambah.`;
-  }
-  return `Cabang sendiri terdekat ${nearest.name} ${nearest.km} km — tidak berebut pelanggan.`;
+function verdictFor(nearest, flagged, locale) {
+  if (!nearest) return t(locale, 'cannibal.verdictNone');
+
+  const params = { outlet: nearest.name, km: localeFactor(locale, nearest.km) };
+
+  return flagged
+    ? t(locale, 'cannibal.verdictFlagged', params)
+    : t(locale, 'cannibal.verdictClear', params);
 }

@@ -3,8 +3,9 @@ import { themeCluster } from '../analytics/themeCluster.js';
 import { TREND_WEEKS, weekStart } from '../domain/clock.js';
 import { findOutlet, outletsForTenant } from '../domain/outlets.js';
 import { themeLabel } from '../domain/themes.js';
+import { DEFAULT_LOCALE } from '../i18n/locales.js';
 import { assertTenant } from '../lib/tenantScope.js';
-import { FACTOR_LABELS, locationScore } from '../location/locationScore.js';
+import { locationScore } from '../location/locationScore.js';
 
 /**
  * One branch, assembled from all three agents — screen 04.
@@ -52,7 +53,7 @@ export function createOutletService({ gbp, places, weights = undefined } = {}) {
     return scored.sort((a, b) => a.score - b.score);
   }
 
-  async function detail(tenantId, outletId) {
+  async function detail(tenantId, outletId, { locale = DEFAULT_LOCALE } = {}) {
     assertTenant(tenantId);
 
     const outlet = findOutlet(outletId);
@@ -66,7 +67,7 @@ export function createOutletService({ gbp, places, weights = undefined } = {}) {
     const [trend, themes, score, nearby] = await Promise.all([
       ratingTrend({ tenantId, outletId, reviews }),
       themeCluster({ tenantId, reviews, outletId }),
-      locationScore({ tenantId, outletId, places, weights }),
+      locationScore({ tenantId, outletId, places, weights, locale }),
       places.nearbyCompetitors({ geo: outlet.geo, radiusM: RADIUS_M }),
     ]);
 
@@ -92,7 +93,7 @@ export function createOutletService({ gbp, places, weights = undefined } = {}) {
         of: ranking.length,
         factors: score.data.factors,
         weights: score.data.weights,
-        factorLabels: FACTOR_LABELS,
+        factorLabels: score.data.labels,
         derivedFactors: score.data.derivedFactors,
         surveyedFactors: score.data.surveyedFactors,
       },
@@ -110,7 +111,7 @@ export function createOutletService({ gbp, places, weights = undefined } = {}) {
       event: openingEvent(nearby.data.pois, trend.data.points),
       themes: themes.data.themes.map((theme) => ({
         theme: theme.theme,
-        label: themeLabel(theme.theme),
+        label: themeLabel(theme.theme, locale),
         count: theme.count,
         share: complaints === 0 ? 0 : Number((theme.count / complaints).toFixed(3)),
       })),

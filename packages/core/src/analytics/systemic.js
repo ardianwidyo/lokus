@@ -1,5 +1,7 @@
 import { findOutlet } from '../domain/outlets.js';
 import { themeLabel } from '../domain/themes.js';
+import { DEFAULT_LOCALE } from '../i18n/locales.js';
+import { t } from '../i18n/index.js';
 
 /**
  * AC-2.2: a theme present in 4 or more regions is systemic.
@@ -15,7 +17,10 @@ export const SYSTEMIC_REGION_THRESHOLD = 4;
  * Marks each theme systemic or local. Takes the output of `themeCluster` and
  * returns it with `systemic`, `regionCount` and a short explanation attached.
  */
-export function flagSystemicThemes(themes, { threshold = SYSTEMIC_REGION_THRESHOLD } = {}) {
+export function flagSystemicThemes(
+  themes,
+  { threshold = SYSTEMIC_REGION_THRESHOLD, locale = DEFAULT_LOCALE } = {},
+) {
   return themes.map((theme) => {
     const regions = theme.regions ?? regionsOf(theme.outletIds ?? Object.keys(theme.byOutlet ?? {}));
     const regionCount = regions.length;
@@ -29,8 +34,12 @@ export function flagSystemicThemes(themes, { threshold = SYSTEMIC_REGION_THRESHO
       // Rendered next to the flag so the reader can check the reasoning rather
       // than trust the badge.
       systemicReason: systemic
-        ? `Muncul di ${regionCount} wilayah: ${regions.join(', ')}.`
-        : `Hanya di ${regionCount} wilayah (${regions.join(', ') || 'tidak ada'}); ambang sistemik ${threshold}.`,
+        ? t(locale, 'systemic.reasonSystemic', { count: regionCount, regions: regions.join(', ') })
+        : t(locale, 'systemic.reasonLocal', {
+            count: regionCount,
+            regions: regions.join(', ') || t(locale, 'systemic.noRegion'),
+            threshold,
+          }),
     };
   });
 }
@@ -39,8 +48,8 @@ export function flagSystemicThemes(themes, { threshold = SYSTEMIC_REGION_THRESHO
  * The one finding screen 07 leads with: the largest systemic theme, the branch
  * carrying most of it, and the branch that is somehow not affected.
  */
-export function systemicFinding(themes) {
-  const flagged = flagSystemicThemes(themes);
+export function systemicFinding(themes, { locale = DEFAULT_LOCALE } = {}) {
+  const flagged = flagSystemicThemes(themes, { locale });
   const systemic = flagged.filter((theme) => theme.systemic).sort((a, b) => b.count - a.count);
 
   if (systemic.length === 0) return null;
@@ -52,16 +61,17 @@ export function systemicFinding(themes) {
 
   return {
     theme: top.theme,
-    label: themeLabel(top.theme),
+    label: themeLabel(top.theme, locale),
     count: top.count,
     regionCount: top.regionCount,
     regions: top.regions,
     worstOutlet: worst ? { outletId: worst[0], name: findOutlet(worst[0])?.name ?? worst[0], count: worst[1] } : null,
     bestOutlet: best ? { outletId: best[0], name: findOutlet(best[0])?.name ?? best[0], count: best[1] } : null,
-    headline: `${themeLabel(top.theme)} adalah masalah sistemik, bukan lokal`,
-    detail:
-      `Muncul di ${top.regionCount} dari ${countRegions(top)} wilayah yang dipantau. ` +
-      'Perbaikan per cabang tidak akan cukup — usulan agen: ubah aturan terkait di SOP pusat.',
+    headline: t(locale, 'systemic.headline', { theme: themeLabel(top.theme, locale) }),
+    detail: t(locale, 'systemic.detail', {
+      count: top.regionCount,
+      total: countRegions(top),
+    }),
   };
 }
 

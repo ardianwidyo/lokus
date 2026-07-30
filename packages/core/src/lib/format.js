@@ -9,12 +9,20 @@
  *
  * These helpers exist so the rule has one home rather than a `.replace()` at
  * each call site, which is how it drifted in the first place.
+ *
+ * Since US-8 there are two conventions to serve, not one, and the real
+ * implementation lives in `i18n/format.js` where the locale is a parameter.
+ * These three stay as the Indonesian-bound names, because a caller that is
+ * *specifically* about Indonesian — the seeded dataset, an Indonesian-only test
+ * assertion — should not have to pass a locale to say so.
  */
+
+import { LOCALE } from '../i18n/locales.js';
+import { localeFactor, localeInteger, localeNumber } from '../i18n/format.js';
 
 /** `3.04` → `"3,04"`. Returns `null` unchanged so callers can guard on it. */
 export function idNumber(value, digits = 2) {
-  if (value === null || value === undefined || Number.isNaN(value)) return null;
-  return value.toFixed(digits).replace('.', ',');
+  return localeNumber(LOCALE.ID, value, digits);
 }
 
 /**
@@ -22,14 +30,10 @@ export function idNumber(value, digits = 2) {
  * "naik 3,67×" and "naik 2×" than as "naik 2,00×".
  */
 export function idFactor(value) {
-  if (value === null || value === undefined || Number.isNaN(value)) return null;
-  return String(value).replace('.', ',');
+  return localeFactor(LOCALE.ID, value);
 }
 
 /** `1840000` → `"1.840.000"`, the thousands separator Indonesian uses. */
 export function idInteger(value) {
-  if (value === null || value === undefined || Number.isNaN(value)) return null;
-  return Math.round(value)
-    .toString()
-    .replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return localeInteger(LOCALE.ID, value);
 }

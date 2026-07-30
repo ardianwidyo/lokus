@@ -4,6 +4,9 @@ import { DEMO_NOW } from '../domain/clock.js';
 import { findOutlet, outletsForTenant } from '../domain/outlets.js';
 import { cannibalisation } from '../location/cannibalisation.js';
 import { themeLabel } from '../domain/themes.js';
+import { DEFAULT_LOCALE } from '../i18n/locales.js';
+import { localeFactor, localePercent } from '../i18n/format.js';
+import { t } from '../i18n/index.js';
 import { assertTenant } from '../lib/tenantScope.js';
 import { searchPassages } from '../knowledge/retrieval.js';
 import { loadReviewFacts } from '../pipeline/loadReviews.js';
@@ -36,6 +39,7 @@ export async function runNightlyCycle({
   warehouse,
   now = DEMO_NOW,
   logger = null,
+  locale = DEFAULT_LOCALE,
 } = {}) {
   assertTenant(tenantId);
   const startedAt = Date.now();
@@ -52,14 +56,17 @@ export async function runNightlyCycle({
   const reviews = listed.data.reviews;
 
   const clustered = await themeCluster({ tenantId, reviews, now });
-  const themes = flagSystemicThemes(clustered.data.themes);
+  const themes = flagSystemicThemes(clustered.data.themes, { locale });
   const risingThemes = themes.filter((theme) => (theme.delta ?? 0) > 1).length;
 
   milestone(
     MILESTONE_TIMES.reviewsRead,
-    `Agen Reputasi membaca ${load.read} review baru`,
-    `${new Set(reviews.map((r) => r.outletId)).size} cabang · ${themes.length} tema terdeteksi · ` +
-      `${risingThemes} tema naik dibanding sebulan lalu`,
+    t(locale, 'briefing.reviewsReadTitle', { count: load.read }),
+    t(locale, 'briefing.reviewsReadDetail', {
+      outlets: new Set(reviews.map((r) => r.outletId)).size,
+      themes: themes.length,
+      rising: risingThemes,
+    }),
     { agent: 'reputation' },
   );
 
@@ -68,40 +75,46 @@ export async function runNightlyCycle({
 
   milestone(
     MILESTONE_TIMES.repliesDrafted,
-    `${autoReplied} review dibalas otomatis`,
-    `semua bintang 3–5 · ${held} ditahan untuk persetujuan Anda`,
+    t(locale, 'briefing.repliesTitle', { count: autoReplied }),
+    t(locale, 'briefing.repliesDetail', { held }),
     { agent: 'reputation' },
   );
 
-  const scan = await scanLocations({ tenantId, places });
+  const scan = await scanLocations({ tenantId, places, locale });
   milestone(
     MILESTONE_TIMES.locationScan,
     scan.skipped
-      ? 'Agen Lokasi tidak dijalankan'
-      : `Agen Lokasi memindai ${scan.outletCount} area cabang`,
+      ? t(locale, 'briefing.locationSkippedTitle')
+      : t(locale, 'briefing.locationTitle', { count: scan.outletCount }),
     scan.skipped
-      ? 'Tidak ada adapter Places pada siklus ini, jadi area cabang tidak dipindai.'
-      : `${scan.poiCount} POI · ${scan.newCompetitorCount} pesaing baru ditemukan · ` +
-        `${scan.cannibalPairs} cabang berisiko kanibalisasi`,
+      ? t(locale, 'briefing.locationSkippedDetail')
+      : t(locale, 'briefing.locationDetail', {
+          poi: scan.poiCount,
+          competitors: scan.newCompetitorCount,
+          pairs: scan.cannibalPairs,
+        }),
     { agent: 'location', unavailable: scan.skipped },
   );
 
-  const coverage = knowledgeCoverage(tenantId);
+  const coverage = knowledgeCoverage(tenantId, locale);
   milestone(
     MILESTONE_TIMES.documentsIndexed,
-    'Agen Pengetahuan memeriksa indeks dokumen',
-    `cakupan jawaban ${(coverage.rate * 100).toFixed(0)}% · ${coverage.gaps.length} celah pengetahuan dilaporkan`,
+    t(locale, 'briefing.knowledgeTitle'),
+    t(locale, 'briefing.knowledgeDetail', {
+      coverage: localePercent(locale, coverage.rate),
+      gaps: coverage.gaps.length,
+    }),
     { agent: 'knowledge' },
   );
 
-  const decisions = buildDecisions({ themes, clustered, coverage, now });
+  const decisions = buildDecisions({ themes, clustered, coverage, now, locale });
 
   milestone(
     MILESTONE_TIMES.handover,
-    'Briefing diserahkan',
+    t(locale, 'briefing.handoverTitle'),
     failures.length === 0
-      ? 'tidak ada panggilan tool yang gagal malam ini'
-      : `${failures.length} panggilan tool gagal · semuanya berhasil diulang otomatis`,
+      ? t(locale, 'briefing.handoverClean')
+      : t(locale, 'briefing.handoverFailures', { count: failures.length }),
     { handover: true },
   );
 
@@ -116,6 +129,7 @@ export async function runNightlyCycle({
     timeline,
     decisions,
     failures,
+    locale,
     costIdr: estimateCycleCost({ reviews: load.read, decisions: decisions.length }),
     latencyMs: Date.now() - startedAt,
   };
@@ -133,7 +147,7 @@ export async function runNightlyCycle({
  * three. Each carries the sources that justify it, so approving one is a
  * decision about evidence rather than about a headline.
  */
-function buildDecisions({ themes, clustered, coverage, now }) {
+function buildDecisions({ themes, clustered, coverage, now, locale = DEFAULT_LOCALE }) {
   const candidates = [];
 
   const rising = themes
@@ -145,72 +159,98 @@ function buildDecisions({ themes, clustered, coverage, now }) {
     if (!worst) continue;
 
     const outlet = findOutlet(worst[0]);
+    const outletName = outlet?.name ?? worst[0];
     const thisWeek = theme.weekly?.at(-1) ?? 0;
+    const delta = localeFactor(locale, theme.delta);
 
     candidates.push({
       id: `decision-theme-${theme.theme}`,
-      agent: 'Agen Reputasi',
+      // The agent's key travels beside its label, so a caller that needs to know
+      // which agent produced this does not have to match the display name.
+      agentKey: 'reputation',
+      agent: t(locale, 'agent.reputation'),
       time: '01.14',
-      title: `${themeLabel(theme.theme)} memburuk di ${outlet?.name ?? worst[0]}`,
-      body:
-        `Muncul di ${thisWeek} review pekan ini di ${outlet?.name ?? worst[0]}, ` +
-        `naik ${theme.delta}× dibanding sebulan lalu. Total ${worst[1]} keluhan dalam 8 pekan. ` +
-        'Usulan agen: tangani sesuai pasal SOP terkait selama dua pekan, lalu ukur ulang.',
+      title: t(locale, 'briefing.decisionThemeTitle', {
+        theme: themeLabel(theme.theme, locale),
+        outlet: outletName,
+      }),
+      body: t(locale, 'briefing.decisionThemeBody', {
+        thisWeek,
+        outlet: outletName,
+        delta,
+        total: worst[1],
+      }),
       evidence: [
-        `${worst[1]} keluhan`,
-        `naik ${theme.delta}×`,
-        theme.systemic ? `${theme.regionCount} wilayah` : 'lokal',
+        t(locale, 'briefing.evidenceComplaints', { count: worst[1] }),
+        t(locale, 'briefing.evidenceRising', { delta }),
+        theme.systemic
+          ? t(locale, 'briefing.evidenceRegions', { count: theme.regionCount })
+          : t(locale, 'briefing.evidenceLocal'),
       ],
       outletId: worst[0],
       theme: theme.theme,
       weight: worst[1] * (theme.delta ?? 1),
       sourceCount: clustered.sources.filter((s) => s.theme === theme.theme).length,
       actions: [
-        { id: 'approve', label: 'Setujui & buat tiket', variant: 'primary' },
-        { id: 'review', label: 'Telaah', variant: 'secondary' },
+        { id: 'approve', label: t(locale, 'briefing.actionApproveTicket'), variant: 'primary' },
+        { id: 'review', label: t(locale, 'briefing.actionReview'), variant: 'secondary' },
       ],
     });
   }
 
-  const systemic = systemicFinding(clustered.data.themes);
+  const systemic = systemicFinding(clustered.data.themes, { locale });
   if (systemic) {
     candidates.push({
       id: 'decision-systemic',
-      agent: 'Agen Reputasi',
+      agentKey: 'reputation',
+      agent: t(locale, 'agent.reputation'),
       time: '02.05',
       title: systemic.headline,
-      body: `${systemic.detail} Cabang terburuk: ${systemic.worstOutlet?.name}.`,
-      evidence: [`${systemic.count} keluhan`, `${systemic.regionCount} wilayah`, 'sistemik'],
+      body: t(locale, 'briefing.decisionSystemicBody', {
+        detail: systemic.detail,
+        outlet: systemic.worstOutlet?.name,
+      }),
+      evidence: [
+        t(locale, 'briefing.evidenceComplaints', { count: systemic.count }),
+        t(locale, 'briefing.evidenceRegions', { count: systemic.regionCount }),
+        t(locale, 'briefing.evidenceSystemic'),
+      ],
       outletId: systemic.worstOutlet?.outletId ?? null,
       theme: systemic.theme,
       weight: systemic.count * 2,
       sourceCount: systemic.count,
       actions: [
-        { id: 'approve', label: 'Setujui & buat tiket', variant: 'primary' },
-        { id: 'review', label: 'Lihat draft perubahan SOP', variant: 'secondary' },
+        { id: 'approve', label: t(locale, 'briefing.actionApproveTicket'), variant: 'primary' },
+        { id: 'review', label: t(locale, 'briefing.actionReviewSop'), variant: 'secondary' },
       ],
     });
   }
 
   if (coverage.gaps.length > 0) {
     const [gap] = coverage.gaps;
+    const percent = localePercent(locale, coverage.rate);
+
     candidates.push({
       id: 'decision-knowledge-gap',
-      agent: 'Agen Pengetahuan',
+      agentKey: 'knowledge',
+      agent: t(locale, 'agent.knowledge'),
       time: '05.22',
-      title: `SOP belum menjawab: ${gap.question}`,
-      body:
-        `${gap.occurrences} pertanyaan bulan ini tidak bisa dijawab dari dokumen yang ada. ` +
-        `Cakupan jawaban saat ini ${(coverage.rate * 100).toFixed(0)}%. ` +
-        'Usulan agen: tambahkan klausa yang menutup celah ini ke SOP pusat.',
-      evidence: [`${gap.occurrences} pertanyaan`, `cakupan ${(coverage.rate * 100).toFixed(0)}%`],
+      title: t(locale, 'briefing.decisionGapTitle', { question: gap.question }),
+      body: t(locale, 'briefing.decisionGapBody', {
+        occurrences: gap.occurrences,
+        coverage: percent,
+      }),
+      evidence: [
+        t(locale, 'briefing.evidenceQuestions', { count: gap.occurrences }),
+        t(locale, 'briefing.evidenceCoverage', { coverage: percent }),
+      ],
       outletId: null,
       theme: gap.theme ?? null,
       weight: gap.occurrences,
       sourceCount: 0,
       actions: [
-        { id: 'approve', label: 'Tugaskan ke pemilik SOP', variant: 'primary' },
-        { id: 'review', label: 'Baca draft klausa', variant: 'secondary' },
+        { id: 'approve', label: t(locale, 'briefing.actionAssignSopOwner'), variant: 'primary' },
+        { id: 'review', label: t(locale, 'briefing.actionReadClause'), variant: 'secondary' },
       ],
     });
   }
@@ -238,15 +278,17 @@ function buildDecisions({ themes, clustered, coverage, now }) {
  * A theme with no passage above the floor is a gap, and that is the number the
  * briefing reports rather than a coverage figure invented for the slide.
  */
-function knowledgeCoverage(tenantId) {
+function knowledgeCoverage(tenantId, locale = DEFAULT_LOCALE) {
+  // `query` is what is matched against the Indonesian corpus and never changes
+  // language; `label` is how the gap is described to a reader and does.
   const probes = [
-    { theme: 'antrean-kasir', label: 'aturan antrean kasir pada jam sibuk', query: 'antrean kasir jam sibuk kasir tambahan' },
-    { theme: 'kebersihan', label: 'standar kebersihan area belanja', query: 'kebersihan area belanja lantai kotor' },
-    { theme: 'stok-kosong', label: 'prosedur restock rak utama', query: 'ketersediaan barang rak utama restock' },
-    { theme: 'parkir', label: 'penanganan parkir penuh', query: 'fasilitas parkir penuh jam sibuk' },
-    { theme: 'harga-vs-pesaing', label: 'sikap terhadap selisih harga kompetitor', query: 'perbedaan harga kompetitor promo resmi' },
-    { theme: 'keramahan-staf', label: 'penanganan keluhan sikap staf', query: 'keluhan sikap staf coaching manajer' },
-    { theme: 'batas-waktu-antrean', label: 'batas waktu antrean yang wajib dilaporkan', query: 'batas waktu antrean menit wajib dilaporkan area manager hari' },
+    { theme: 'antrean-kasir', label: t(locale, 'briefing.probeQueue'), query: 'antrean kasir jam sibuk kasir tambahan' },
+    { theme: 'kebersihan', label: t(locale, 'briefing.probeCleanliness'), query: 'kebersihan area belanja lantai kotor' },
+    { theme: 'stok-kosong', label: t(locale, 'briefing.probeStock'), query: 'ketersediaan barang rak utama restock' },
+    { theme: 'parkir', label: t(locale, 'briefing.probeParking'), query: 'fasilitas parkir penuh jam sibuk' },
+    { theme: 'harga-vs-pesaing', label: t(locale, 'briefing.probePrice'), query: 'perbedaan harga kompetitor promo resmi' },
+    { theme: 'keramahan-staf', label: t(locale, 'briefing.probeStaff'), query: 'keluhan sikap staf coaching manajer' },
+    { theme: 'batas-waktu-antrean', label: t(locale, 'briefing.probeQueueLimit'), query: 'batas waktu antrean menit wajib dilaporkan area manager hari' },
   ];
 
   const gaps = [];
@@ -281,7 +323,7 @@ function knowledgeCoverage(tenantId) {
  * pretending the scan happened and reporting zeroes, which would read as "no
  * competitors found".
  */
-async function scanLocations({ tenantId, places }) {
+async function scanLocations({ tenantId, places, locale = DEFAULT_LOCALE }) {
   const outlets = outletsForTenant(tenantId);
 
   if (!places || outlets.length === 0) {
@@ -307,6 +349,7 @@ async function scanLocations({ tenantId, places }) {
       tenantId,
       geo: outlet.geo,
       excludeOutletId: outlet.outletId,
+      locale,
     });
     if (data.flagged && data.nearestOwn) {
       flagged.add([outlet.outletId, data.nearestOwn.outletId].sort().join('|'));

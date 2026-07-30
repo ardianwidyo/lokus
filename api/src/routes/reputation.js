@@ -25,7 +25,9 @@ export function reputationRoutes(fastify, { reputation }) {
   });
 
   fastify.get('/v1/reviews/:reviewId', read, async (request) => {
-    const detail = await reputation.reviewDetail(request.tenant.id, request.params.reviewId);
+    const detail = await reputation.reviewDetail(request.tenant.id, request.params.reviewId, {
+      locale: request.locale,
+    });
     // Same refusal whether the review belongs to another tenant or does not
     // exist, so this cannot be used to probe for ids (AC-6.1).
     if (!detail) throw notFound('Review not found');
@@ -41,11 +43,14 @@ export function reputationRoutes(fastify, { reputation }) {
       // The approver is the authenticated caller, never a name in the body.
       approvedBy: principal.email ?? principal.userId,
       role: tenant.role,
+      locale: request.locale,
     });
 
     request.log.info({ event: 'review.reply_sent', reviewId: request.params.reviewId }, 'reply sent');
     return sent;
   });
 
-  fastify.get('/v1/themes', read, async (request) => reputation.themeMatrix(request.tenant.id));
+  fastify.get('/v1/themes', read, async (request) =>
+    reputation.themeMatrix(request.tenant.id, { locale: request.locale }),
+  );
 }

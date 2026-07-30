@@ -1,4 +1,6 @@
 import { findOutlet } from '../domain/outlets.js';
+import { DEFAULT_LOCALE } from '../i18n/locales.js';
+import { t } from '../i18n/index.js';
 import { assertTenant } from '../lib/tenantScope.js';
 import { guardrailCheck } from '../reputation/guardrails.js';
 import { route } from './intent.js';
@@ -28,7 +30,7 @@ export function createSupervisor({ agents = {}, gapLog = null, now = () => new D
   let counter = 0;
   const nextId = idFactory ?? (() => `run-${(counter += 1)}`);
 
-  async function ask({ tenantId, question, context = {} }) {
+  async function ask({ tenantId, question, context = {}, locale = DEFAULT_LOCALE }) {
     assertTenant(tenantId);
     const startedAt = Date.now();
 
@@ -39,7 +41,7 @@ export function createSupervisor({ agents = {}, gapLog = null, now = () => new D
         tool: 'supervisor.route',
         resultSize: plan.agents.length,
         ms: 0,
-        note: `intent ${plan.intent} → ${plan.agents.join(', ')}`,
+        note: t(locale, 'step.route', { intent: plan.intent, agents: plan.agents.join(', ') }),
       },
     ];
 
@@ -53,6 +55,7 @@ export function createSupervisor({ agents = {}, gapLog = null, now = () => new D
           question,
           outletId: plan.outletId ?? context.outletId ?? null,
           startStep: 1,
+          locale,
         }),
       ),
     );
@@ -85,14 +88,15 @@ export function createSupervisor({ agents = {}, gapLog = null, now = () => new D
         }) ?? null)
       : null;
     const answer = refused
-      ? buildRefusal(plan, unavailable)
-      : buildAnswer({ plan, findings, unavailable });
+      ? buildRefusal(unavailable, locale)
+      : buildAnswer({ plan, findings, unavailable, locale });
 
     const guardrail = guardrailCheck({
       draftText: answer,
       citations: sources
         .filter((source) => source.type === 'document')
         .map((source) => ({ docId: source.docId, page: source.page, score: source.score })),
+      locale,
     });
     steps.push({
       n: steps.length + 1,
@@ -116,7 +120,8 @@ export function createSupervisor({ agents = {}, gapLog = null, now = () => new D
       knowledgeGap,
       findings,
       sources,
-      sourceSummary: summariseSources(sources),
+      sourceSummary: summariseSources(sources, locale),
+      locale,
       unavailable: unavailable.map((result) => ({ agent: result.agent, reason: result.reason })),
       rejectedCount,
       guardrail: guardrail.data,
@@ -131,45 +136,47 @@ export function createSupervisor({ agents = {}, gapLog = null, now = () => new D
   return { ask, route };
 }
 
-function buildAnswer({ plan, findings, unavailable }) {
+function buildAnswer({ plan, findings, unavailable, locale }) {
   const outlet = plan.outletId ? findOutlet(plan.outletId) : null;
   const lead = outlet
-    ? `Untuk ${outlet.name}, ini yang ditemukan agen:`
-    : 'Ini yang ditemukan agen di seluruh jaringan:';
+    ? t(locale, 'supervisor.leadOutlet', { outlet: outlet.name })
+    : t(locale, 'supervisor.leadNetwork');
 
   const body = findings.map((finding) => finding.text);
 
-  const caveats = unavailable.map(
-    (result) => `Catatan: ${result.reason} Jawaban ini belum memasukkan sudut pandang tersebut.`,
+  const caveats = unavailable.map((result) =>
+    t(locale, 'supervisor.caveat', { reason: result.reason }),
   );
 
   return [lead, ...body, ...caveats].join('\n\n');
 }
 
-function buildRefusal(plan, unavailable) {
+function buildRefusal(unavailable, locale) {
   const missing = unavailable.map((result) => result.reason).join(' ');
 
-  return [
-    'Tidak ada di dokumen.',
-    'Agen tidak menemukan satu pun sumber yang bisa menopang jawaban untuk pertanyaan ini, ' +
-      'jadi tidak ada jawaban yang diberikan. Pertanyaan ini dicatat sebagai celah pengetahuan.',
-    missing,
-  ]
+  return [t(locale, 'supervisor.refusalTitle'), t(locale, 'supervisor.refusalBody'), missing]
     .filter(Boolean)
     .join('\n\n');
 }
 
 /** The source tags shown under the answer: "18 review · SOP v4 hal. 12". */
-function summariseSources(sources) {
+function summariseSources(sources, locale) {
   const reviews = sources.filter((source) => source.type === 'review');
   const documents = sources.filter((source) => source.type === 'document');
 
   const tags = [];
-  if (reviews.length > 0) tags.push(`${reviews.length} review`);
+  if (reviews.length > 0) {
+    tags.push(t(locale, 'supervisor.sourceReviews', { count: reviews.length }));
+  }
 
   const seen = new Set();
   for (const doc of documents) {
-    const label = `${doc.title ?? doc.docId} hal. ${doc.page}`;
+    // The document title is the tenant's, so it is not translated — only the
+    // page word around it is.
+    const label = t(locale, 'supervisor.sourceDocument', {
+      title: doc.title ?? doc.docId,
+      page: doc.page,
+    });
     if (!seen.has(label)) {
       seen.add(label);
       tags.push(label);

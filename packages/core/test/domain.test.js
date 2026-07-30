@@ -92,9 +92,22 @@ describe('themes', () => {
   });
 
   it('looks a theme up by id and falls back to the id when unknown', () => {
-    expect(findTheme('parkir').label).toBe('Parkir');
+    expect(findTheme('parkir').id).toBe('parkir');
     expect(findTheme('tidak-ada')).toBeNull();
     expect(themeLabel('parkir')).toBe('Parkir');
     expect(themeLabel('tidak-ada')).toBe('tidak-ada');
+  });
+
+  it('names a theme in the reader’s language, defaulting to Indonesian', () => {
+    expect(themeLabel('antrean-kasir')).toBe('Antrean kasir');
+    expect(themeLabel('antrean-kasir', 'id')).toBe('Antrean kasir');
+    expect(themeLabel('antrean-kasir', 'en')).toBe('Checkout queues');
+  });
+
+  it('keeps the keyword table Indonesian in both locales', () => {
+    // The keywords match customer review text, so they are not translatable —
+    // an English keyword table would find nothing at all.
+    expect(findTheme('antrean-kasir').keywords.map((k) => k.term)).toContain('antre');
+    expect(THEMES.every((theme) => theme.label === undefined)).toBe(true);
   });
 });

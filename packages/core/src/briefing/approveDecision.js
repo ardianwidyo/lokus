@@ -1,4 +1,6 @@
 import { findOutlet } from '../domain/outlets.js';
+import { DEFAULT_LOCALE } from '../i18n/locales.js';
+import { t } from '../i18n/index.js';
 import { assertTenant } from '../lib/tenantScope.js';
 import { SLA_DAYS, TicketError } from '../tickets/ticketStore.js';
 
@@ -25,13 +27,13 @@ export class DecisionApprovalError extends Error {
 
 const APPROVER_ROLES = new Set(['admin', 'manager']);
 
-export function ownerFor(decision) {
+export function ownerFor(decision, locale = DEFAULT_LOCALE) {
   const outlet = decision.outletId ? findOutlet(decision.outletId) : null;
   if (outlet?.manager) return outlet.manager;
 
   // A systemic finding cannot be owned by one branch manager: fixing it means
   // changing the network SOP.
-  return NETWORK_OWNER;
+  return t(locale, 'ticket.ownerNetwork');
 }
 
 /** Urgent findings get a shorter clock than the standing SLA. */
@@ -47,6 +49,7 @@ export async function approveBriefingDecision({
   role,
   ticketStore,
   now = () => new Date(),
+  locale = DEFAULT_LOCALE,
 }) {
   assertTenant(tenantId);
 
@@ -76,11 +79,14 @@ export async function approveBriefingDecision({
     return await ticketStore.create(tenantId, {
       title: decision.title,
       outletId: decision.outletId ?? null,
-      owner: ownerFor(decision),
+      owner: ownerFor(decision, locale),
       theme: decision.theme ?? null,
       sourceInsightId: decision.id,
       sourceKind: 'briefing_decision',
       createdBy: approvedBy,
+      // A named human approved this one, which is what screen 13's "mine"
+      // filter means and what constitution II is about.
+      createdByKind: 'user',
       dueAt: dueDateFor(decision, now()),
     });
   } catch (error) {

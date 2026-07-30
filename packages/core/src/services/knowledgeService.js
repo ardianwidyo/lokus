@@ -1,6 +1,7 @@
 import { KnowledgeGapLog, ragCite } from '../knowledge/cite.js';
 import { gapReport } from '../knowledge/gapReport.js';
 import { createSeededKnowledgeStore } from '../knowledge/ingest.js';
+import { DEFAULT_LOCALE } from '../i18n/locales.js';
 import { assertTenant } from '../lib/tenantScope.js';
 
 /**
@@ -57,11 +58,19 @@ export function createKnowledgeService({ store = null, gapLog = null, gemini = n
     };
   }
 
-  async function ask(tenantId, question, { askedBy = null } = {}) {
+  async function ask(tenantId, question, { askedBy = null, locale = DEFAULT_LOCALE } = {}) {
     assertTenant(tenantId);
     const passages = kb.retrievablePassages(tenantId);
 
-    const result = await ragCite({ tenantId, question, passages, gapLog: gaps, askedBy, gemini });
+    const result = await ragCite({
+      tenantId,
+      question,
+      passages,
+      gapLog: gaps,
+      askedBy,
+      gemini,
+      locale,
+    });
     return { ...result.data, question, askedBy };
   }
 

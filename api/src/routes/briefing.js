@@ -8,18 +8,21 @@ export function briefingRoutes(fastify, { briefing, tickets }) {
     preHandler: [fastify.authenticate, fastify.withTenant, fastify.requireRole(ROLES.MANAGER)],
   };
 
-  fastify.get('/v1/briefing', read, async (request) => briefing.briefing(request.tenant.id));
+  fastify.get('/v1/briefing', read, async (request) =>
+    briefing.briefing(request.tenant.id, { locale: request.locale }),
+  );
 
   fastify.post('/v1/briefing/decisions/:decisionId/approve', write, async (request) => {
     const { principal, tenant } = request;
 
-    const current = await briefing.briefing(tenant.id);
+    const current = await briefing.briefing(tenant.id, { locale: request.locale });
     const decision = current.decisions.find((item) => item.id === request.params.decisionId);
     if (!decision) throw notFound('Decision not found');
 
     const ticket = await briefing.approveDecision(tenant.id, decision, {
       approvedBy: principal.email ?? principal.userId,
       role: tenant.role,
+      locale: request.locale,
     });
 
     request.log.info(
@@ -31,7 +34,7 @@ export function briefingRoutes(fastify, { briefing, tickets }) {
 
   fastify.get('/v1/tickets', read, async (request) => {
     const [board, stats] = await Promise.all([
-      tickets.board(request.tenant.id),
+      tickets.board(request.tenant.id, { locale: request.locale }),
       tickets.closeTimeStats(request.tenant.id),
     ]);
 
@@ -50,6 +53,8 @@ export function briefingRoutes(fastify, { briefing, tickets }) {
       sourceInsightId: body.sourceInsightId,
       sourceKind: body.sourceKind ?? 'agent_run',
       createdBy: principal.email ?? principal.userId,
+      // A named human posted this, whatever the payload says about its origin.
+      createdByKind: 'user',
     });
 
     request.log.info({ event: 'ticket.created', ticketId: ticket.id }, 'ticket created');

@@ -15,7 +15,11 @@ export function agentRoutes(fastify, { supervisor, budget = null }) {
       // here surfaces as a budget error the UI can explain, not a blank answer.
       budget?.reserve(request.tenant.id, ESTIMATED_ASK_IDR);
 
-      const run = await supervisor.ask({ tenantId: request.tenant.id, question });
+      const run = await supervisor.ask({
+        tenantId: request.tenant.id,
+        question,
+        locale: request.locale,
+      });
       budget?.record(request.tenant.id, run.costIdr);
 
       request.log.info(
@@ -23,7 +27,7 @@ export function agentRoutes(fastify, { supervisor, budget = null }) {
         'agent run complete',
       );
 
-      return { run, actions: answerActions(run) };
+      return { run, actions: answerActions(run, request.locale) };
     },
   );
 }

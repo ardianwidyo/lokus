@@ -1,4 +1,6 @@
 import { findOutlet } from '../domain/outlets.js';
+import { DEFAULT_LOCALE } from '../i18n/locales.js';
+import { t } from '../i18n/index.js';
 import { assertTenant } from '../lib/tenantScope.js';
 import { toolResult } from '../lib/toolResult.js';
 
@@ -21,12 +23,20 @@ export const DEFAULT_WEIGHTS = Object.freeze({
   access: 0.15,
 });
 
-export const FACTOR_LABELS = Object.freeze({
-  traffic: 'Lalu lintas pejalan',
-  mix: 'Bauran kategori sekitar',
-  competitors: 'Kepadatan pesaing',
-  access: 'Ketersediaan parkir',
-});
+/** The four factor keys, in the order the score panel lists them. */
+export const FACTOR_KEYS = Object.freeze(['traffic', 'mix', 'competitors', 'access']);
+
+/** The reader-facing factor names, in the reader's language. */
+export function factorLabels(locale = DEFAULT_LOCALE) {
+  return Object.fromEntries(FACTOR_KEYS.map((key) => [key, t(locale, `factor.${key}`)]));
+}
+
+/**
+ * Kept for callers that are specifically about Indonesian — the seeded dataset
+ * and the Indonesian-only assertions. Anything rendering to a reader should call
+ * `factorLabels(locale)` instead.
+ */
+export const FACTOR_LABELS = Object.freeze(factorLabels(DEFAULT_LOCALE));
 
 /** Each competing POI inside the radius costs this much of the factor. */
 export const COMPETITOR_PENALTY = 8;
@@ -94,6 +104,7 @@ export async function locationScore({
   weights = DEFAULT_WEIGHTS,
   surveyed = null,
   radiusM = 1000,
+  locale = DEFAULT_LOCALE,
 } = {}) {
   const startedAt = Date.now();
   assertTenant(tenantId);
@@ -128,7 +139,7 @@ export async function locationScore({
       total: scoreFrom(factors, appliedWeights),
       factors,
       weights: appliedWeights,
-      labels: FACTOR_LABELS,
+      labels: factorLabels(locale),
       competitorCount: nearby.data.total,
       newCompetitorCount: nearby.data.newSinceCount,
       // Named so the UI can say which numbers are measured and which surveyed,
