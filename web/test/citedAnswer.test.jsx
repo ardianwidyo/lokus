@@ -146,3 +146,30 @@ describe('Screen 12 · Jawaban bersitasi (AC-4.1, AC-4.2, AC-4.3)', () => {
     expect(title.closest('.panel')).toHaveAttribute('data-status', 'error');
   });
 });
+
+describe('Screen 12 · who wrote the words (T061)', () => {
+  beforeEach(() => {
+    window.sessionStorage.clear();
+  });
+
+  it('says the answer is quoted when no model is configured', async () => {
+    // This is the public demo's path, and it should not imply a model ran.
+    await renderAnswer();
+
+    expect(screen.getByText(/dikutip apa adanya dari SOP/)).toBeInTheDocument();
+  });
+
+  it('names the model, and that the citations were checked, when one wrote it', async () => {
+    const source = createSeededKnowledgeSource();
+    const ask = source.ask.bind(source);
+    source.ask = async (...args) => ({
+      ...(await ask(...args)),
+      generated: true,
+      generationStep: { tool: 'gemini.generate', model: 'gemini-2.0-flash', costIdr: 0.5, ms: 640 },
+    });
+
+    await renderAnswer(source);
+
+    expect(screen.getByText(/ditulis gemini-2\.0-flash, lolos cek sitasi/)).toBeInTheDocument();
+  });
+});

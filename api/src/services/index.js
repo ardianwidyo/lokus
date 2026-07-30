@@ -2,6 +2,7 @@ import {
   createBriefingService,
   createBudgetGuard,
   createKnowledgeAgent,
+  createGeminiAdapterIfConfigured,
   createKnowledgeService,
   createLocationAgent,
   createLocationService,
@@ -27,10 +28,19 @@ import {
  * `createSeededGbpAdapter` for the Google one, and the memory stores for
  * Firestore-backed ones, changes this file and nothing else.
  */
-export function createServices({ evaluationReport, budgets = {}, onBudgetAlert = null } = {}) {
+export function createServices({
+  evaluationReport,
+  budgets = {},
+  onBudgetAlert = null,
+  // The key lives in this process and nowhere else. Absent, every call site
+  // uses its deterministic path — which is what the public demo serves, since
+  // GitHub Pages has no API behind it and a browser-side key is a public key.
+  geminiApiKey = process.env.GEMINI_API_KEY ?? null,
+} = {}) {
   const gbp = createSeededGbpAdapter();
   const places = createSeededPlacesAdapter();
-  const knowledge = createKnowledgeService();
+  const gemini = createGeminiAdapterIfConfigured({ apiKey: geminiApiKey });
+  const knowledge = createKnowledgeService({ gemini });
   const runStore = createMemoryRunStore();
   const ticketStore = createMemoryTicketStore({ seed: seedTickets({ tenantId: 'nusa-retail' }) });
 
@@ -53,6 +63,10 @@ export function createServices({ evaluationReport, budgets = {}, onBudgetAlert =
   return {
     gbp,
     places,
+    gemini,
+    // Reported so /healthz and screen 14 can state which reasoning path is
+    // live, rather than leaving a reader to guess whether a key is present.
+    reasoning: gemini ? 'gemini' : 'deterministic',
     runStore,
     ticketStore,
     budget,

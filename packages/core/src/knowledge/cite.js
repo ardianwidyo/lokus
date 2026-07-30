@@ -1,5 +1,6 @@
 import { idNumber } from '../lib/format.js';
 import { assertTenant, scopeToTenant } from '../lib/tenantScope.js';
+import { writeGroundedAnswer } from './groundedWriter.js';
 import { toolResult } from '../lib/toolResult.js';
 import { CONFIDENCE_THRESHOLD, firstSentence, searchPassages } from './retrieval.js';
 
@@ -91,6 +92,10 @@ export async function ragCite({
   gapLog = null,
   askedBy = null,
   now = () => new Date(),
+  // Absent by default: with no key configured the answer is the passages
+  // themselves, which is what the public demo serves.
+  gemini = null,
+  tier = undefined,
 } = {}) {
   const startedAt = Date.now();
   assertTenant(tenantId);
@@ -144,15 +149,50 @@ export async function ragCite({
     text: chunk.text,
   }));
 
-  const paragraphs = citations.map((citation) => `${citation.text} ${citation.marker}`);
+  // The deterministic answer: the passages themselves, each carrying its
+  // marker. Grounded by construction, and the fallback for everything below.
+  const quoted = citations.map((citation) => `${citation.text} ${citation.marker}`);
   const confidence = Number(
     (citations.reduce((sum, c) => sum + c.score, 0) / citations.length).toFixed(4),
   );
 
+  const written = await writeGroundedAnswer({
+    gemini,
+    question,
+    citations,
+    tier,
+    fallbackText: quoted.join('\n\n'),
+  });
+
+  // A model that refuses is obeyed: it read the passages and said they do not
+  // answer the question, and overriding that with the passages anyway would be
+  // the invention this whole layer exists to prevent.
+  if (written.refused) {
+    const gap = gapLog?.record({ tenantId, question, askedBy, bestScore: chunks[0]?.score ?? 0, at: now() });
+
+    return toolResult({
+      data: {
+        answered: false,
+        text: REFUSAL_TEXT,
+        reason: 'Model membaca kutipan yang lolos ambang dan menilai tidak ada yang menjawab pertanyaan ini.',
+        citations: [],
+        confidence,
+        rejectedCount,
+        threshold,
+        knowledgeGap: gap ?? null,
+        generated: true,
+      },
+      sources: [],
+      startedAt,
+    });
+  }
+
+  const paragraphs = written.text.split(/\n{2,}/).filter(Boolean);
+
   return toolResult({
     data: {
       answered: true,
-      text: paragraphs.join('\n\n'),
+      text: written.text,
       paragraphs,
       citations,
       confidence,
@@ -160,6 +200,11 @@ export async function ragCite({
       rejectedCount,
       threshold,
       knowledgeGap: null,
+      // How the words were produced, so the UI and the trace can say so rather
+      // than leaving a reader to assume one or the other.
+      generated: written.generated,
+      groundingChecks: written.checks,
+      generationStep: written.step,
     },
     sources: citations.map((citation) => ({
       type: 'document',

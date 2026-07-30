@@ -44,6 +44,10 @@ export default [
         clearTimeout: 'readonly',
         URL: 'readonly',
         console: 'readonly',
+        // Both present in Node 20 and every target browser; the Gemini
+        // adapter uses them to put a ceiling on a call that never returns.
+        AbortController: 'readonly',
+        fetch: 'readonly',
       },
     },
   },

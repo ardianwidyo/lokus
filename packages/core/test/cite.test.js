@@ -259,3 +259,94 @@ describe('T022 · refusals are recorded wherever they happen', () => {
     expect(run.knowledgeGap).toBeNull();
   });
 });
+
+describe('rag.cite with a model behind it (T061)', () => {
+  const modelSaying = (text) => ({
+    generate: async () => ({
+      text,
+      model: 'gemini-2.0-flash',
+      tier: 'gemini-reasoning',
+      tokens: { input: 120, output: 40 },
+      costIdr: 0.5,
+      ms: 640,
+    }),
+  });
+
+  it('serves the passages themselves when no model is configured', async () => {
+    const { data } = await cite();
+
+    // This is what the public demo runs, and it must stay grounded by
+    // construction rather than by a check.
+    expect(data.generated).toBeFalsy();
+    expect(data.text).toContain(data.citations[0].text);
+  });
+
+  it('serves the written answer when the model cites properly', async () => {
+    const { data } = await cite({
+      gemini: modelSaying('Barang promo yang sudah dibuka tidak bisa dikembalikan [1].'),
+    });
+
+    expect(data.answered).toBe(true);
+    expect(data.generated).toBe(true);
+    expect(data.text).toBe('Barang promo yang sudah dibuka tidak bisa dikembalikan [1].');
+    expect(data.generationStep).toMatchObject({ tool: 'gemini.generate', costIdr: 0.5 });
+  });
+
+  it('keeps the citations verifiable even when a model wrote the words', async () => {
+    const { sources } = await cite({
+      gemini: modelSaying('Tidak bisa dikembalikan [1].'),
+    });
+
+    // The sources are still the retrieved passages with their pages and
+    // scores; the model never gets to choose what the answer is attributed to.
+    expect(sources.length).toBeGreaterThan(0);
+    for (const source of sources) {
+      expect(source).toMatchObject({ type: 'document', page: expect.any(Number) });
+      expect(source.score).toBeGreaterThanOrEqual(CONFIDENCE_THRESHOLD);
+    }
+  });
+
+  it('discards a fluent answer that cites nothing', async () => {
+    const { data } = await cite({
+      gemini: modelSaying('Tentu saja barang promo selalu bisa dikembalikan kapan pun.'),
+    });
+
+    expect(data.generated).toBe(false);
+    expect(data.text).not.toContain('kapan pun');
+    expect(data.text).toContain(data.citations[0].text);
+  });
+
+  it('discards an answer that cites a source that does not exist', async () => {
+    const { data } = await cite({ gemini: modelSaying('Refund boleh 30 hari [9].') });
+
+    expect(data.generated).toBe(false);
+    expect(data.text).not.toContain('[9]');
+  });
+
+  it('refuses, and logs the gap, when the model says the passages do not answer it', async () => {
+    const gapLog = new KnowledgeGapLog();
+
+    const { data, sources } = await cite({
+      gemini: modelSaying('Tidak ada di dokumen.'),
+      gapLog,
+    });
+
+    expect(data.answered).toBe(false);
+    expect(data.text).toBe(REFUSAL_TEXT);
+    expect(sources).toEqual([]);
+    expect(gapLog.list(TENANT).length).toBe(1);
+  });
+
+  it('falls back rather than failing when the model errors', async () => {
+    const broken = {
+      generate: async () => {
+        throw Object.assign(new Error('429'), { code: 'GEMINI_HTTP_ERROR' });
+      },
+    };
+
+    const { data } = await cite({ gemini: broken });
+
+    expect(data.answered).toBe(true);
+    expect(data.generated).toBe(false);
+  });
+});

@@ -10,7 +10,7 @@ import { assertTenant } from '../lib/tenantScope.js';
  * question refused in the chat and a reply the drafter could not ground show up
  * in the same report. Separate logs would each tell half the truth.
  */
-export function createKnowledgeService({ store = null, gapLog = null } = {}) {
+export function createKnowledgeService({ store = null, gapLog = null, gemini = null } = {}) {
   const kb = store ?? createSeededKnowledgeStore();
   const gaps = gapLog ?? new KnowledgeGapLog();
 
@@ -61,7 +61,7 @@ export function createKnowledgeService({ store = null, gapLog = null } = {}) {
     assertTenant(tenantId);
     const passages = kb.retrievablePassages(tenantId);
 
-    const result = await ragCite({ tenantId, question, passages, gapLog: gaps, askedBy });
+    const result = await ragCite({ tenantId, question, passages, gapLog: gaps, askedBy, gemini });
     return { ...result.data, question, askedBy };
   }
 

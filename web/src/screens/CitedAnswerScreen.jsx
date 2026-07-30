@@ -71,7 +71,14 @@ export function CitedAnswerScreen({ onNavigate }) {
           meta={
             answer?.answered ? (
               <span className="panel-meta">
-                {answer.citations.length} sumber · {answer.confidenceLabel}
+                {answer.citations.length} sumber · {answer.confidenceLabel} ·{' '}
+                {/* Constitution III: who wrote these words is part of the trace.
+                    A generated answer passed a grounding check; a quoted one
+                    never needed to, and the difference is the reader's to
+                    know. */}
+                {answer.generated
+                  ? `ditulis ${answer.generationStep?.model ?? 'Gemini'}, lolos cek sitasi`
+                  : 'dikutip apa adanya dari SOP'}
               </span>
             ) : null
           }
