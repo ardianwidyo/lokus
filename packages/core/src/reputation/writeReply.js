@@ -1,3 +1,5 @@
+import { MODEL_TIER } from '../cost/budget.js';
+
 /**
  * The brand-voice reply, written by a model and then checked.
  *
@@ -86,7 +88,14 @@ export async function writeReply({
   voicePassage,
   outlet,
   address,
-  tier,
+  // The bulk tier by default, which is what plan.md always said this job was:
+  // "Gemini Flash (bulk)". Measured on one live draft, the reasoning tier
+  // spent 1236 thought tokens to produce 104 visible ones — Rp 8,58 — while
+  // the lite tier produced an equally good, slightly tighter reply with no
+  // thinking at all, for Rp 0,38. Across hundreds of reviews that is the
+  // difference between a budget and a bill, and the task is following stated
+  // rules rather than reasoning.
+  tier = MODEL_TIER.FLASH,
   fallbackText,
 }) {
   if (!gemini || !sopPassage) {
@@ -101,7 +110,11 @@ export async function writeReply({
       // A public reply should read the same way twice; this is not the place
       // for the model to be inventive.
       temperature: 0.15,
-      maxOutputTokens: 400,
+      // A ceiling costs nothing unused, and on a thinking tier the budget is
+      // shared with thoughts — at 400 the first live draft came back as "Halo
+      // Kak Ratna, terima kasih atas masukannya dan kami", and 1024 was still
+      // not enough for a model that spent 1236 tokens thinking.
+      maxOutputTokens: 4_096,
     });
   } catch (error) {
     return { text: fallbackText, generated: false, checks: [], reason: error?.code ?? 'GEMINI_FAILED', step: null };

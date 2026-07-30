@@ -60,7 +60,7 @@ describe('Gemini adapter (T060)', () => {
 
     const result = await gemini.generate({ prompt: 'p' });
 
-    expect(result.tokens).toEqual({ input: 1_000_000, output: 0 });
+    expect(result.tokens).toEqual({ input: 1_000_000, output: 0, visible: 0, thoughts: 0 });
     expect(result.costIdr).toBe(1_600);
     expect(result.model).toBe(MODEL_FOR_TIER[MODEL_TIER.REASONING]);
   });
@@ -122,5 +122,84 @@ describe('Gemini adapter (T060)', () => {
 
   it('prices nothing for a model it does not know', () => {
     expect(costOf('some-future-model', { input: 1000, output: 1000 })).toBe(0);
+  });
+});
+
+describe('thinking tokens (measured 2026-07-30)', () => {
+  it('charges for thoughts, which are billed but absent from candidatesTokenCount', async () => {
+    // 328 thought tokens against 12 visible was a real measurement. Pricing
+    // only the visible ones understates the call by an order of magnitude and
+    // lets the budget guard wave through what it should degrade.
+    const fetchImpl = async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        candidates: [{ content: { parts: [{ text: 'jawab' }] } }],
+        usageMetadata: { promptTokenCount: 0, candidatesTokenCount: 12, thoughtsTokenCount: 328 },
+      }),
+    });
+    const gemini = createGeminiAdapter({ apiKey: 'k', fetchImpl });
+
+    const result = await gemini.generate({ prompt: 'p' });
+
+    expect(result.tokens.output).toBe(340);
+    expect(result.tokens.visible).toBe(12);
+    expect(result.tokens.thoughts).toBe(328);
+    // 340 output tokens at Rp 6.400 per 1M.
+    expect(result.costIdr).toBeCloseTo(2.176, 3);
+  });
+
+  it('reports zero thoughts for a model that does not think', async () => {
+    const fetchImpl = async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        candidates: [{ content: { parts: [{ text: 'jawab' }] } }],
+        usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 15 },
+      }),
+    });
+    const gemini = createGeminiAdapter({ apiKey: 'k', fetchImpl });
+
+    const result = await gemini.generate({ prompt: 'p', tier: MODEL_TIER.FLASH });
+
+    expect(result.tokens).toMatchObject({ output: 15, visible: 15, thoughts: 0 });
+  });
+});
+
+describe('truncation', () => {
+  it('rejects a cut-off generation rather than returning half a sentence', async () => {
+    // The first live reply draft came back as "Halo Kak Ratna, terima kasih
+    // atas masukannya dan kami" and passed every shape check, because no
+    // heuristic distinguishes brief from severed. finishReason does.
+    const fetchImpl = async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        candidates: [
+          { content: { parts: [{ text: 'Halo Kak Ratna, terima kasih atas masukannya dan kami' }] }, finishReason: 'MAX_TOKENS' },
+        ],
+        usageMetadata: { promptTokenCount: 300, candidatesTokenCount: 100, thoughtsTokenCount: 280 },
+      }),
+    });
+    const gemini = createGeminiAdapter({ apiKey: 'k', fetchImpl });
+
+    const error = await gemini.generate({ prompt: 'p' }).catch((e) => e);
+
+    expect(error.code).toBe('GEMINI_TRUNCATED');
+  });
+
+  it('passes a normally finished generation through', async () => {
+    const fetchImpl = async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        candidates: [{ content: { parts: [{ text: 'Selesai.' }] }, finishReason: 'STOP' }],
+        usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 5 },
+      }),
+    });
+    const gemini = createGeminiAdapter({ apiKey: 'k', fetchImpl });
+
+    const result = await gemini.generate({ prompt: 'p' });
+    expect(result.finishReason).toBe('STOP');
   });
 });

@@ -16,10 +16,33 @@ import { MODEL_TIER } from '../cost/budget.js';
 
 const ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models';
 
-/** Which published model backs each budget tier. */
+/**
+ * Which published model backs each budget tier.
+ *
+ * Pinned rather than the floating `*-latest` aliases. Constitution III wants
+ * the trace to say what actually ran, and an alias can be repointed under a
+ * recorded run, which makes the trace a guess after the fact.
+ *
+ * Both were confirmed reachable on 2026-07-30. `gemini-2.0-*`, the earlier
+ * choice, returns 429 on this project — its free-tier daily allowance is spent
+ * elsewhere, which is exactly why a rate-limited model must degrade rather
+ * than fail.
+ *
+ * Measured the same day, on a short constrained prompt:
+ *
+ *   gemini-3.6-flash        342 thought tokens   5729 ms
+ *   gemini-3.5-flash        328 thought tokens   2565 ms
+ *   gemini-3.5-flash-lite     0 thought tokens    853 ms
+ *
+ * The lite tier does not think, which is the right trade for the cheap tier:
+ * both call sites hand the model its passages and its rules, so the work is
+ * following constraints rather than reasoning, and the output is verified
+ * afterwards either way. 3.6 was rejected for the reasoning tier because 5.7 s
+ * on one call is most of the eval's 10 s p95 budget.
+ */
 export const MODEL_FOR_TIER = Object.freeze({
-  [MODEL_TIER.REASONING]: 'gemini-2.0-flash',
-  [MODEL_TIER.FLASH]: 'gemini-2.0-flash-lite',
+  [MODEL_TIER.REASONING]: 'gemini-3.5-flash',
+  [MODEL_TIER.FLASH]: 'gemini-3.5-flash-lite',
 });
 
 /**
@@ -28,6 +51,11 @@ export const MODEL_FOR_TIER = Object.freeze({
  * does, which is the only job these numbers have here.
  */
 const RATE_IDR_PER_MTOK = Object.freeze({
+  'gemini-3.5-flash': { input: 1_600, output: 6_400 },
+  'gemini-3.6-flash': { input: 1_600, output: 6_400 },
+  'gemini-3.5-flash-lite': { input: 1_200, output: 4_800 },
+  // Kept so a run recorded against an older pin still prices correctly rather
+  // than silently costing zero.
   'gemini-2.0-flash': { input: 1_600, output: 6_400 },
   'gemini-2.0-flash-lite': { input: 1_200, output: 4_800 },
 });
@@ -66,7 +94,10 @@ export function createGeminiAdapter({
     throw new GeminiError('GEMINI_NO_FETCH', 'fetch tidak tersedia di runtime ini.');
   }
 
-  async function generate({ prompt, tier: callTier = tier, temperature = 0.2, maxOutputTokens = 900 }) {
+  // Generous, because on a thinking model the budget is shared with thoughts
+  // and a truncated answer is worse than a slow one — the first live cited
+  // answer came back cut off mid-sentence at 900.
+  async function generate({ prompt, tier: callTier = tier, temperature = 0.2, maxOutputTokens = 4_096 }) {
     const model = MODEL_FOR_TIER[callTier] ?? MODEL_FOR_TIER[MODEL_TIER.REASONING];
     const startedAt = now();
 
@@ -107,6 +138,19 @@ export function createGeminiAdapter({
 
     const body = await response.json();
     const text = extractText(body);
+    const finishReason = body?.candidates?.[0]?.finishReason ?? null;
+
+    // A cut-off generation is not a shorter answer, it is half a sentence. On
+    // a thinking model this is easy to hit, because thoughts and the visible
+    // reply share one budget — and a truncated public reply would otherwise
+    // reach a customer, since no shape check can reliably tell "brief" from
+    // "severed". The API says so outright, so the API is what we believe.
+    if (finishReason === 'MAX_TOKENS') {
+      throw new GeminiError(
+        'GEMINI_TRUNCATED',
+        `Jawaban Gemini terpotong di batas ${maxOutputTokens} token; jalur deterministik dipakai.`,
+      );
+    }
 
     if (!text) {
       // A blocked or empty candidate is a refusal, not an answer. Returning ""
@@ -118,9 +162,17 @@ export function createGeminiAdapter({
     }
 
     const usage = body?.usageMetadata ?? {};
+    // Thinking tokens are billed at the output rate but are not included in
+    // candidatesTokenCount, and on a thinking model they dwarf the visible
+    // answer — 328 against 12 in one measurement. Leaving them out would have
+    // under-reported the spend by an order of magnitude and let the budget
+    // guard wave through calls it should have degraded (constitution V).
+    const thoughts = usage.thoughtsTokenCount ?? 0;
     const tokens = {
       input: usage.promptTokenCount ?? 0,
-      output: usage.candidatesTokenCount ?? 0,
+      output: (usage.candidatesTokenCount ?? 0) + thoughts,
+      visible: usage.candidatesTokenCount ?? 0,
+      thoughts,
     };
 
     return {
@@ -128,6 +180,7 @@ export function createGeminiAdapter({
       model,
       tier: callTier,
       tokens,
+      finishReason,
       costIdr: costOf(model, tokens),
       ms: now() - startedAt,
     };
