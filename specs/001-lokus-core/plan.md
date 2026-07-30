@@ -237,6 +237,28 @@ folded in continuously rather than left to the end.
   `NODE_ENV=production`, nothing selects it unless `LOKUS_AUTH_MODE` is exactly
   `dev`, and every request under it is logged as unverified.
 
+- **2026-07-30 · no tenant chosen is a state, not a failure.**
+  Opening any screen directly without having picked a tenant rendered that
+  screen's error panel — "Permintaan ini tidak menyebutkan tenant" — which is
+  accurate and useless. Not having chosen yet is the normal condition of
+  someone arriving, and the product already knows where they should go: the
+  rail says "Pilih tenant di layar 01" while the panel next to it reports a
+  fault.
+
+  The console now sends them to screen 01 and remembers where they were
+  heading, in the URL as `/masuk?next=<path>`, so the destination survives a
+  reload and is visible rather than hidden in storage. After a tenant is
+  chosen it continues there instead of always landing on the briefing.
+
+  `next` is resolved against the fourteen known screen paths and ignored
+  otherwise. A redirect target taken from a URL is an open redirect unless it
+  is checked against an allowlist, and `findScreenByPath` already is one.
+
+  This matters beyond the local console: anyone opening a deep link into the
+  public demo — a link pasted from README, a bookmark, a judge returning to a
+  screen — arrived at an error panel instead of being asked which tenant to
+  open.
+
 ## Definition of done (per phase)
 
 1. All tasks in the phase committed with their task-id prefixes.

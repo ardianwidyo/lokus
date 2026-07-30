@@ -147,3 +147,8 @@ One commit per task, prefixed with the task id.
   through a browser against a running API, not only through tests — the defect
   this fixes was invisible to a suite that sets the tenant itself.
   [AC-6.1, AC-6.3]
+- **T063** Arriving without a tenant sends the reader to screen 01 rather than
+  to an error panel, carrying the intended destination as `/masuk?next=<path>`
+  and continuing there once a tenant is chosen. `next` is resolved against the
+  fourteen known screen paths and ignored otherwise, so a URL cannot redirect
+  anyone off-site. [AC-6.1, AC-6.3]
