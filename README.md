@@ -92,8 +92,8 @@ dataset contoh **di dalam browser**, jadi yang Anda lihat di sana adalah
 aplikasi yang sama dengan yang dijalankan `npm run dev`.
 
 Yang **tidak** ada di demo URL itu: lapisan API. Auth, isolasi tenant, dan RBAC
-diuji oleh 127 test di workspace `api` dan bisa Anda jalankan sendiri dengan
-dua perintah di bawah, tapi tidak dilewati oleh demo publik. Terraform di
+diuji oleh 145 test di workspace `api` dan bisa Anda lewati sendiri dengan dua
+perintah di atas, tapi tidak dilewati oleh demo publik. Terraform di
 [`infra/`](infra/) tervalidasi terhadap provider Google 6.12 dan **belum
 teraplikasi** — deploy Cloud Run menunggu billing account yang aktif
 ([`docs/deploy.md`](docs/deploy.md) punya langkahnya).
