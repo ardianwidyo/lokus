@@ -16,6 +16,10 @@ coverage/
 terraform.tfvars
 backend.hcl
 crash.log
+# A saved plan is a binary snapshot of resource values, sensitive ones included,
+# and it is stale the moment the state moves. Regenerate it, never commit it.
+tfplan
+*.tfplan
 
 .DS_Store
 Thumbs.db
