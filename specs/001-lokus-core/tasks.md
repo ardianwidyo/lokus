@@ -152,3 +152,12 @@ One commit per task, prefixed with the task id.
   and continuing there once a tenant is chosen. `next` is resolved against the
   fourteen known screen paths and ignored otherwise, so a URL cannot redirect
   anyone off-site. [AC-6.1, AC-6.3]
+- **T064** An outlet learns what LOKUS is allowed to do with its listing. A
+  `listingLevel` of `absent | public | managed` per outlet, derived from the
+  last adapter response rather than configured, travels with every review
+  payload the API returns. The reply action and the needs-permission state read
+  it instead of assuming every outlet is repliable, and the response-time
+  metrics count only `managed` outlets while naming the exclusion. The seeded
+  dataset gains one outlet at each level, so all three paths are visible in the
+  demo rather than only the happy one.
+  [AC-9.1, AC-9.2, AC-9.3, AC-9.4, AC-9.5, AC-9.6]

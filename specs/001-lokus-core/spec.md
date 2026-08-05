@@ -135,6 +135,43 @@ boundary between them is a product decision, not a shortcut:
   console has copy for the failure, and in Indonesian rather than not at all when
   it does not. No failure renders as an empty panel or as a bare error code.
 
+### US-9 Listing access level
+As U4, I can see for every outlet what LOKUS is actually permitted to do with
+its Google listing, so an outlet nobody is allowed to reply to is never mistaken
+for one that is merely waiting on a click.
+
+Google serves review data through two APIs with different access models, and the
+difference is not a configuration detail — it changes what the Reputation agent
+can honestly promise for a given branch:
+
+| Level | Condition | Reviews available | Reply |
+|---|---|---|---|
+| **L0 absent** | the outlet has no listing on Google Maps at all | none | no |
+| **L1 public** | a listing exists, but the tenant neither owns nor manages it | the 5 Google chooses to expose, read-only (Places API New) | no |
+| **L2 managed** | the listing is claimed and verified, and the managing account has granted LOKUS the `business.manage` scope | full history, paginated (Business Profile API v4) | yes |
+
+Replying is a property of ownership, not of credentials: no API key, quota
+increase, or billing change lifts L0 or L1 to a reply. A tenant onboarding at
+L0 or L1 is a normal state to be reported, not an error and not a blocker.
+
+- **AC-9.1** Every outlet carries a level, and any screen showing its review
+  data shows the level alongside.
+- **AC-9.2** The level is derived from what the credentials actually returned on
+  the last run, never from a flag set by hand. A revoked grant drops an outlet
+  to L1 on the next nightly cycle rather than reporting a stale success.
+- **AC-9.3** L1 uses the needs-permission state, which offers a connect action
+  because a person can act on it. L0 does not: it says the outlet has no listing
+  and offers no connect button, because connecting cannot fix it.
+- **AC-9.4** A reply is never offered for an L0 or L1 outlet. A draft written
+  for one is stored as unsendable with its reason, rather than failing at the
+  moment the send is pressed.
+- **AC-9.5** Metrics that assume full review history — median first response,
+  share answered within 48h — count only L2 outlets, and every screen reporting
+  them states how many outlets were excluded and why.
+- **AC-9.6** At L1 the console states that five is Google's ceiling rather than
+  the outlet's review count, so a quiet branch and a capped one do not read the
+  same.
+
 ## Success metrics
 
 | Metric | Baseline | Target |
@@ -154,6 +191,11 @@ real-time streaming ingestion.
 
 - **Q1** Business Profile API access for the pilot tenant — granted or seeded
   dataset for the demo? (Adapter interface stays the same either way.)
+  **Narrowed 2026-08-05:** the question is per outlet, not per tenant. US-9
+  names the three levels and the console ships whichever ones the pilot turns
+  out to have. What remains open is only which level each pilot outlet sits at,
+  and that cannot be known before access is requested — the Business Profile
+  APIs start every project at zero quota until Google approves the request.
 - **Q2** Which real SOP document can be used in the demo, redacted or not.
 - ~~**Q3** Team name and members for the README and the closing slide.~~
   **Resolved 2026-07-30:** a single entrant, Ardian Widyo Prasetyo. The
