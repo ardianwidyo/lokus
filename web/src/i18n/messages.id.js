@@ -148,6 +148,29 @@ export const id = {
     readOnlyConnect: 'Peran Anda hanya bisa membaca. Minta admin tenant untuk menghubungkan akun.',
   },
 
+  // US-9. Apa yang boleh dilakukan LOKUS atas listing Google sebuah cabang.
+  listing: {
+    thisBranch: 'cabang ini',
+    levelManaged: 'Listing dikelola',
+    levelPublic: 'Listing publik',
+    levelAbsent: 'Tanpa listing',
+
+    publicTitle: 'Listing belum diklaim akun ini',
+    publicDescription:
+      'LOKUS bisa membaca review {outlet} lewat Places, tapi tidak bisa membalasnya. Balasan hanya bisa dikirim dari akun yang mengelola listing-nya.',
+    connect: 'Hubungkan listing',
+    ceilingNote:
+      'Google hanya menampilkan maksimal {count} review untuk listing yang belum diklaim. Ini batas API, bukan jumlah review cabang ini.',
+
+    absentTitle: 'Cabang ini belum ada di Google Maps',
+    absentDescription:
+      'Tidak ada listing untuk dibaca maupun dibalas. Daftarkan {outlet} ke Google Business Profile lebih dahulu — menghubungkan akun tidak akan memunculkannya.',
+
+    cannotReply: 'Balasan tidak tersedia untuk cabang ini',
+    coverageExcluded:
+      '{count} cabang tidak dihitung: riwayat review-nya tidak lengkap atau tidak ada.',
+  },
+
   common: {
     sampleData: 'data contoh',
     readOnlyApproveReply:
@@ -352,6 +375,7 @@ export const id = {
 
     kicker: '{count} {bucket}',
     metaPriority: 'urut prioritas',
+    metaNeedsConnection: '{count} menunggu koneksi listing',
     loading: 'Agen sedang membaca review terbaru…',
     emptyTitle: 'Tidak ada review baru',
     emptyDescription:
@@ -706,6 +730,13 @@ export const id = {
     costError: 'Biaya tak bisa dimuat',
     costNote:
       '{used}% dari batas keras {ceiling}. Di atas {degrade}%, agen turun ke mode Flash dan mengirim peringatan.',
+
+    coverageKicker: 'Cakupan pengukuran respons',
+    coverageLoading: 'Menghitung cakupan pengukuran…',
+    coverageEmpty: 'Belum ada data untuk diukur',
+    coverageError: 'Cakupan pengukuran tak bisa dimuat',
+    coverageNote:
+      'Kedua angka di atas hanya dihitung untuk cabang yang riwayat review-nya utuh. Cabang dengan listing publik hanya menampilkan 5 review pilihan Google, dan cabang tanpa listing tidak menampilkan apa pun — memasukkannya akan membuat angka ini terlihat lebih baik daripada yang terukur.',
 
     evalKicker: 'Evaluasi agen',
     evalTitle: 'Hasil golden set',

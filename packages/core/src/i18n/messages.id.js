@@ -235,6 +235,7 @@ export const id = {
       '{outlets} cabang · {themes} tema terdeteksi · {rising} tema naik dibanding sebulan lalu',
     repliesTitle: '{count} review dibalas otomatis',
     repliesDetail: 'semua bintang 3–5 · {held} ditahan untuk persetujuan Anda',
+    repliesUnanswerable: '· {count} tidak bisa dibalas: listing-nya belum dikelola akun ini',
     locationSkippedTitle: 'Agen Lokasi tidak dijalankan',
     locationSkippedDetail:
       'Tidak ada adapter Places pada siklus ini, jadi area cabang tidak dipindai.',
@@ -301,6 +302,15 @@ export const id = {
     healthToolFailuresNote: 'semua berhasil retry',
     healthLastDeploy: 'Deploy terakhir',
     healthLastDeployNote: 'CI hijau',
+
+    // US-9. Dua metrik ini hanya sah untuk cabang yang riwayat review-nya utuh.
+    coverageMedian: 'Median respons pertama',
+    coverageWithin: 'Dibalas dalam {hours} jam',
+    coverageHours: '{hours} jam',
+    coverageNoReplies: 'belum ada balasan terkirim',
+    coverageCounted: 'dari {counted} cabang yang riwayatnya utuh',
+    coverageExcluded: '{count} cabang tidak dihitung: {names}',
+    coverageExcludedNone: 'semua cabang dihitung',
   },
 
   metric: {

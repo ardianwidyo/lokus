@@ -149,6 +149,29 @@ export const en = {
       'Your role is read-only. Ask a tenant admin to connect the account.',
   },
 
+  // US-9. What LOKUS is permitted to do with a branch's Google listing.
+  listing: {
+    thisBranch: 'this branch',
+    levelManaged: 'Listing managed',
+    levelPublic: 'Public listing',
+    levelAbsent: 'No listing',
+
+    publicTitle: 'This account does not manage the listing',
+    publicDescription:
+      'LOKUS can read {outlet}’s reviews through Places, but cannot reply to them. A reply can only be sent from the account that manages the listing.',
+    connect: 'Connect listing',
+    ceilingNote:
+      'Google shows at most {count} reviews for an unclaimed listing. That is the API ceiling, not this branch’s review count.',
+
+    absentTitle: 'This branch is not on Google Maps',
+    absentDescription:
+      'There is no listing to read or reply to. Add {outlet} to Google Business Profile first — connecting an account will not make one appear.',
+
+    cannotReply: 'No reply is available for this branch',
+    coverageExcluded:
+      '{count} branches are not counted: their review history is capped or absent.',
+  },
+
   common: {
     sampleData: 'sample data',
     readOnlyApproveReply:
@@ -352,6 +375,7 @@ export const en = {
 
     kicker: '{count} {bucket}',
     metaPriority: 'in priority order',
+    metaNeedsConnection: '{count} waiting on a listing connection',
     loading: 'The agent is reading the latest reviews…',
     emptyTitle: 'No new reviews',
     emptyDescription:
@@ -706,6 +730,13 @@ export const en = {
     costError: 'The cost could not be loaded',
     costNote:
       '{used}% of the {ceiling} hard ceiling. Above {degrade}%, the agents drop to Flash mode and send an alert.',
+
+    coverageKicker: 'Response measurement coverage',
+    coverageLoading: 'Computing measurement coverage…',
+    coverageEmpty: 'Nothing to measure yet',
+    coverageError: 'The coverage figures could not be loaded',
+    coverageNote:
+      'Both figures above are computed only over branches with a complete review history. A public listing shows five reviews Google picked, and a branch with no listing shows none — including either would make these numbers look better than what was measured.',
 
     evalKicker: 'Agent evaluation',
     evalTitle: 'Golden set results',

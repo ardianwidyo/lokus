@@ -1,6 +1,8 @@
+import { replyCoverage } from '../analytics/replyCoverage.js';
 import { flagSystemicThemes, systemicFinding } from '../analytics/systemic.js';
 import { themeCluster } from '../analytics/themeCluster.js';
 import { relativeLabel } from '../domain/clock.js';
+import { listingFor } from '../domain/listingLevel.js';
 import { findOutlet } from '../domain/outlets.js';
 import { themeLabel } from '../domain/themes.js';
 import { DEFAULT_LOCALE } from '../i18n/locales.js';
@@ -29,13 +31,19 @@ import { guardrailCheck } from '../reputation/guardrails.js';
 export function createReputationService({ gbp, approvalStore = null, gemini = null } = {}) {
   const store = approvalStore ?? createMemoryApprovalStore();
 
-  const reviewsByTenant = new Map();
-  async function allReviews(tenantId) {
-    if (!reviewsByTenant.has(tenantId)) {
+  // Reviews and listings arrive in one response and are cached together, so a
+  // row and the permission covering it can never be a cycle apart (US-9).
+  const readByTenant = new Map();
+  async function read(tenantId) {
+    if (!readByTenant.has(tenantId)) {
       const { data } = await gbp.listReviews({ tenantId, limit: 5000 });
-      reviewsByTenant.set(tenantId, data.reviews);
+      readByTenant.set(tenantId, { reviews: data.reviews, listings: data.listings ?? [] });
     }
-    return reviewsByTenant.get(tenantId);
+    return readByTenant.get(tenantId);
+  }
+
+  async function allReviews(tenantId) {
+    return (await read(tenantId)).reviews;
   }
 
   const draftCache = new Map();
@@ -52,12 +60,13 @@ export function createReputationService({ gbp, approvalStore = null, gemini = nu
 
   async function inbox(tenantId, { bucket = 'perlu-tindakan' } = {}) {
     assertTenant(tenantId);
-    const reviews = await allReviews(tenantId);
-    const summary = await replyQueueSummary({ tenantId, reviews, store });
+    const { reviews, listings } = await read(tenantId);
+    const summary = await replyQueueSummary({ tenantId, reviews, store, listings });
+    const repliable = (review) => listingFor(listings, review.outletId).canReply;
 
     const buckets = {
       'perlu-tindakan': summary.needsActionReviews,
-      'draft-siap': reviews.filter((r) => r.rating >= 3 && r.replyState === 'draft'),
+      'draft-siap': reviews.filter((r) => r.rating >= 3 && r.replyState === 'draft' && repliable(r)),
       terkirim: reviews.filter((r) => r.replyState === 'sent'),
     };
 
@@ -67,13 +76,17 @@ export function createReputationService({ gbp, approvalStore = null, gemini = nu
         'draft-siap': buckets['draft-siap'].length,
         terkirim: summary.sent,
       },
-      rows: (buckets[bucket] ?? []).map(toRow),
+      // Named apart from the counts: it is not a fourth bucket, it is how much
+      // of the first one is waiting on a connection rather than on a reply.
+      needsConnection: summary.needsConnection,
+      rows: (buckets[bucket] ?? []).map((review) => toRow(review, listings)),
     };
   }
 
   async function reviewDetail(tenantId, reviewId, { locale = DEFAULT_LOCALE } = {}) {
     assertTenant(tenantId);
-    const review = (await allReviews(tenantId)).find((row) => row.id === reviewId);
+    const { reviews, listings } = await read(tenantId);
+    const review = reviews.find((row) => row.id === reviewId);
     if (!review) return null;
 
     const draft = await draftFor(tenantId, review, locale);
@@ -83,9 +96,12 @@ export function createReputationService({ gbp, approvalStore = null, gemini = nu
     const persisted = await store.get(tenantId, reviewId);
 
     return {
-      review: toRow(review),
+      review: toRow(review, listings),
       draft,
       guardrail,
+      // The screen decides what to offer from this, so it travels with the
+      // draft rather than being looked up separately (AC-9.1).
+      listing: listingFor(listings, review.outletId),
       state: persisted?.state ?? review.replyState,
       approvedBy: persisted?.approvedBy ?? null,
     };
@@ -93,13 +109,20 @@ export function createReputationService({ gbp, approvalStore = null, gemini = nu
 
   async function approveAndSend(tenantId, { reviewId, approvedBy, role, locale = DEFAULT_LOCALE }) {
     assertTenant(tenantId);
-    const review = (await allReviews(tenantId)).find((row) => row.id === reviewId);
+    const { reviews, listings } = await read(tenantId);
+    const review = reviews.find((row) => row.id === reviewId);
     if (!review) return null;
 
     const draft = await draftFor(tenantId, review, locale);
 
     if (!(await store.get(tenantId, reviewId))) {
-      await saveDraft({ tenantId, review, draft, store });
+      await saveDraft({
+        tenantId,
+        review,
+        draft,
+        store,
+        listing: listingFor(listings, review.outletId),
+      });
     }
     // Constitution II: 1-2 stars need a named human. The role check inside
     // approveDraft refuses a viewer even if a route somehow let one through.
@@ -128,14 +151,25 @@ export function createReputationService({ gbp, approvalStore = null, gemini = nu
     };
   }
 
-  return { inbox, reviewDetail, approveAndSend, themeMatrix, store };
+  /** The listing level of every outlet, for the panels that report coverage. */
+  async function listings(tenantId) {
+    assertTenant(tenantId);
+    const { reviews, listings: rows } = await read(tenantId);
+    return { listings: rows, coverage: replyCoverage(reviews, rows) };
+  }
+
+  return { inbox, reviewDetail, approveAndSend, themeMatrix, listings, store };
 }
 
-function toRow(review) {
+function toRow(review, listings = []) {
+  const listing = listingFor(listings, review.outletId);
+
   return {
     ...review,
     outletName: findOutlet(review.outletId)?.name ?? review.outletId,
     relative: relativeLabel(review.publishedAt),
+    listingLevel: listing.level,
+    canReply: listing.canReply,
   };
 }
 

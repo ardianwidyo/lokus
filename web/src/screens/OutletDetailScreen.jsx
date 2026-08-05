@@ -3,6 +3,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { useSession } from '../app/SessionContext.jsx';
 import { useAsyncData } from '../app/useAsyncData.js';
 import { Blueprint } from '../components/Blueprint.jsx';
+import { ListingBadge, ListingNotice } from '../components/ListingNotice.jsx';
 import { DataPanel, PANEL_STATUS } from '../components/states/index.js';
 import { Rich, useLocale } from '../i18n/index.js';
 import { RadiusMap } from './outlet/RadiusMap.jsx';
@@ -98,6 +99,15 @@ export function OutletDetailScreen({ onNavigate, query }) {
                   manager: data.outlet.manager,
                 })}
               </p>
+              {/* AC-9.1. The rating beside this is only as complete as the
+                  listing allows, so the level is read on the same line as the
+                  branch it qualifies rather than buried in a panel below. */}
+              <ListingBadge level={data.listing?.level} />
+              {data.listing?.reviewCeiling ? (
+                <p className="state-note">
+                  {t('listing.ceilingNote', { count: data.listing.reviewCeiling })}
+                </p>
+              ) : null}
             </div>
 
             <div className="outlet-figures">
@@ -149,7 +159,12 @@ export function OutletDetailScreen({ onNavigate, query }) {
             empty={{ title: t('cabang.trendEmpty') }}
             error={{ title: t('cabang.trendError'), onRetry: reload }}
           >
-            {data ? (
+            {/* An empty chart for a branch with no listing would read as "no
+                complaints this quarter". The reason has to be on the panel
+                (AC-9.3), and it is a different reason at each level. */}
+            {data && data.rating.reviewCount === 0 && !data.listing?.hasFullHistory ? (
+              <ListingNotice listing={data.listing} outletName={data.outlet.name} />
+            ) : data ? (
               <>
                 <RatingChart
                   points={data.trend.points}

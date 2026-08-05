@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { canWrite } from '../app/roles.js';
 import { useSession } from '../app/SessionContext.jsx';
 import { useAsyncData } from '../app/useAsyncData.js';
+import { ListingNotice } from '../components/ListingNotice.jsx';
 import { DataPanel, PANEL_STATUS } from '../components/states/index.js';
 import { useLocale } from '../i18n/index.js';
 import { DraftBlock } from './review/DraftBlock.jsx';
@@ -111,7 +112,17 @@ export function ReviewInboxScreen({ onNavigate }) {
             count: data?.counts?.[bucket] ?? 0,
             bucket: t(activeBucket.labelKey).toLowerCase(),
           })}
-          meta={<span className="panel-meta">{t('review.metaPriority')}</span>}
+          meta={
+            <span className="panel-meta">
+              {t('review.metaPriority')}
+              {/* Part of the count above needs a connection, not a reply. Saying
+                  so here keeps "perlu tindakan" from implying every row is one
+                  click from an answer (AC-9.4). */}
+              {data?.needsConnection
+                ? ` · ${t('review.metaNeedsConnection', { count: data.needsConnection })}`
+                : ''}
+            </span>
+          }
           loading={{ message: t('review.loading') }}
           empty={{
             title: t('review.emptyTitle'),
@@ -162,30 +173,48 @@ export function ReviewInboxScreen({ onNavigate }) {
 
               <DraftBlock draft={detail.draft} />
 
-              <div className="state-actions">
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={() => approve(selectedId)}
-                  disabled={!mayAct || !detail.draft?.drafted || detail.state === 'sent'}
-                >
-                  {detail.state === 'sent' ? t('review.sent') : t('review.approveAndSend')}
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  disabled={!mayAct}
-                  onClick={() => onNavigate?.(`/draft?review=${selectedId}`)}
-                >
-                  {t('review.editText')}
-                </button>
-                <button type="button" className="btn btn-secondary" disabled={!mayAct}>
-                  {t('review.makeTicket')}
-                </button>
-                <button type="button" className="btn btn-ghost" disabled={!mayAct}>
-                  {t('review.dismiss')}
-                </button>
-              </div>
+              {/* AC-9.4: the send is withheld here rather than failing when it
+                  is pressed. The draft above still renders — it becomes valid
+                  the moment the listing is connected, so throwing it away
+                  would lose work that is already done. */}
+              {detail.listing && !detail.listing.canReply ? (
+                <ListingNotice
+                  listing={detail.listing}
+                  outletName={detail.review.outletName}
+                />
+              ) : (
+                <div className="state-actions">
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={() => approve(selectedId)}
+                    disabled={!mayAct || !detail.draft?.drafted || detail.state === 'sent'}
+                  >
+                    {detail.state === 'sent' ? t('review.sent') : t('review.approveAndSend')}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    disabled={!mayAct}
+                    onClick={() => onNavigate?.(`/draft?review=${selectedId}`)}
+                  >
+                    {t('review.editText')}
+                  </button>
+                  <button type="button" className="btn btn-secondary" disabled={!mayAct}>
+                    {t('review.makeTicket')}
+                  </button>
+                  <button type="button" className="btn btn-ghost" disabled={!mayAct}>
+                    {t('review.dismiss')}
+                  </button>
+                </div>
+              )}
+
+              {/* AC-9.6: five is Google's ceiling, not the branch's total. */}
+              {detail.listing?.reviewCeiling ? (
+                <p className="state-note">
+                  {t('listing.ceilingNote', { count: detail.listing.reviewCeiling })}
+                </p>
+              ) : null}
 
               {!mayAct ? <p className="state-note">{t('common.readOnlyApproveReply')}</p> : null}
               {notice ? (

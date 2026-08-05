@@ -236,6 +236,7 @@ export const en = {
       '{outlets} branches · {themes} themes detected · {rising} themes up on a month ago',
     repliesTitle: '{count} reviews answered automatically',
     repliesDetail: 'all 3–5 star · {held} held for your approval',
+    repliesUnanswerable: '· {count} cannot be replied to: this account does not manage the listing',
     locationSkippedTitle: 'The Location Agent did not run',
     locationSkippedDetail:
       'No Places adapter on this cycle, so branch surroundings were not scanned.',
@@ -301,6 +302,15 @@ export const en = {
     healthToolFailuresNote: 'all retried successfully',
     healthLastDeploy: 'Last deploy',
     healthLastDeployNote: 'CI green',
+
+    // US-9. Both figures are only valid for branches whose history is complete.
+    coverageMedian: 'Median first response',
+    coverageWithin: 'Answered within {hours}h',
+    coverageHours: '{hours}h',
+    coverageNoReplies: 'no replies sent yet',
+    coverageCounted: 'across {counted} branches with a complete history',
+    coverageExcluded: '{count} branches not counted: {names}',
+    coverageExcludedNone: 'every branch counted',
   },
 
   metric: {

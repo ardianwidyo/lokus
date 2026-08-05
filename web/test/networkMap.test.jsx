@@ -32,9 +32,9 @@ describe('Screen 03 · Peta jaringan cabang (T033)', () => {
   it('says how much of the estate the dataset actually covers', async () => {
     await renderMap();
 
-    // The rail says "42 cabang" from the tenant record while the map draws 6.
+    // The rail says "42 cabang" from the tenant record while the map draws 8.
     // Both are true; leaving the reader to reconcile them is what is not.
-    expect(screen.getByText(/6 dari 42 cabang ada di dataset contoh/)).toBeInTheDocument();
+    expect(screen.getByText(/8 dari 42 cabang ada di dataset contoh/)).toBeInTheDocument();
   });
 
   it('draws every outlet and the competitors around them', async () => {
@@ -42,8 +42,8 @@ describe('Screen 03 · Peta jaringan cabang (T033)', () => {
 
     const field = screen.getByRole('img', { name: /Peta \d+ cabang/ });
 
-    expect(field.getAttribute('aria-label')).toMatch(/Peta 6 cabang dan \d+ pesaing/);
-    expect(field.querySelectorAll('.map-outlet')).toHaveLength(6);
+    expect(field.getAttribute('aria-label')).toMatch(/Peta 8 cabang dan \d+ pesaing/);
+    expect(field.querySelectorAll('.map-outlet')).toHaveLength(8);
     expect(field.querySelectorAll('.map-competitor').length).toBeGreaterThan(0);
   });
 
@@ -93,7 +93,7 @@ describe('Screen 03 · Peta jaringan cabang (T033)', () => {
     await userEvent.click(within(layers).getByText('Kepadatan pesaing'));
 
     expect(field.textContent).toMatch(/\d+ pesaing/);
-    expect(field.querySelectorAll('.map-outlet')).toHaveLength(6);
+    expect(field.querySelectorAll('.map-outlet')).toHaveLength(8);
   });
 
   it('selects a branch from the list and from the map', async () => {

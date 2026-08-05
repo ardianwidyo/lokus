@@ -79,9 +79,9 @@ describe('outletService.detail (T034)', () => {
   it('ranks the branch among its own tenant only', async () => {
     const { location } = await service().detail(TENANT, 'BKS-02');
 
-    expect(location.of).toBe(6);
-    // Bekasi Timur scores 71; only Depok (68) is weaker.
-    expect(location.rank).toBe(5);
+    expect(location.of).toBe(8);
+    // Bekasi Timur scores 71; only Depok (68) and Karawang (70) are weaker.
+    expect(location.rank).toBe(6);
   });
 
   it('ranks the strongest branch first and the weakest last', async () => {
@@ -188,7 +188,9 @@ describe('outletService.list (T034)', () => {
   it('puts the branch that needs attention at the top', async () => {
     const rows = await service().list(TENANT);
 
-    expect(rows).toHaveLength(6);
+    // Every branch is scored, including the two whose listing we cannot read:
+    // Places answers for a neighbourhood, not for a listing (US-9).
+    expect(rows).toHaveLength(8);
     expect(rows[0].outletId).toBe('DPK-01');
     expect(rows.map((row) => row.score)).toEqual([...rows.map((row) => row.score)].sort((a, b) => a - b));
   });

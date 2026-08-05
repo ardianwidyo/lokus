@@ -28,6 +28,25 @@ export {
 
 export { DEMO_NOW, TREND_WEEKS, relativeLabel, weekIndexOf, weekStart } from './domain/clock.js';
 export { OUTLETS, findOutlet, outletsForTenant, regionCount } from './domain/outlets.js';
+// US-9. What LOKUS may do with an outlet's Google listing, and why.
+export {
+  LISTING_LEVELS,
+  LISTING_LEVEL_ORDER,
+  LISTING_SOURCES,
+  PUBLIC_REVIEW_CEILING,
+  UNSENDABLE_REASONS,
+  canReply,
+  deriveListingLevel,
+  hasFullHistory,
+  isListingLevel,
+  listingFor,
+  listingIndex,
+  listingRecord,
+  reviewCeiling,
+  unsendableReason,
+} from './domain/listingLevel.js';
+export { SEED_LISTING_PROBES, seedListings } from './seed/listings.js';
+export { RESPONSE_TARGET_HOURS, replyCoverage } from './analytics/replyCoverage.js';
 export { THEMES, THEME_IDS, findTheme, themeLabel } from './domain/themes.js';
 
 export { GBP_TOOL_NAMES, GbpError, createGoogleGbpAdapter, createSeededGbpAdapter } from './adapters/gbp.js';

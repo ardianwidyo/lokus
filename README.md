@@ -35,8 +35,9 @@ dengan sengaja, karena mengklaim dampak lapangan dari sebuah demo tidak jujur.
 | Metrik | Sebelum | Target | Yang sudah terbukti di repo ini |
 |---|---|---|---|
 | Median respons pertama ke review | 9 hari | < 8 jam | Draft dihasilkan seketika untuk 6 tema keluhan; 4/4 guardrail lolos pada 80 keluhan contoh yang diuji |
-| Review dibalas dalam 48 jam | 31% | > 90% | 592 dari 713 (bintang 3–5) boleh dibalas tanpa persetujuan; **seluruh 121 review bintang 1–2 ditahan** — 95 sudah disetujui manusia bernama lalu terkirim, 26 masih menunggu di antrean |
-| Tema naik terdeteksi sebelum rating turun 0,2 | tidak pernah | 7–10 hari lebih awal | Klasterisasi menemukan 36 sel matriks tema **dari teks saja**, dengan delta mingguan per cabang |
+| Review dibalas dalam 48 jam | 31% | > 90% | 592 dari 713 review yang boleh dibalas (bintang 3–5) tidak butuh persetujuan; **seluruh 121 review bintang 1–2 ditahan** — 95 sudah disetujui manusia bernama lalu terkirim, 26 masih menunggu di antrean |
+| Tema naik terdeteksi sebelum rating turun 0,2 | tidak pernah | 7–10 hari lebih awal | Klasterisasi menemukan 39 sel matriks tema **dari teks saja**, dengan delta mingguan per cabang |
+| Cabang yang metriknya boleh diklaim | tidak dibedakan | hanya yang riwayatnya utuh | 6 dari 8 cabang dihitung; 2 dikecualikan **dan disebut namanya di layar 14** — satu listing-nya belum diklaim (Google hanya membuka 5 review), satu belum ada di Google Maps |
 | Waktu tutup tiket | tidak diukur | < 5 hari (SLA) | Papan tindakan mengukurnya; tiket contoh yang ditutup membawa dampaknya |
 | Biaya per tenant per bulan | — | < Rp 5,4 juta | Ditegakkan di kode: turun ke Flash di 90%, batas keras menolak panggilan |
 
@@ -209,11 +210,25 @@ pernah dipanggil adalah klaim yang tidak bisa dipertanggungjawabkan.
 | Retrieval berambang 0,70, penolakan, dan pencatatan celah pengetahuan | **Firestore** & **Cloud Storage**: state di memori |
 | Isolasi tenant, RBAC, guardrail, batas biaya | **Business Profile** & **Places**: adapter sengaja tidak diimplementasi, bukan dipalsukan |
 
-**Datanya sintetis.** 713 review, 6 cabang, POI pesaing, dan pasal SOP
+**Datanya sintetis.** 718 review, 8 cabang, POI pesaing, dan pasal SOP
 dihasilkan generator deterministik di `packages/core/src/seed`. Tidak ada
 review Google sungguhan, dan adapter Google-nya
 [melempar error alih-alih mengarang](packages/core/src/adapters/gbp.js) bila
 dipanggil tanpa kredensial.
+
+Dari 718 itu, **713 datang dari enam cabang yang listing-nya dikelola tenant,
+dan 5 sisanya dari satu cabang yang listing-nya belum diklaim** — lima adalah
+batas yang dibuka Places API untuk listing seperti itu, dan tidak satu pun bisa
+dibalas. Cabang kedelapan belum ada di Google Maps dan karena itu tidak
+menghasilkan review sama sekali. Ketiga keadaan ini ada di dataset dengan
+sengaja: [spec US-9](specs/001-lokus-core/spec.md) menuntut konsol membedakan
+"belum diizinkan" dari "tidak akan pernah bisa", dan satu-satunya cara
+membuktikannya adalah menjalankan ketiganya di demo.
+
+**Satu angka yang sengaja tidak diklaim:** waktu respons di dataset contoh
+adalah nilai tetap dari generator, bukan hasil kerja agen. Panel cakupan di
+layar 14 menghitungnya sungguhan, tapi yang layak diperiksa di sana adalah
+**cabang mana yang dikeluarkan dari perhitungan dan mengapa** — bukan mediannya.
 
 **Yang membuat Gemini di sini bukan sekadar tempelan:** keluarannya diperiksa,
 bukan dipercaya. Jawaban yang tidak menyebut sumber dibuang; jawaban yang
@@ -277,7 +292,9 @@ Kualitas jejak audit yang paling layak diperiksa: **klasterisasi tema
 menemukan kembali seluruh 36 sel matriks layar 07 dari teks Bahasa Indonesia
 saja.** Generator menyusun dataset dari matriks itu; klasterisasi tidak pernah
 melihat rencananya, dan tidak ada satu pun baris review yang membawa label tema
-([test-nya](packages/core/test/themeCluster.test.js)).
+([test-nya](packages/core/test/themeCluster.test.js)). Tiga sel lagi datang
+dari review Places cabang Karawang, yang tidak pernah ada di matriks — 39 sel
+di layar, 36 di antaranya adalah rekonstruksi.
 
 ---
 
@@ -341,11 +358,16 @@ beberapa tempat hasilnya berbeda tipis dari angka ilustratif di
 `design/SCREENS.md` — yang dihitung yang dipakai, karena konstitusi menuntut
 setiap angka bisa ditelusuri ke baris yang menghasilkannya.
 
-**"42 cabang" di rail vs 6 di peta.** Keduanya benar dan artinya berbeda: 42
-adalah ukuran jaringan Nusa Retail seperti tercatat di direktori tenant, 6
-adalah cabang yang benar-benar tercakup dataset contoh 713 review. Panel peta
-mengatakannya sendiri — *"6 dari 42 cabang ada di dataset contoh"* — supaya
+**"42 cabang" di rail vs 8 di peta.** Keduanya benar dan artinya berbeda: 42
+adalah ukuran jaringan Nusa Retail seperti tercatat di direktori tenant, 8
+adalah cabang yang benar-benar tercakup dataset contoh. Panel peta
+mengatakannya sendiri — *"8 dari 42 cabang ada di dataset contoh"* — supaya
 tidak ada yang perlu menebak angka mana yang sedang dilihat.
+
+Angka ketiga yang berbeda lagi: **6**, jumlah cabang yang metrik waktu
+responsnya boleh dihitung. Delapan cabang ada di peta karena Places menjawab
+untuk sebuah lingkungan, bukan untuk sebuah listing — skor lokasi tetap sah
+walau review-nya tidak terbaca.
 
 Dua tempat lain di mana ini terlihat jelas, keduanya di layar 04:
 

@@ -82,6 +82,9 @@ Sumber: [`packages/core/src/seed/reviews.js`](../packages/core/src/seed/reviews.
 
 ### 2.1 Matriks keluhan (8 minggu, per tema × outlet)
 
+Hanya enam cabang yang listing-nya dikelola tenant yang punya riwayat untuk
+dibangkitkan; dua cabang lain ada di §3.1 dan alasannya ada di sana.
+
 | Tema | BKS-02 | CKR-01 | DPK-01 | SRP-03 | BGR-01 | TGR-01 |
 |---|---|---|---|---|---|---|
 | antrean-kasir | 31 | 9 | 4 | 12 | 3 | 8 |
@@ -136,9 +139,28 @@ Sumber: [`packages/core/src/domain/outlets.js`](../packages/core/src/domain/outl
 | SRP-03 | Serpong Sektor 7 | Serpong | Ruko Sektor 7 Blok RA | Bayu Nugroho | 2022-01-20 | -6.2924, 106.6741 |
 | BGR-01 | Bogor Pajajaran | Bogor | Jl. Raya Pajajaran No. 17 | Intan Permata | 2021-09-06 | -6.5944, 106.8006 |
 | TGR-01 | Tangerang Alam Sutera | Tangerang | Jl. Alam Sutera Boulevard | Fajar Ramadhan | 2020-02-11 | -6.2286, 106.6534 |
+| KRW-01 | Karawang Galuh Mas | Karawang | Jl. Galuh Mas Raya Blok B | Tri Hastuti | 2026-04-02 | -6.3227, 107.2872 |
+| BSD-02 | BSD Grand Boulevard | BSD | Jl. Grand Boulevard Kav. 12 | Anggara Putra | 2026-07-15 | -6.3019, 106.6528 |
 
 Aturan tema sistemik (AC-2.2): tema dianggap sistemik bila muncul di ≥4 region
 berbeda (`regionCount`).
+
+### 3.1 Level listing per outlet (spec US-9)
+
+Sumber: [`packages/core/src/seed/listings.js`](../packages/core/src/seed/listings.js).
+Berkas itu berisi **respons API-nya**, bukan level-nya; level diturunkan
+`deriveListingLevel` dari respons tersebut — sama seperti yang akan dilakukan
+adapter Google atas respons sungguhan.
+
+| outletId | Business Profile v4 | Places | Level | Review terbaca | Boleh dibalas |
+|---|---|---|---|---|---|
+| BKS-02 … TGR-01 (6 cabang) | ada | ada | `managed` | riwayat penuh | ya |
+| KRW-01 | tidak ada | ada | `public` | maks. 5 (batas Places) | tidak |
+| BSD-02 | tidak ada | tidak ada | `absent` | tidak ada | tidak |
+
+Dua kolom terakhir yang menentukan perilaku konsol: matriks keluhan di §2.1
+hanya berlaku untuk enam cabang `managed`, dan metrik waktu respons di layar 14
+hanya dihitung untuk mereka — dua sisanya disebut namanya sebagai pengecualian.
 
 ---
 

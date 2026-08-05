@@ -60,7 +60,7 @@ describe('Screen 04 · Detail cabang (T034)', () => {
   it('ranks the branch inside its own tenant', async () => {
     await renderOutlet({ outlet: 'BKS-02' });
 
-    expect(screen.getByText('peringkat 5 dari 6')).toBeInTheDocument();
+    expect(screen.getByText('peringkat 6 dari 8')).toBeInTheDocument();
   });
 
   it('draws the weeks that exist and says it is not twelve', async () => {
@@ -139,7 +139,7 @@ describe('Screen 04 · Detail cabang (T034)', () => {
     await userEvent.click(await screen.findByRole('radio', { name: 'Bogor Pajajaran' }));
 
     expect(await screen.findByRole('heading', { name: 'Bogor Pajajaran' })).toBeInTheDocument();
-    expect(await screen.findByText('peringkat 1 dari 6')).toBeInTheDocument();
+    expect(await screen.findByText('peringkat 1 dari 8')).toBeInTheDocument();
   });
 });
 

@@ -1,6 +1,7 @@
 import { flagSystemicThemes, systemicFinding } from '../analytics/systemic.js';
 import { themeCluster } from '../analytics/themeCluster.js';
 import { DEMO_NOW } from '../domain/clock.js';
+import { listingFor } from '../domain/listingLevel.js';
 import { findOutlet, outletsForTenant } from '../domain/outlets.js';
 import { cannibalisation } from '../location/cannibalisation.js';
 import { themeLabel } from '../domain/themes.js';
@@ -70,13 +71,23 @@ export async function runNightlyCycle({
     { agent: 'reputation' },
   );
 
-  const autoReplied = reviews.filter((r) => r.rating >= 3 && r.replyState !== 'none').length;
-  const held = reviews.filter((r) => r.rating <= 2 && r.replyState === 'none').length;
+  // "Held" means held for a human signature. A review on a listing we do not
+  // manage is not waiting for a signature — nobody can sign it into existence —
+  // so counting it here would report an approval backlog that does not exist
+  // and hide a connection problem that does (spec US-9).
+  const repliable = (review) => listingFor(listed.data.listings ?? [], review.outletId).canReply;
+  const answerable = reviews.filter(repliable);
+
+  const autoReplied = answerable.filter((r) => r.rating >= 3 && r.replyState !== 'none').length;
+  const held = answerable.filter((r) => r.rating <= 2 && r.replyState === 'none').length;
+  const unanswerable = reviews.length - answerable.length;
 
   milestone(
     MILESTONE_TIMES.repliesDrafted,
     t(locale, 'briefing.repliesTitle', { count: autoReplied }),
-    t(locale, 'briefing.repliesDetail', { held }),
+    unanswerable > 0
+      ? `${t(locale, 'briefing.repliesDetail', { held })} ${t(locale, 'briefing.repliesUnanswerable', { count: unanswerable })}`
+      : t(locale, 'briefing.repliesDetail', { held }),
     { agent: 'reputation' },
   );
 

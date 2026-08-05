@@ -2430,6 +2430,37 @@
   text-align: right;
 }
 
+/* US-9 · listing level.
+   The badge inherits `.tag` from tokens.css; only spacing is added here. The
+   three levels are told apart by their words, not by colour — "publik" and
+   "tanpa listing" mean different things a colour cannot carry. */
+.listing-badge {
+  margin-top: var(--space-2);
+  display: inline-block;
+}
+
+.coverage-exclusions {
+  list-style: none;
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: 13px;
+  color: var(--color-neutral-700);
+}
+
+.coverage-exclusions li {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.coverage-exclusions .listing-badge {
+  margin-top: 0;
+}
+
 @media (max-width: 1199px) {
   .outlet-grid {
     grid-template-columns: 1fr;

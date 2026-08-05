@@ -5,6 +5,7 @@ import { canWrite } from '../app/roles.js';
 import { useSession } from '../app/SessionContext.jsx';
 import { useAsyncData } from '../app/useAsyncData.js';
 import { Blueprint } from '../components/Blueprint.jsx';
+import { ListingNotice } from '../components/ListingNotice.jsx';
 import { DataPanel, PANEL_STATUS } from '../components/states/index.js';
 import { useLocale } from '../i18n/index.js';
 import { Stars } from './review/ReviewList.jsx';
@@ -108,25 +109,39 @@ export function ReplyDraftScreen({ reviewId, onNavigate }) {
               </>
             )}
 
-            <div className="state-actions">
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={send}
-                disabled={!mayAct || !data.draft?.drafted || data.state === 'sent'}
-              >
-                {data.state === 'sent' ? t('draft.sent') : t('draft.approveAndSend')}
-              </button>
-              <button type="button" className="btn btn-secondary" disabled={!mayAct}>
-                {t('draft.editText')}
-              </button>
-              <button type="button" className="btn btn-secondary" disabled={!mayAct}>
-                {t('draft.regenerate')}
-              </button>
-              <button type="button" className="btn btn-ghost" disabled={!mayAct}>
-                {t('draft.reject')}
-              </button>
-            </div>
+            {/* AC-9.4. The draft, its sources and its guardrails all still
+                render: they are the work, and the work is sound. What is
+                missing is the authority to publish it, which is a different
+                thing from a draft that failed. */}
+            {data.listing && !data.listing.canReply ? (
+              <ListingNotice listing={data.listing} outletName={data.review.outletName} />
+            ) : (
+              <div className="state-actions">
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={send}
+                  disabled={!mayAct || !data.draft?.drafted || data.state === 'sent'}
+                >
+                  {data.state === 'sent' ? t('draft.sent') : t('draft.approveAndSend')}
+                </button>
+                <button type="button" className="btn btn-secondary" disabled={!mayAct}>
+                  {t('draft.editText')}
+                </button>
+                <button type="button" className="btn btn-secondary" disabled={!mayAct}>
+                  {t('draft.regenerate')}
+                </button>
+                <button type="button" className="btn btn-ghost" disabled={!mayAct}>
+                  {t('draft.reject')}
+                </button>
+              </div>
+            )}
+
+            {data.listing?.reviewCeiling ? (
+              <p className="state-note">
+                {t('listing.ceilingNote', { count: data.listing.reviewCeiling })}
+              </p>
+            ) : null}
 
             {notice ? (
               <p className="state-note" role="status">

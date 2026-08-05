@@ -1,6 +1,7 @@
+import { replyCoverage } from '../analytics/replyCoverage.js';
 import { DEFAULT_BUDGET_IDR, DEGRADE_AT } from '../cost/budget.js';
 import { DEFAULT_LOCALE } from '../i18n/locales.js';
-import { localeNumber } from '../i18n/format.js';
+import { localeNumber, localePercent } from '../i18n/format.js';
 import { t } from '../i18n/index.js';
 import { CONFIDENCE_THRESHOLD } from '../knowledge/retrieval.js';
 import { assertTenant } from '../lib/tenantScope.js';
@@ -14,13 +15,16 @@ import { assertTenant } from '../lib/tenantScope.js';
  * Vertex AI", "asia-southeast2" and "v0.9.4" are names of things, and a judge
  * checking the claim needs to read the same string the infrastructure uses.
  */
-export function createAdminService({ budget, evaluationReport }) {
+export function createAdminService({ budget, evaluationReport, gbp = null }) {
   async function overview(tenantId, { locale = DEFAULT_LOCALE } = {}) {
     assertTenant(tenantId);
     const state = budget.stateOf(tenantId);
 
     return {
       models: modelRows(locale),
+      // Null without an adapter rather than zeroed: a screen must be able to
+      // tell "we measured nothing" from "we measured zero".
+      coverage: gbp ? await coverageRows(tenantId, gbp, locale) : null,
       guardrails: guardrailToggles(locale),
       confidenceThreshold: CONFIDENCE_THRESHOLD,
       budget: {
@@ -41,6 +45,58 @@ export function createAdminService({ budget, evaluationReport }) {
   }
 
   return { overview };
+}
+
+/**
+ * The two response-time claims, with the outlets they could not be computed
+ * over named rather than dropped (AC-9.5).
+ *
+ * `exclusions` is not a footnote. Both numbers are only meaningful for a branch
+ * whose history is complete, and a reader comparing these to the README targets
+ * needs to know that two of the eight branches are not in them — one because
+ * Google caps what an unclaimed listing shows, one because it has no listing at
+ * all. Reporting the figures without that would be reporting a better result
+ * than was measured.
+ */
+async function coverageRows(tenantId, gbp, locale) {
+  const { data } = await gbp.listReviews({ tenantId, limit: 5000 });
+  const coverage = replyCoverage(data.reviews, data.listings ?? []);
+
+  const median = coverage.medianFirstResponseHours;
+  const share = coverage.withinTargetShare;
+
+  return {
+    rows: [
+      {
+        id: 'median-first-response',
+        label: t(locale, 'admin.coverageMedian'),
+        value:
+          median === null
+            ? '—'
+            : t(locale, 'admin.coverageHours', { hours: localeNumber(locale, median, 1) }),
+        note:
+          median === null
+            ? t(locale, 'admin.coverageNoReplies')
+            : t(locale, 'admin.coverageCounted', { counted: coverage.outletsCounted }),
+      },
+      {
+        id: 'within-target',
+        label: t(locale, 'admin.coverageWithin', { hours: coverage.withinTargetHours }),
+        value: share === null ? '—' : localePercent(locale, share),
+        note: t(locale, 'admin.coverageCounted', { counted: coverage.outletsCounted }),
+      },
+    ],
+    outletsCounted: coverage.outletsCounted,
+    outletsExcluded: coverage.outletsExcluded,
+    exclusions: coverage.exclusions,
+    excludedNote:
+      coverage.outletsExcluded === 0
+        ? t(locale, 'admin.coverageExcludedNone')
+        : t(locale, 'admin.coverageExcluded', {
+            count: coverage.outletsExcluded,
+            names: coverage.exclusions.map((row) => row.name).join(', '),
+          }),
+  };
 }
 
 /**

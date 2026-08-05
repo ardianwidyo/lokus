@@ -6,6 +6,7 @@ import {
   draftReply,
   flagSystemicThemes,
   guardrailCheck,
+  listingFor,
   relativeLabel,
   replyQueueSummary,
   saveDraft,
@@ -35,13 +36,16 @@ export function createSeededReputationSource({ tenantId = 'nusa-retail', locale 
   const gbp = createSeededGbpAdapter();
   const store = createMemoryApprovalStore();
 
-  let reviewsPromise = null;
-  const loadReviews = () => {
-    reviewsPromise ??= gbp
+  // Reviews and listing levels come back from one call and are held together,
+  // so a row can never be shown beside a permission read a cycle earlier (US-9).
+  let readPromise = null;
+  const read = () => {
+    readPromise ??= gbp
       .listReviews({ tenantId, limit: 5000 })
-      .then((result) => result.data.reviews);
-    return reviewsPromise;
+      .then((result) => ({ reviews: result.data.reviews, listings: result.data.listings ?? [] }));
+    return readPromise;
   };
+  const loadReviews = () => read().then((result) => result.reviews);
 
   /** Drafts are generated lazily and cached, so opening a review is instant. */
   const draftCache = new Map();
@@ -54,16 +58,19 @@ export function createSeededReputationSource({ tenantId = 'nusa-retail', locale 
   }
 
   async function inbox({ bucket = 'perlu-tindakan' } = {}) {
-    const reviews = await loadReviews();
-    const summary = await replyQueueSummary({ tenantId, reviews, store });
+    const { reviews, listings } = await read();
+    const summary = await replyQueueSummary({ tenantId, reviews, store, listings });
+    const repliable = (review) => listingFor(listings, review.outletId).canReply;
 
     const buckets = {
       'perlu-tindakan': summary.needsActionReviews,
-      'draft-siap': reviews.filter((review) => review.rating >= 3 && review.replyState === 'draft'),
+      'draft-siap': reviews.filter(
+        (review) => review.rating >= 3 && review.replyState === 'draft' && repliable(review),
+      ),
       terkirim: reviews.filter((review) => review.replyState === 'sent'),
     };
 
-    const rows = (buckets[bucket] ?? []).map(toRow);
+    const rows = (buckets[bucket] ?? []).map((review) => toRow(review, listings));
 
     return {
       counts: {
@@ -71,12 +78,13 @@ export function createSeededReputationSource({ tenantId = 'nusa-retail', locale 
         'draft-siap': buckets['draft-siap'].length,
         terkirim: summary.sent,
       },
+      needsConnection: summary.needsConnection,
       rows,
     };
   }
 
   async function reviewDetail(reviewId) {
-    const reviews = await loadReviews();
+    const { reviews, listings } = await read();
     const review = reviews.find((row) => row.id === reviewId);
     if (!review) return null;
 
@@ -87,21 +95,28 @@ export function createSeededReputationSource({ tenantId = 'nusa-retail', locale 
     const persisted = await store.get(tenantId, reviewId);
 
     return {
-      review: toRow(review),
+      review: toRow(review, listings),
       draft,
       guardrail,
+      listing: listingFor(listings, review.outletId),
       state: persisted?.state ?? review.replyState,
       approvedBy: persisted?.approvedBy ?? null,
     };
   }
 
   async function approveAndSend({ reviewId, approvedBy, role }) {
-    const reviews = await loadReviews();
+    const { reviews, listings } = await read();
     const review = reviews.find((row) => row.id === reviewId);
     const draft = await draftFor(review);
 
     if (!(await store.get(tenantId, reviewId))) {
-      await saveDraft({ tenantId, review, draft, store });
+      await saveDraft({
+        tenantId,
+        review,
+        draft,
+        store,
+        listing: listingFor(listings, review.outletId),
+      });
     }
     if (review.rating <= 2) {
       await approveDraft({ tenantId, reviewId, approvedBy, role, store });
@@ -130,11 +145,15 @@ export function createSeededReputationSource({ tenantId = 'nusa-retail', locale 
   return { isSeeded: true, inbox, reviewDetail, approveAndSend, themeMatrix };
 }
 
-function toRow(review) {
+function toRow(review, listings = []) {
+  const listing = listingFor(listings, review.outletId);
+
   return {
     ...review,
     outletName: OUTLET_NAMES[review.outletId] ?? review.outletId,
     relative: relativeLabel(review.publishedAt),
+    listingLevel: listing.level,
+    canReply: listing.canReply,
   };
 }
 
@@ -145,6 +164,8 @@ const OUTLET_NAMES = {
   'SRP-03': 'Serpong Sektor 7',
   'BGR-01': 'Bogor Pajajaran',
   'TGR-01': 'Tangerang Alam Sutera',
+  'KRW-01': 'Karawang Galuh Mas',
+  'BSD-02': 'BSD Grand Boulevard',
 };
 
 /** Share of reviews per week that are negative — the trend card on screen 07. */

@@ -1,5 +1,7 @@
 import { DAY_MS, DEMO_NOW, HOUR_MS, TREND_WEEKS, WEEK_MS } from '../domain/clock.js';
+import { LISTING_LEVELS, PUBLIC_REVIEW_CEILING, deriveListingLevel } from '../domain/listingLevel.js';
 import { OUTLETS } from '../domain/outlets.js';
+import { SEED_LISTING_PROBES } from './listings.js';
 import { createRng } from './rng.js';
 import { AUTHOR_NAMES, COMPLAINT_TEMPLATES, POSITIVE_TEMPLATES } from './reviewTemplates.js';
 
@@ -116,6 +118,58 @@ const FEATURED_POSITIVE = Object.freeze({
   text: 'Kasir cepat walau ramai, stafnya sigap mengarahkan ke kasir tambahan. Cabang paling nyaman sejauh ini.',
 });
 
+/**
+ * The five reviews Places API (New) exposes for the Karawang branch — its
+ * whole visible history, because five is the ceiling (AC-9.6), not because the
+ * branch only ever received five.
+ *
+ * Two of them are complaints an area manager would want answered today, which
+ * is the point: the console has to show the reviews *and* the fact that nobody
+ * here has the authority to reply to them.
+ */
+const PUBLIC_REVIEWS = Object.freeze([
+  {
+    id: 'rev-KRW-01-places-1',
+    outletId: 'KRW-01',
+    rating: 2,
+    author: 'Dimas A.',
+    hoursAgo: 9,
+    text: 'Antrean panjang jam makan siang dan hanya satu kasir yang buka. Barangnya lengkap sih.',
+  },
+  {
+    id: 'rev-KRW-01-places-2',
+    outletId: 'KRW-01',
+    rating: 2,
+    author: 'Sinta M.',
+    hoursAgo: 33,
+    text: 'Rak minuman dingin banyak yang kosong dan lantainya lengket dekat pintu masuk.',
+  },
+  {
+    id: 'rev-KRW-01-places-3',
+    outletId: 'KRW-01',
+    rating: 3,
+    author: 'Bagas P.',
+    hoursAgo: 52,
+    text: 'Standar saja. Parkir motor cukup, tapi harga beberapa item lebih mahal dari sebelah.',
+  },
+  {
+    id: 'rev-KRW-01-places-4',
+    outletId: 'KRW-01',
+    rating: 4,
+    author: 'Ayu Lestari',
+    hoursAgo: 80,
+    text: 'Stafnya ramah dan mau bantu carikan barang. Tokonya bersih waktu saya datang.',
+  },
+  {
+    id: 'rev-KRW-01-places-5',
+    outletId: 'KRW-01',
+    rating: 5,
+    author: 'Rizal H.',
+    hoursAgo: 121,
+    text: 'Dekat rumah, buka 24 jam, kasirnya cepat. Sejauh ini tidak ada keluhan.',
+  },
+]);
+
 /** Distributes a total across 8 weeks, leaning the remainder onto later weeks. */
 function evenSpread(total, weeks = TREND_WEEKS) {
   const base = Math.floor(total / weeks);
@@ -147,8 +201,22 @@ function replyStateFor(rating, publishedAt, now) {
   return ageDays > 2 ? 'sent' : 'draft';
 }
 
-function buildReview({ id, tenantId, outletId, rating, author, text, publishedAt, now }) {
-  const replyState = replyStateFor(rating, publishedAt, now);
+function buildReview({
+  id,
+  tenantId,
+  outletId,
+  rating,
+  author,
+  text,
+  publishedAt,
+  now,
+  level = LISTING_LEVELS.MANAGED,
+}) {
+  const managed = level === LISTING_LEVELS.MANAGED;
+  // A review nobody may answer has no reply history to have, so its state is
+  // `none` by construction rather than by a rule applied later. Seeding one as
+  // `sent` would be recording a reply that could not have been published.
+  const replyState = managed ? replyStateFor(rating, publishedAt, now) : 'none';
 
   return {
     id,
@@ -162,9 +230,15 @@ function buildReview({ id, tenantId, outletId, rating, author, text, publishedAt
     replyText: null,
     approvedBy: null,
     approvedAt: null,
+    // A fixture, not a measurement: every sent reply is six hours after its
+    // review. `replyCoverage` computes a real median over these, but the median
+    // it finds is this constant — so nothing may cite it as evidence of how
+    // fast the agents are. The README says so too.
     sentAt: replyState === 'sent' ? new Date(publishedAt.getTime() + 6 * HOUR_MS).toISOString() : null,
-    source: 'google-business-profile',
-    sourceUri: `https://business.google.com/reviews/${id}`,
+    source: managed ? 'google-business-profile' : 'google-places',
+    sourceUri: managed
+      ? `https://business.google.com/reviews/${id}`
+      : `https://www.google.com/maps/place/?q=place_id:${SEED_LISTING_PROBES[outletId]?.placesMatch ?? ''}`,
   };
 }
 
@@ -183,7 +257,15 @@ export function generateReviews({ now = DEMO_NOW, seed = 'lokus-2026' } = {}) {
     FEATURED.map((item) => [`${item.outletId}:${item.theme}`, item]),
   );
 
-  for (const outlet of OUTLETS) {
+  // Only outlets whose listing we manage have a history to generate. The other
+  // two are not missing data by oversight — an unclaimed listing genuinely does
+  // not expose one, and an outlet absent from Maps has none to expose.
+  const levelOf = (outletId) => deriveListingLevel(SEED_LISTING_PROBES[outletId] ?? {});
+  const managedOutlets = OUTLETS.filter(
+    (outlet) => levelOf(outlet.outletId) === LISTING_LEVELS.MANAGED,
+  );
+
+  for (const outlet of managedOutlets) {
     for (const themeId of Object.keys(COMPLAINT_MATRIX)) {
       const plan = weeklyPlanFor(outlet.outletId, themeId);
       const featured = featuredByKey.get(`${outlet.outletId}:${themeId}`);
@@ -236,11 +318,26 @@ export function generateReviews({ now = DEMO_NOW, seed = 'lokus-2026' } = {}) {
     }),
   );
 
+  // Everything Places will show for an unclaimed listing, and no more. The slice
+  // is not decoration: if the ceiling ever changes, the dataset has to change
+  // with it rather than keep asserting a number the API no longer honours.
+  for (const row of PUBLIC_REVIEWS.slice(0, PUBLIC_REVIEW_CEILING)) {
+    reviews.push(
+      buildReview({
+        ...row,
+        tenantId: 'nusa-retail',
+        publishedAt: new Date(now.getTime() - row.hoursAgo * HOUR_MS),
+        now,
+        level: LISTING_LEVELS.PUBLIC,
+      }),
+    );
+  }
+
   // Top up with satisfied customers until the outlet's mean is as close to its
   // target as four- and five-star rows can get it. Stopping at the first
   // crossing would overshoot badly on the smaller outlets, so each step picks
   // the rating that reduces the error and the loop ends when none does.
-  for (const outlet of OUTLETS) {
+  for (const outlet of managedOutlets) {
     const target = TARGET_RATING[outlet.outletId];
     const own = reviews.filter((review) => review.outletId === outlet.outletId);
     let sum = own.reduce((total, review) => total + review.rating, 0);

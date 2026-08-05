@@ -1,4 +1,9 @@
-import { DEFAULT_LOCALE, createAdminService, createBudgetGuard } from '@lokus/core';
+import {
+  DEFAULT_LOCALE,
+  createAdminService,
+  createBudgetGuard,
+  createSeededGbpAdapter,
+} from '@lokus/core';
 
 import evalReport from '../../../eval/report.sample.json';
 
@@ -21,7 +26,13 @@ export function createSeededAdminSource({ tenantId = 'nusa-retail', locale = DEF
   // Month-to-date spend for the demo tenant (design/SCREENS.md screen 14).
   budget.seed(tenantId, 1_840_000);
 
-  const service = createAdminService({ budget, evaluationReport: evalReport });
+  // The same adapter the reputation source reads, so the coverage figures on
+  // screen 14 describe the reviews screen 05 is showing (spec AC-9.5).
+  const service = createAdminService({
+    budget,
+    evaluationReport: evalReport,
+    gbp: createSeededGbpAdapter(),
+  });
 
   return {
     isSeeded: true,

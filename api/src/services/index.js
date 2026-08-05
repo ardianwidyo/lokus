@@ -73,7 +73,9 @@ export function createServices({
     supervisor,
     reputation: createReputationService({ gbp, gemini }),
     briefing: createBriefingService({ gbp, places, ticketStore }),
-    admin: createAdminService({ budget, evaluationReport }),
+    // `gbp` so screen 14 can report response-time coverage over the outlets
+    // whose history is complete, and name the ones it left out (spec AC-9.5).
+    admin: createAdminService({ budget, evaluationReport, gbp }),
     location: createLocationService({ places }),
     outlets: createOutletService({ gbp, places }),
     knowledge,

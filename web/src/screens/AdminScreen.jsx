@@ -4,6 +4,7 @@ import { Check, X } from 'lucide-react';
 import { useSession } from '../app/SessionContext.jsx';
 import { useAsyncData } from '../app/useAsyncData.js';
 import { Blueprint } from '../components/Blueprint.jsx';
+import { ListingBadge } from '../components/ListingNotice.jsx';
 import { DataPanel } from '../components/states/index.js';
 import { Rich, useLocale } from '../i18n/index.js';
 
@@ -140,6 +141,50 @@ export function AdminScreen() {
       </div>
 
       <div className="admin-bottom">
+        {/* AC-9.5. Both figures below are the README's headline claims, and both
+            assume a complete review history. The branches that do not have one
+            are named under them rather than quietly dropped — a metric that
+            cannot say what it left out is not a measurement. */}
+        <DataPanel
+          status={status}
+          kicker={t('admin.coverageKicker')}
+          meta={
+            data?.coverage ? (
+              <span className="panel-meta">{data.coverage.excludedNote}</span>
+            ) : null
+          }
+          loading={{ message: t('admin.coverageLoading') }}
+          empty={{ title: t('admin.coverageEmpty') }}
+          error={{ title: t('admin.coverageError'), description: failure, onRetry: reload }}
+        >
+          {data?.coverage ? (
+            <>
+              <dl className="kv-list">
+                {data.coverage.rows.map((row) => (
+                  <div key={row.id} className="kv-row">
+                    <dt>{row.label}</dt>
+                    <dd>
+                      {row.value}
+                      <span className="kv-note">{row.note}</span>
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+              {data.coverage.exclusions.length ? (
+                <ul className="coverage-exclusions">
+                  {data.coverage.exclusions.map((row) => (
+                    <li key={row.outletId}>
+                      {row.name}
+                      <ListingBadge level={row.level} />
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+              <p className="state-note">{t('admin.coverageNote')}</p>
+            </>
+          ) : null}
+        </DataPanel>
+
         <DataPanel
           status={status}
           kicker={t('admin.evalKicker')}

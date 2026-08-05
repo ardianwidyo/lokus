@@ -79,6 +79,35 @@ export const OUTLETS = Object.freeze([
     openedAt: '2020-02-11',
     geo: { lat: -6.2286, lng: 106.6534 },
   },
+  // The last two exist so the console has to show the levels US-9 describes
+  // rather than only the one that works. Karawang was bought from a franchisee
+  // whose Google account still holds the listing; BSD opened three weeks ago and
+  // is not on Maps yet. Both are ordinary branches with ordinary managers — the
+  // difference is entirely in what Google will tell us about them.
+  {
+    outletId: 'KRW-01',
+    tenantId: 'nusa-retail',
+    code: 'KRW-01',
+    name: 'Karawang Galuh Mas',
+    shortName: 'Karawang',
+    region: 'Karawang',
+    address: 'Jl. Galuh Mas Raya Blok B',
+    manager: 'Tri Hastuti',
+    openedAt: '2026-04-02',
+    geo: { lat: -6.3227, lng: 107.2872 },
+  },
+  {
+    outletId: 'BSD-02',
+    tenantId: 'nusa-retail',
+    code: 'BSD-02',
+    name: 'BSD Grand Boulevard',
+    shortName: 'BSD',
+    region: 'BSD',
+    address: 'Jl. Grand Boulevard Kav. 12',
+    manager: 'Anggara Putra',
+    openedAt: '2026-07-15',
+    geo: { lat: -6.3019, lng: 106.6528 },
+  },
 ]);
 
 const BY_ID = new Map(OUTLETS.map((outlet) => [outlet.outletId, outlet]));

@@ -199,7 +199,12 @@ describe('the seeded dataset', () => {
     // The whole set, not the default page — a truncated page skews the mean.
     const { data } = await gbp.listReviews({ tenantId: TENANT, limit: 5000 });
 
-    for (const outlet of OUTLETS) {
+    // Only the managed outlets have a target: a target is a statement about a
+    // history, and the other two do not have one to shape (US-9).
+    const managed = OUTLETS.filter((outlet) => TARGET_RATING[outlet.outletId]);
+    expect(managed).toHaveLength(6);
+
+    for (const outlet of managed) {
       const own = data.reviews.filter((review) => review.outletId === outlet.outletId);
       const mean = own.reduce((sum, review) => sum + review.rating, 0) / own.length;
 

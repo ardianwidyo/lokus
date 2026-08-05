@@ -96,7 +96,10 @@ describe('bq.themeCluster', () => {
     const { data } = await themeCluster({ tenantId: TENANT, reviews: await allReviews() });
 
     expect(data.themes[0].theme).toBe('antrean-kasir');
-    expect(data.themes[0].count).toBe(67);
+    // 67 from the six managed branches in COMPLAINT_MATRIX, plus one the
+    // clusterer found in Karawang's public Places reviews. A complaint we can
+    // read but not answer is still a complaint, and still counts (US-9).
+    expect(data.themes[0].count).toBe(68);
   });
 
   it('gives an 8-week series per theme that sums to its total', async () => {

@@ -46,9 +46,15 @@ describe('clock', () => {
 });
 
 describe('outlets', () => {
-  it('holds the six outlets the demo covers', () => {
-    expect(OUTLETS).toHaveLength(6);
+  it('holds the eight outlets the demo covers', () => {
+    // Six branches whose listing the tenant manages, plus the two US-9 exists
+    // for: one bought from a franchisee who still holds the listing, one opened
+    // too recently to be on Maps.
+    expect(OUTLETS).toHaveLength(8);
     expect(OUTLETS.map((outlet) => outlet.outletId)).toContain('BKS-02');
+    expect(OUTLETS.map((outlet) => outlet.outletId)).toEqual(
+      expect.arrayContaining(['KRW-01', 'BSD-02']),
+    );
   });
 
   it('finds an outlet and returns null for an unknown one', () => {
@@ -57,7 +63,7 @@ describe('outlets', () => {
   });
 
   it('scopes outlets to a tenant', () => {
-    expect(outletsForTenant('nusa-retail')).toHaveLength(6);
+    expect(outletsForTenant('nusa-retail')).toHaveLength(8);
     expect(outletsForTenant('klinik-sehat-prima')).toHaveLength(0);
   });
 

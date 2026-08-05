@@ -1,3 +1,4 @@
+import { LISTING_LEVELS, listingFor, listingIndex } from '../domain/listingLevel.js';
 import { assertTenant, scopeToTenant } from '../lib/tenantScope.js';
 import { toolResult } from '../lib/toolResult.js';
 
@@ -83,12 +84,32 @@ export function createMemoryApprovalStore() {
   };
 }
 
-/** Stores a generated draft against its review, ready for review by a human. */
-export async function saveDraft({ tenantId, review, draft, store, now = () => new Date() }) {
+/**
+ * Stores a generated draft against its review, ready for review by a human.
+ *
+ * A draft for an outlet whose listing we do not manage is still written, and
+ * written as unsendable with the reason (AC-9.4). Refusing to draft it would
+ * throw away work that becomes valid the moment the listing is connected, and
+ * letting it look sendable would move the failure to the send button — which is
+ * the worst place for it, because by then someone has decided to publish.
+ */
+export async function saveDraft({
+  tenantId,
+  review,
+  draft,
+  store,
+  listing = null,
+  now = () => new Date(),
+}) {
   assertTenant(tenantId);
   if (!draft?.drafted) {
     throw new ApprovalError('NO_DRAFT', 'Tidak ada draft untuk disimpan');
   }
+
+  // Absent a probe the draft is treated as sendable, because every caller that
+  // has no listing data is one of the paths that predate US-9 and deals only
+  // with managed outlets. The adapter still refuses if that assumption is wrong.
+  const sendable = listing ? listing.canReply : true;
 
   const record = {
     reviewId: review.id,
@@ -98,6 +119,9 @@ export async function saveDraft({ tenantId, review, draft, store, now = () => ne
     citations: draft.citations,
     state: REPLY_STATES.DRAFT,
     requiresApproval: requiresApproval(review),
+    sendable,
+    unsendableReason: sendable ? null : listing.unsendableReason,
+    listingLevel: listing?.level ?? LISTING_LEVELS.MANAGED,
     approvedBy: null,
     approvedAt: null,
     sentAt: null,
@@ -168,6 +192,16 @@ export async function sendReply({
   const draft = await store.get(tenantId, reviewId);
   if (!draft) throw new ApprovalError('DRAFT_NOT_FOUND', 'Draft tidak ditemukan untuk tenant ini');
 
+  // AC-9.4. Checked before the approval gate, because an outlet we may not
+  // reply to is not a draft awaiting a signature — asking a manager to approve
+  // it would be asking them to authorise something that cannot happen.
+  if (draft.sendable === false) {
+    throw new ApprovalError(
+      draft.unsendableReason ?? 'LISTING_NOT_REPLIABLE',
+      'Balasan hanya bisa dikirim untuk lokasi yang dikelola akun ini',
+    );
+  }
+
   if (draft.requiresApproval && draft.state !== REPLY_STATES.APPROVED) {
     throw new ApprovalError(
       'APPROVAL_REQUIRED',
@@ -197,22 +231,38 @@ export async function sendReply({
   return toolResult({ data: sent, sources: result.sources, startedAt });
 }
 
-/** Screen 05's three buckets: needs action, draft ready, already sent. */
-export async function replyQueueSummary({ tenantId, reviews, store }) {
+/**
+ * Screen 05's three buckets: needs action, draft ready, already sent.
+ *
+ * A complaint about a branch whose listing we do not manage belongs in "needs
+ * action" — it does need one — but the action is connecting the listing, not
+ * writing a reply. So it is listed, and counted separately as `needsConnection`
+ * so the screen can say which kind of action it is instead of implying a reply
+ * is one click away (AC-9.4).
+ */
+export async function replyQueueSummary({ tenantId, reviews, store, listings = [] }) {
   assertTenant(tenantId);
   const drafts = await store.list(tenantId);
   const byReview = new Map(drafts.map((draft) => [draft.reviewId, draft]));
 
   const scoped = reviews.filter((review) => review.tenantId === tenantId);
+  // With no probe supplied there is nothing to withhold on, and every caller in
+  // that position predates US-9. An empty list must not read as "nothing is
+  // repliable", which is what `listingFor` alone would say.
+  const index = listingIndex(listings);
+  const repliable = (review) =>
+    index.size === 0 || listingFor(index, review.outletId).canReply;
 
   const needsAction = scoped.filter((review) => {
     const draft = byReview.get(review.id);
     if (review.replyState === 'sent') return false;
+    if (!repliable(review)) return requiresApproval(review);
     return requiresApproval(review) && draft?.state !== REPLY_STATES.SENT;
   });
 
   const draftReady = scoped.filter((review) => {
     const draft = byReview.get(review.id);
+    if (!repliable(review)) return false;
     return !requiresApproval(review) && (draft?.state === REPLY_STATES.DRAFT || review.replyState === 'draft');
   });
 
@@ -222,6 +272,7 @@ export async function replyQueueSummary({ tenantId, reviews, store }) {
 
   return {
     needsAction: needsAction.length,
+    needsConnection: needsAction.filter((review) => !repliable(review)).length,
     draftReady: draftReady.length,
     sent: sent.length,
     needsActionReviews: needsAction,

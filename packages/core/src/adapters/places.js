@@ -68,6 +68,11 @@ const COMPETITOR_COUNTS = Object.freeze({
   'SRP-03': 3,
   'BGR-01': 2,
   'TGR-01': 3,
+  // Places answers for a neighbourhood, not for a listing, so these two are
+  // scanned exactly like the rest — an outlet we cannot read reviews for still
+  // has competitors we can count (spec US-9).
+  'KRW-01': 4,
+  'BSD-02': 3,
 });
 
 /** Depok's newest competitor is the one the briefing talks about. */

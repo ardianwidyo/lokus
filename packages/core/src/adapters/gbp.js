@@ -1,4 +1,6 @@
 import { DEMO_NOW } from '../domain/clock.js';
+import { listingFor } from '../domain/listingLevel.js';
+import { seedListings } from '../seed/listings.js';
 import { generateReviews } from '../seed/reviews.js';
 import { toolResult } from '../lib/toolResult.js';
 import { assertTenant, scopeToTenant } from '../lib/tenantScope.js';
@@ -12,6 +14,12 @@ import { assertTenant, scopeToTenant } from '../lib/tenantScope.js';
  *
  *   listReviews({ tenantId, outletId?, since?, limit? }) → { data, sources[], latencyMs }
  *   reply({ tenantId, reviewId, text, approvedBy })      → { data, sources[], latencyMs }
+ *
+ * `listReviews` also returns `data.listings`: one record per outlet saying which
+ * of the two Google APIs answered for it and therefore what may be done with it
+ * (spec US-9). The reviews and the permission travel together on purpose — a
+ * caller that has the rows has, in the same response, the reason it may or may
+ * not answer them.
  *
  * Per plan.md every tool returns `{data, sources[], latencyMs}`, and a tool
  * that cannot cite a source returns `sources: []` so the supervisor refuses to
@@ -59,8 +67,20 @@ export function createSeededGbpAdapter({ now = DEMO_NOW, seed = 'lokus-2026', cl
 
     const page = rows.slice(0, limit);
 
+    // Probed on every call rather than cached: a level is a claim about what
+    // the credentials return *now*, and a stored one would keep reporting a
+    // grant that has since been revoked (AC-9.2).
+    const listings = seedListings({ tenantId, now: clock() });
+
     return toolResult({
-      data: { reviews: page.map((review) => ({ ...review })), total: rows.length },
+      data: {
+        reviews: page.map((review) => ({ ...review })),
+        total: rows.length,
+        // Every outlet, not only the ones that produced reviews — an outlet with
+        // no listing has nothing to report except that fact, and that fact is
+        // exactly what the console needs (AC-9.1).
+        listings,
+      },
       // Every review is its own citable source: an id the UI can link back to.
       sources: page.map((review) => ({
         type: 'review',
@@ -82,6 +102,19 @@ export function createSeededGbpAdapter({ now = DEMO_NOW, seed = 'lokus-2026', cl
       // Same refusal whether the review belongs to another tenant or does not
       // exist, so this cannot be used to probe another tenant's data (AC-6.1).
       throw new GbpError('REVIEW_NOT_FOUND', 'Review tidak ditemukan untuk tenant ini');
+    }
+
+    // AC-9.4, and the last line of defence for it. Publishing a reply needs the
+    // v4 write, which needs a listing this account manages — so an unclaimed or
+    // absent listing is refused here even if every layer above it let the call
+    // through. The refusal names the level, because "connect the account" and
+    // "this branch is not on Maps" are different problems for the reader.
+    const listing = listingFor(seedListings({ tenantId, now: clock() }), review.outletId);
+    if (!listing.canReply) {
+      throw new GbpError(
+        listing.unsendableReason,
+        'Balasan hanya bisa dikirim untuk lokasi yang dikelola akun ini',
+      );
     }
 
     // Constitution II: the human owns the public voice on 1-2 star reviews.
@@ -113,6 +146,11 @@ export function createSeededGbpAdapter({ now = DEMO_NOW, seed = 'lokus-2026', cl
  * The real adapter. Left unimplemented on purpose rather than faked: if the
  * Business Profile credentials are absent the caller must fall back to the
  * seeded adapter explicitly, not silently receive invented reviews.
+ *
+ * When it is written it must derive each outlet's level with
+ * `deriveListingLevel` over its own two responses — the v4 location lookup and
+ * the Places match — rather than reading a configured value. That is what keeps
+ * AC-9.2 true of the real path and not only of the seeded one.
  */
 export function createGoogleGbpAdapter({ accessToken, accountId }) {
   if (!accessToken || !accountId) {

@@ -1,6 +1,7 @@
 import { ratingTrend } from '../analytics/ratingTrend.js';
 import { themeCluster } from '../analytics/themeCluster.js';
 import { TREND_WEEKS, weekStart } from '../domain/clock.js';
+import { listingFor } from '../domain/listingLevel.js';
 import { findOutlet, outletsForTenant } from '../domain/outlets.js';
 import { themeLabel } from '../domain/themes.js';
 import { DEFAULT_LOCALE } from '../i18n/locales.js';
@@ -24,19 +25,20 @@ export const BLOCK_WEEKS = 4;
 export const RADIUS_M = 1000;
 
 export function createOutletService({ gbp, places, weights = undefined } = {}) {
-  const reviewsByTenant = new Map();
-  async function allReviews(tenantId) {
-    if (!reviewsByTenant.has(tenantId)) {
+  const readByTenant = new Map();
+  async function read(tenantId) {
+    if (!readByTenant.has(tenantId)) {
       const { data } = await gbp.listReviews({ tenantId, limit: 5000 });
-      reviewsByTenant.set(tenantId, data.reviews);
+      readByTenant.set(tenantId, { reviews: data.reviews, listings: data.listings ?? [] });
     }
-    return reviewsByTenant.get(tenantId);
+    return readByTenant.get(tenantId);
   }
 
   /** The picker at the top of the screen: every branch, worst score first. */
   async function list(tenantId) {
     assertTenant(tenantId);
     const outlets = outletsForTenant(tenantId);
+    const { listings } = await read(tenantId);
 
     const scored = await Promise.all(
       outlets.map(async (outlet) => {
@@ -46,7 +48,16 @@ export function createOutletService({ gbp, places, weights = undefined } = {}) {
           places,
           weights,
         });
-        return { outletId: outlet.outletId, code: outlet.code, name: outlet.name, score: data.total };
+        return {
+          outletId: outlet.outletId,
+          code: outlet.code,
+          name: outlet.name,
+          score: data.total,
+          // Every branch is scored — Places answers for a neighbourhood whether
+          // or not we hold the listing — but the picker still has to show which
+          // ones the reputation half of the screen will be silent about.
+          listingLevel: listingFor(listings, outlet.outletId).level,
+        };
       }),
     );
 
@@ -61,7 +72,7 @@ export function createOutletService({ gbp, places, weights = undefined } = {}) {
     // exist, or the 404 becomes a way to enumerate the other tenant's estate.
     if (!outlet || outlet.tenantId !== tenantId) return null;
 
-    const reviews = await allReviews(tenantId);
+    const { reviews, listings } = await read(tenantId);
     const ranking = await list(tenantId);
 
     const [trend, themes, score, nearby] = await Promise.all([
@@ -85,6 +96,10 @@ export function createOutletService({ gbp, places, weights = undefined } = {}) {
         openedAt: outlet.openedAt,
         geo: outlet.geo,
       },
+      // The rating panel below is only as complete as this says it is: at
+      // `public` it rests on the five reviews Places exposed, at `absent` on
+      // nothing at all. The screen must be able to say which (AC-9.1, AC-9.6).
+      listing: listingFor(listings, outletId),
       rating: ratingSummary(mine, trend.data.points),
       location: {
         score: score.data.total,
