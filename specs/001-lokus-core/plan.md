@@ -13,9 +13,24 @@
 | Analytics | deterministic JS over the seeded dataset | BigQuery + GIS needs billing; the queries it replaces are named in the trace |
 | State | Firestore | tenants, tickets, agent runs/traces |
 | Docs | Cloud Storage | source SOP/catalog files |
-| External | Business Profile Performance API, Places API (New) | adapters behind one interface each |
+| External | Business Profile API v4, Places API (New), Business Profile Performance API | adapters behind one interface each; see "External review sources" below |
 | Scheduling | Cloud Scheduler → Pub/Sub | nightly cycle 23:00, briefing by 06:00 |
 | Ops | Terraform, GitHub Actions, Cloud Logging + Trace, Secret Manager | region `asia-southeast2` |
+
+## External review sources
+
+`gbp.listReviews` and `gbp.reply` are one interface over two Google APIs that
+are not interchangeable. Which one answers depends on the outlet's listing level
+(spec US-9), so the table above lists all three deliberately:
+
+| API | Serves | Access | Used for |
+|---|---|---|---|
+| Business Profile API v4 `accounts.locations.reviews` | full review history, paginated; reply write | OAuth `business.manage` from the managing account, on a project Google has allowlisted — quota is zero until approved | L2 outlets: everything |
+| Places API (New) `places.get` with `reviews` in the field mask | at most 5 reviews, chosen by Google, read-only | API key | L1 outlets: read-only reputation signal |
+| Business Profile Performance API | impressions, calls, direction requests | same OAuth as v4 | location factors, **not reviews** |
+
+The Performance API carries no review content and cannot reply — an earlier
+draft of this plan named it as the review source, which it never was.
 
 ## Agent contracts
 
@@ -121,6 +136,7 @@ folded in continuously rather than left to the end.
 | Risk | Mitigation |
 |---|---|
 | Business Profile API access delayed | ship with a seeded dataset behind the same adapter interface; swap when access lands |
+| Pilot outlets not claimed, or absent from Maps entirely | listing levels in spec US-9: the Reputation agent degrades to the 5 read-only Places reviews at L1 and to nothing at L0, says which it is, and never offers a reply it has no authority to send |
 | Places quota / cost | cache POI responses per grid cell for 7 days; Site Scout may run on cached data |
 | Model cost overrun | per-tenant ceiling in code, degrade to Flash at 90%, alert |
 | Non-developer team | every task in `tasks.md` names its acceptance criterion so the coding agent has an unambiguous target |
