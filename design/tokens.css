@@ -2,47 +2,58 @@
 @import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;700&family=Barlow+Condensed:wght@400;600&display=swap');
 
 :root {
-  --color-bg: #ffffff;
-  --color-surface: #f5f5f5;
-  --color-text: #1d1f20;
-  --color-accent: #347dc5;
-  --color-accent-2: #6490b9;
-  --color-divider: color-mix(in srgb, #1d1f20 16%, transparent);
+  --color-bg: #f8f9ff;
+  --color-surface: #eff4ff;
+  --color-text: #0b1c30;
+  --color-accent: #0058be;
+  --color-accent-2: #6b8dc1;
+  --color-divider: color-mix(in srgb, #0b1c30 22%, transparent);
 
   /* Tonal ramps — generated in OKLCH on one shared lightness scale, so the
-     same step of any role matches the others in visual value. Retuned for a
-     brighter ground and a more saturated accent hue (same 210° hue, higher
-     chroma) — lightness per step held steady so contrast ratios only improve,
-     never regress (see web/test/accessibility.test.jsx). */
-  --color-neutral-100: #fbfbfc;
-  --color-neutral-200: #eff0f1;
-  --color-neutral-300: #d4d4d7;
-  --color-neutral-400: #b7b7ba;
-  --color-neutral-500: #98989b;
-  --color-neutral-600: #7a7a7d;
-  --color-neutral-700: #5d5d60;
-  --color-neutral-800: #424244;
-  --color-neutral-900: #2b2b2d;
+     same step of any role matches the others in visual value. Retuned onto the
+     Stitch palette (design/reference/lokusstitch.html): hue moves to Stitch's
+     blue family at ~258°, and the neutrals pick up the cool tint Stitch gives
+     its surfaces instead of staying near-achromatic. Lightness per step is held
+     at the values it had before, so contrast ratios only improve, never regress
+     (see web/test/accessibility.test.jsx) — the one exception is the accent's
+     dark end, re-anchored onto three tones Stitch ships verbatim: #0058be
+     (secondary), #004395 (on-secondary-fixed-variant), #001a42
+     (on-secondary-fixed). Those are darker than the steps they replace, so that
+     end gains contrast too. */
+  --color-neutral-100: #f9fbff;
+  --color-neutral-200: #eaf0fd;
+  --color-neutral-300: #ccd5e6;
+  --color-neutral-400: #b0b8c7;
+  --color-neutral-500: #9299a5;
+  --color-neutral-600: #767b84;
+  --color-neutral-700: #595d67;
+  --color-neutral-800: #3c424f;
+  --color-neutral-900: #222b3e;
 
-  --color-accent-100: #eef6ff;
-  --color-accent-200: #d6ebff;
-  --color-accent-300: #b5d9fd;
-  --color-accent-400: #8dbdec;
-  --color-accent-500: #5e9cd9;
-  --color-accent-600: #347dc5;
-  --color-accent-700: #2a5e92;
-  --color-accent-800: #224567;
-  --color-accent-900: #172b3f;
+  --color-accent-100: #eff6ff;
+  --color-accent-200: #dbe9ff;
+  --color-accent-300: #bbd7ff;
+  --color-accent-400: #8ebafb;
+  --color-accent-500: #4c8be8;
+  --color-accent-600: #0058be;
+  --color-accent-700: #004395;
+  --color-accent-800: #022f6c;
+  --color-accent-900: #001a42;
 
-  --color-accent-2-100: #eef6ff;
-  --color-accent-2-200: #d6ebff;
-  --color-accent-2-300: #bdd8f2;
-  --color-accent-2-400: #93b7dc;
-  --color-accent-2-500: #7098bf;
-  --color-accent-2-600: #567ea3;
-  --color-accent-2-700: #3f6280;
-  --color-accent-2-800: #2b4559;
-  --color-accent-2-900: #1c2d3a;
+  /* Stitch ships no second accent — its "secondary-container" is a brighter
+     blue that already does the active-state job --color-accent-600 does here.
+     So this ramp keeps LOKUS's own role for it (the second categorical colour,
+     for tags and chart series) and stays a muted sibling of the accent: same
+     hue, roughly half the chroma, which is what keeps the two readable apart. */
+  --color-accent-2-100: #eff5ff;
+  --color-accent-2-200: #dce9fd;
+  --color-accent-2-300: #c3d6f3;
+  --color-accent-2-400: #9ab5dd;
+  --color-accent-2-500: #7695c5;
+  --color-accent-2-600: #577bb2;
+  --color-accent-2-700: #415f8c;
+  --color-accent-2-800: #2e4262;
+  --color-accent-2-900: #1e2b40;
 
   /* The one deliberately-dark surface, and its ink — map fields and the
      user's own chat bubble (see shell.css ".map-bg", ".chat-bubble-user").
@@ -51,13 +62,13 @@
      it would go pale in dark mode and its white/light-blue ink would vanish
      into it. --color-on-accent-surface-muted is --color-accent-400's light
      theme value, pinned, for markers and strokes drawn on that surface. */
-  --color-accent-surface: #172b3f;
-  --color-on-accent-surface: #ffffff;
-  --color-on-accent-surface-muted: #8dbdec;
+  --color-accent-surface: #213145;
+  --color-on-accent-surface: #eaf1ff;
+  --color-on-accent-surface-muted: #8ebafb;
 
   /* A modal scrim dims toward black in both themes — it is not a themed
      foreground/background pairing, so it does not live in the ramp above. */
-  --color-scrim: rgba(43, 43, 45, 0.5);
+  --color-scrim: rgba(34, 43, 62, 0.5);
 
   --font-heading: "Barlow Condensed", system-ui, sans-serif;
   --font-heading-weight: 600;
@@ -76,9 +87,9 @@
 
   /* Elevation — derived from the ground: soft ink-tinted shadows on a
      light theme, a hairline edge + ambient darkness on a dark one. */
-  --shadow-sm: 0 1px 2px color-mix(in srgb, #2b2b2d 14%, transparent);
-  --shadow-md: 0 3px 10px color-mix(in srgb, #2b2b2d 16%, transparent);
-  --shadow-lg: 0 12px 32px color-mix(in srgb, #2b2b2d 22%, transparent);
+  --shadow-sm: 0 1px 2px color-mix(in srgb, #222b3e 14%, transparent);
+  --shadow-md: 0 3px 10px color-mix(in srgb, #222b3e 16%, transparent);
+  --shadow-lg: 0 12px 32px color-mix(in srgb, #222b3e 22%, transparent);
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
@@ -97,42 +108,46 @@
    touching either — only the token values below changed. Contrast for every
    real pairing in the app is checked in web/test/accessibility.test.jsx. */
 :root[data-theme="dark"] {
+  /* Stitch supplied no dark values — its export sets `darkMode: "class"` and
+     then defines light tones only. So the ground, the surface and the ink below
+     are unchanged from before this retune, and only the blue family follows
+     Stitch's hue. This block is a derivation, not a transcription. */
   --color-bg: #121417;
   --color-surface: #1e2125;
   --color-text: #f1f2f3;
-  --color-accent: #6ea3d8;
-  --color-accent-2: #84a8cd;
+  --color-accent: #70a0e5;
+  --color-accent-2: #89a6d2;
   --color-divider: color-mix(in srgb, #f1f2f3 16%, transparent);
 
-  --color-neutral-100: #1b1e22;
-  --color-neutral-200: #292e32;
-  --color-neutral-300: #3f444b;
-  --color-neutral-400: #575e66;
-  --color-neutral-500: #747c86;
-  --color-neutral-600: #969ba2;
-  --color-neutral-700: #b9bcc1;
-  --color-neutral-800: #dcdee0;
-  --color-neutral-900: #eef0f1;
+  --color-neutral-100: #1a1e25;
+  --color-neutral-200: #292d36;
+  --color-neutral-300: #3e444f;
+  --color-neutral-400: #575d6b;
+  --color-neutral-500: #747b8b;
+  --color-neutral-600: #959ba7;
+  --color-neutral-700: #b7bcc5;
+  --color-neutral-800: #dbdee3;
+  --color-neutral-900: #eef0f3;
 
-  --color-accent-100: #152433;
-  --color-accent-200: #203d5b;
-  --color-accent-300: #32699f;
-  --color-accent-400: #3270ae;
-  --color-accent-500: #468ace;
-  --color-accent-600: #6ea3d8;
-  --color-accent-700: #a0c2e3;
-  --color-accent-800: #cfdeed;
-  --color-accent-900: #eef2f6;
+  --color-accent-100: #14233a;
+  --color-accent-200: #1d3b67;
+  --color-accent-300: #2d64b4;
+  --color-accent-400: #2f6bc2;
+  --color-accent-500: #4885df;
+  --color-accent-600: #70a0e5;
+  --color-accent-700: #a2c0eb;
+  --color-accent-800: #cfddf2;
+  --color-accent-900: #edf2f8;
 
-  --color-accent-2-100: #1c2936;
-  --color-accent-2-200: #2a425a;
-  --color-accent-2-300: #395c7f;
-  --color-accent-2-400: #4675a4;
-  --color-accent-2-500: #608fbe;
-  --color-accent-2-600: #84a8cd;
-  --color-accent-2-700: #aec4db;
-  --color-accent-2-800: #d7e0ea;
-  --color-accent-2-900: #eff2f5;
+  --color-accent-2-100: #1c283a;
+  --color-accent-2-200: #2b4061;
+  --color-accent-2-300: #3d5986;
+  --color-accent-2-400: #4e72aa;
+  --color-accent-2-500: #688cc4;
+  --color-accent-2-600: #89a6d2;
+  --color-accent-2-700: #b0c3df;
+  --color-accent-2-800: #d7e0ed;
+  --color-accent-2-900: #eff2f6;
 
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.55);
   --shadow-md: 0 3px 10px rgba(0, 0, 0, 0.6);

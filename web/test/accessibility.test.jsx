@@ -206,33 +206,36 @@ describe('T056 · accessibility', () => {
 describe('T056 · contrast of body copy on its background', () => {
   // Values read from design/tokens.css. WCAG 2.2 AA: 4.5:1 for body text,
   // 3:1 for large text and UI chrome.
-  const BG = '#ffffff';
-  const ACCENT_100 = '#eef6ff';
-  const ACCENT_900 = '#172b3f';
+  const BG = '#f8f9ff';
+  const ACCENT_100 = '#eff6ff';
+  const ACCENT_900 = '#001a42';
 
   it.each([
-    ['body text on ground', '#1d1f20', BG],
-    ['secondary text on ground', '#5d5d60', BG],
-    ['accent text on ground', '#2a5e92', BG],
+    ['body text on ground', '#0b1c30', BG],
+    ['secondary text on ground', '#595d67', BG],
+    ['accent text on ground', '#004395', BG],
     ['decision body on accent tint', ACCENT_900, ACCENT_100],
-    ['accent text on accent tint', '#2a5e92', ACCENT_100],
+    ['accent text on accent tint', '#004395', ACCENT_100],
     ['ground text on dark accent', BG, ACCENT_900],
   ])('%s clears 4.5:1', (_label, fg, bg) => {
     expect(contrastRatio(parseColor(fg), parseColor(bg))).toBeGreaterThanOrEqual(4.5);
   });
 
-  it('confirms the base accent is only safe for chrome, not body copy', () => {
-    // design/UI-GUIDELINES.md says exactly this, which is why body-sized accent
-    // text uses --color-accent-700 everywhere instead.
-    const ratio = contrastRatio(parseColor('#347dc5'), parseColor(BG));
+  it('clears body-copy contrast on the base accent, which the old palette could not', () => {
+    // This assertion used to run the other way: #347dc5 managed only 4.30:1, so
+    // the test pinned the accent *below* 4.5 to document why body-sized accent
+    // text goes through --color-accent-700 instead. Stitch's #0058be is darker
+    // and more saturated, and clears the bar outright. UI-GUIDELINES.md still
+    // routes body accent text through 700 — that is now a convention with
+    // headroom rather than a limit the palette imposes.
+    const ratio = contrastRatio(parseColor('#0058be'), parseColor(BG));
 
-    expect(ratio).toBeLessThan(4.5);
-    expect(ratio).toBeGreaterThanOrEqual(3);
+    expect(ratio).toBeGreaterThanOrEqual(4.5);
   });
 
   it.each([
-    ['neutral tag text', '#424244', '#fbfbfc'],
-    ['accent tag text', '#224567', ACCENT_100],
+    ['neutral tag text', '#3c424f', '#f9fbff'],
+    ['accent tag text', '#022f6c', ACCENT_100],
   ])('%s clears 4.5:1', (_label, fg, bg) => {
     expect(contrastRatio(parseColor(fg), parseColor(bg))).toBeGreaterThanOrEqual(4.5);
   });
@@ -246,15 +249,15 @@ describe('theme switcher · contrast of body copy on its background, dark theme'
   // inversion actually holds contrast for every real pairing in the app.
   const BG = '#121417';
   const TEXT = '#f1f2f3';
-  const ACCENT_100 = '#152433';
-  const ACCENT_900 = '#eef2f6';
+  const ACCENT_100 = '#14233a';
+  const ACCENT_900 = '#edf2f8';
 
   it.each([
     ['body text on ground', TEXT, BG],
-    ['secondary text on ground', '#b9bcc1', BG],
-    ['accent text on ground', '#a0c2e3', BG],
+    ['secondary text on ground', '#b7bcc5', BG],
+    ['accent text on ground', '#a2c0eb', BG],
     ['decision body on accent tint', ACCENT_900, ACCENT_100],
-    ['accent text on accent tint', '#a0c2e3', ACCENT_100],
+    ['accent text on accent tint', '#a2c0eb', ACCENT_100],
     ['ground text on dark accent', BG, ACCENT_900],
   ])('%s clears 4.5:1', (_label, fg, bg) => {
     expect(contrastRatio(parseColor(fg), parseColor(bg))).toBeGreaterThanOrEqual(4.5);
@@ -267,14 +270,14 @@ describe('theme switcher · contrast of body copy on its background, dark theme'
     // What matters in both themes is that the constraint is followed (this
     // codebase never uses bare --color-accent for body text), not that the
     // number lands in a specific window.
-    const ratio = contrastRatio(parseColor('#6ea3d8'), parseColor(BG));
+    const ratio = contrastRatio(parseColor('#70a0e5'), parseColor(BG));
 
     expect(ratio).toBeGreaterThanOrEqual(3);
   });
 
   it.each([
-    ['neutral tag text', '#dcdee0', '#1b1e22'],
-    ['accent tag text', '#cfdeed', ACCENT_100],
+    ['neutral tag text', '#dbdee3', '#1a1e25'],
+    ['accent tag text', '#cfddf2', ACCENT_100],
   ])('%s clears 4.5:1', (_label, fg, bg) => {
     expect(contrastRatio(parseColor(fg), parseColor(bg))).toBeGreaterThanOrEqual(4.5);
   });
@@ -283,10 +286,10 @@ describe('theme switcher · contrast of body copy on its background, dark theme'
     // The theme-matrix heatmap (Sparkline.jsx `intensityStyle`) reuses
     // --color-bg/--color-text as cell ink at the ramp's extremes — this is
     // what confirms that self-heals under inversion rather than going blind.
-    ['bg-coloured ink on a saturated cell (step 800)', BG, '#cfdeed'],
-    ['bg-coloured ink on a saturated cell (step 500)', BG, '#468ace'],
-    ['text-coloured ink on a faint cell (step 200)', TEXT, '#203d5b'],
-    ['text-coloured ink on a faint cell (step 400)', TEXT, '#3270ae'],
+    ['bg-coloured ink on a saturated cell (step 800)', BG, '#cfddf2'],
+    ['bg-coloured ink on a saturated cell (step 500)', BG, '#4885df'],
+    ['text-coloured ink on a faint cell (step 200)', TEXT, '#1d3b67'],
+    ['text-coloured ink on a faint cell (step 400)', TEXT, '#2f6bc2'],
   ])('%s clears 4.5:1', (_label, fg, bg) => {
     expect(contrastRatio(parseColor(fg), parseColor(bg))).toBeGreaterThanOrEqual(4.5);
   });
