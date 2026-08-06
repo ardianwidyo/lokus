@@ -36,29 +36,35 @@ sudut.
 ## Token yang paling sering dipakai
 
 ```css
---color-bg: #ffffff;         /* ground */
---color-surface: #f5f5f5;    /* input */
---color-text: #1d1f20;
---color-accent: #347dc5;
---color-divider: color-mix(in srgb, #1d1f20 16%, transparent);
+--color-bg: #f8f9ff;         /* ground */
+--color-surface: #eff4ff;    /* input */
+--color-text: #0b1c30;
+--color-accent: #0058be;
+--color-divider: color-mix(in srgb, #0b1c30 22%, transparent);
 
---color-accent-100: #eef6ff;  /* panel keputusan, highlight baris terpilih */
---color-accent-300: #b5d9fd;  /* border panel keputusan */
---color-accent-400: #8dbdec;  /* nomor besar, border-left blok draft */
---color-accent-600: #347dc5;  /* hover tombol primer */
---color-accent-700: #2a5e92;  /* teks aksen ukuran badan (kontras aman) */
---color-accent-900: #172b3f;  /* text-on-tint (panel keputusan, item rail aktif) */
+--color-accent-100: #eff6ff;  /* panel keputusan, highlight baris terpilih */
+--color-accent-300: #bbd7ff;  /* border panel keputusan */
+--color-accent-400: #8ebafb;  /* nomor besar, border-left blok draft */
+--color-accent-600: #0058be;  /* hover tombol primer */
+--color-accent-700: #004395;  /* teks aksen ukuran badan (kontras aman) */
+--color-accent-900: #001a42;  /* text-on-tint (panel keputusan, item rail aktif) */
 
---color-neutral-200: #eff0f1; /* skeleton, track bar */
---color-neutral-600: #7a7a7d; /* label kicker */
---color-neutral-700: #5d5d60; /* teks sekunder */
+--color-neutral-200: #eaf0fd; /* skeleton, track bar */
+--color-neutral-600: #767b84; /* label kicker */
+--color-neutral-700: #595d67; /* teks sekunder */
 
 --font-heading: "Barlow Condensed";  --font-body: "Barlow";
 --space-1..8: 3.4 6.8 10.2 13.6 20.4 27.2 px
 ```
 
-Teks berukuran badan dalam warna aksen wajib memakai `--color-accent-700`
-(aksen dasar hanya 3:1 — cukup untuk ikon, chrome, dan teks besar).
+Nilai warna di atas diambil dari ekspor Stitch
+(`design/reference/lokusstitch.html`); tipografi, spacing, dan radius **belum**
+ikut — lihat "Yang belum ikut" di bawah.
+
+Teks berukuran badan dalam warna aksen tetap memakai `--color-accent-700`.
+Aksen dasar sendiri sekarang sudah 6.37:1 di atas ground (palet lama hanya
+4.30:1), jadi aturan ini kini soal konsistensi, bukan lagi batas yang dipaksa
+palet.
 
 Semua token di atas ikut berbalik nilai antara tema terang dan gelap — lihat
 "Tema terang / gelap" di bawah. Tiga token TIDAK ikut berbalik, karena
@@ -66,11 +72,28 @@ perannya bukan pasangan latar/teks yang mengikuti tema, melainkan satu
 permukaan aksen yang sengaja tetap sama di kedua tema:
 
 ```css
---color-accent-surface: #172b3f;          /* field peta, gelembung chat pengguna */
---color-on-accent-surface: #ffffff;       /* label di atas field peta */
---color-on-accent-surface-muted: #8dbdec; /* marker & radius di atas field peta */
---color-scrim: rgba(43, 43, 45, .5);      /* latar belakang dialog */
+--color-accent-surface: #213145;          /* field peta, gelembung chat pengguna */
+--color-on-accent-surface: #eaf1ff;       /* label di atas field peta */
+--color-on-accent-surface-muted: #8ebafb; /* marker & radius di atas field peta */
+--color-scrim: rgba(34, 43, 62, .5);      /* latar belakang dialog */
 ```
+
+Ketiganya diambil dari pasangan `inverse-surface` / `inverse-on-surface` milik
+Stitch, yang memang perannya sama persis.
+
+## Yang belum ikut dari Stitch
+
+Penyegaran ini **hanya warna**. Yang sengaja dibiarkan:
+
+| Aspek | Stitch | LOKUS sekarang |
+|---|---|---|
+| Tipografi | Inter | Barlow / Barlow Condensed |
+| Radius | 2–12 px | 0 pada komponen (rangka blueprint) |
+| Warna status | hijau/amber/merah eksplisit | belum ada token status |
+| Tema gelap | tidak dikirim sama sekali | turunan sendiri |
+
+Stitch juga memakai gradien dan `backdrop-filter` pada beberapa kartu; keduanya
+masih dilarang di daftar "Jangan" di atas dan tidak diadopsi.
 
 ## Kelas komponen yang tersedia
 
