@@ -370,6 +370,7 @@ export const id = {
     bucketNeedsAction: 'Perlu tindakan',
     bucketDraftReady: 'Draft siap',
     bucketSent: 'Terkirim',
+    bucketAdded: 'Ditambahkan (demo)',
     filterLabel: 'Saring review',
     listLabel: 'Daftar review',
 
@@ -380,6 +381,9 @@ export const id = {
     emptyTitle: 'Tidak ada review baru',
     emptyDescription:
       'Semua review pekan ini sudah dibalas. Agen akan memeriksa lagi malam ini pukul 23.00.',
+    addedEmptyTitle: 'Belum ada review yang Anda tambahkan',
+    addedEmptyDescription:
+      'Segmen ini hanya berisi review yang ditulis lewat komposer di sesi ini. Gunakan [+ Tambah review (demo)] di bawah daftar untuk memberi agen sesuatu yang belum pernah dilihatnya.',
     errorTitle: 'Kotak masuk tak bisa dimuat',
     errorFallback: 'Layanan review tidak menjawab.',
     hint: '↑ ↓ pindah · ⏎ setujui & lanjut · E ubah',
@@ -629,6 +633,26 @@ export const id = {
     colUpdated: 'Diperbarui',
     docsNote:
       'Hanya dokumen bertanda {indexed} yang bisa dikutip agen. Draft yang menunggu tinjauan dan dokumen yang dikecualikan tidak pernah muncul di jawaban.',
+    demoTag: 'demo',
+
+    docContentKicker: 'Isi dokumen · {title}',
+    docContentKickerPlain: 'Isi dokumen',
+    docContentChunks: '{count} potongan terindeks',
+    docContentMeta: '{type} · {pages} halaman · diperbarui {updated}',
+    docContentLoading: 'Mengambil potongan dokumen…',
+    docContentEmptyTitle: 'Belum ada dokumen dibuka',
+    docContentEmptyDescription:
+      'Tekan nama dokumen di tabel untuk melihat potongan yang benar-benar terindeks darinya — bukan berkas yang diunggah, tapi apa yang dibaca agen.',
+    docContentErrorTitle: 'Isi dokumen tak bisa dimuat',
+    docContentErrorFallback: 'Layanan pengetahuan tidak menjawab.',
+    docContentNoChunks:
+      'Dokumen ini terdaftar tapi belum menghasilkan satu potongan pun, jadi tidak ada yang bisa dikutip darinya.',
+    docContentNotRetrievable:
+      'Potongan di bawah tersimpan tapi tidak diindeks untuk pencarian. Agen tidak akan pernah mengutipnya sampai status indeksnya berubah.',
+    chunkMeta: 'hal. {page} · {tokens} token',
+    docRestrictedTitle: 'Isi dokumen ini dibatasi',
+    docRestrictedDescription:
+      '"{title}" ditandai hanya untuk peran Admin, jadi isinya tidak ditampilkan di sini. Barisnya tetap terdaftar supaya Anda tahu dokumen itu ada dan bisa memintanya ke admin.',
 
     gapsKicker: 'Celah pengetahuan',
     gapsLoading: 'Mengelompokkan pertanyaan tak terjawab…',

@@ -176,6 +176,87 @@ describe('the knowledge base index', () => {
   });
 });
 
+describe('reading a document back (T069)', () => {
+  it('returns the chunks that were actually indexed, with page and tokens', async () => {
+    const store = createSeededKnowledgeStore();
+    const { data } = await store.ingest({ tenantId: TENANT, title: 'SOP Antrean', text: longText(60) });
+
+    const detail = store.documentDetail(TENANT, data.documentId);
+
+    expect(detail.chunkCount).toBe(data.chunks);
+    expect(detail.chunks).toHaveLength(data.chunks);
+    for (const chunk of detail.chunks) {
+      expect(chunk.text.length).toBeGreaterThan(0);
+      expect(chunk.tokens).toBeGreaterThan(0);
+      expect(chunk.page).toBeGreaterThan(0);
+    }
+  });
+
+  it('reads back a seeded document too, not only an ingested one', () => {
+    const detail = createSeededKnowledgeStore().documentDetail(TENANT, 'sop-layanan-v4');
+
+    expect(detail.title).toBe('SOP Layanan Pelanggan v4');
+    expect(detail.retrievable).toBe(true);
+    expect(detail.chunks.length).toBeGreaterThan(0);
+  });
+
+  it('marks a document added this session, so the table can say so', async () => {
+    const store = createSeededKnowledgeStore();
+    await store.ingest({ tenantId: TENANT, title: 'SOP Baru', text: longText(20) });
+
+    const added = store.documentsFor(TENANT).find((doc) => doc.docId === 'sop-baru');
+    const seeded = store.documentsFor(TENANT).find((doc) => doc.docId === 'sop-layanan-v4');
+
+    expect(added.addedInSession).toBe(true);
+    expect(seeded.addedInSession).toBeUndefined();
+  });
+
+  it('holds the chunks of a restricted document, which are stored but never retrievable', async () => {
+    const store = createSeededKnowledgeStore();
+    await store.ingest({ tenantId: TENANT, title: 'Kontrak Waralaba', text: longText(20), restricted: true });
+
+    const detail = store.documentDetail(TENANT, 'kontrak-waralaba');
+
+    expect(detail.retrievable).toBe(false);
+    expect(detail.chunks.length).toBeGreaterThan(0);
+    expect(store.retrievablePassages(TENANT).some((c) => c.docId === 'kontrak-waralaba')).toBe(false);
+  });
+
+  it('gives one refusal for another tenant\'s document and for no document at all', async () => {
+    const store = createSeededKnowledgeStore();
+    await store.ingest({ tenantId: 'dealer-arta-motor', title: 'SOP Dealer', text: longText(20) });
+
+    expect(store.documentDetail(TENANT, 'sop-dealer')).toBeNull();
+    expect(store.documentDetail(TENANT, 'tidak-ada')).toBeNull();
+  });
+
+  it('never hands one tenant the chunks of a same-named document belonging to another', async () => {
+    const store = createSeededKnowledgeStore();
+    // Both tenants ingest a document that slugs to the same id. Selecting
+    // chunks by document id alone would mix the two texts together.
+    await store.ingest({ tenantId: TENANT, title: 'SOP Kasir', text: 'Aturan kasir Nusa Retail. '.repeat(40) });
+    await store.ingest({
+      tenantId: 'dealer-arta-motor',
+      title: 'SOP Kasir',
+      text: 'Aturan kasir Arta Motor. '.repeat(40),
+    });
+
+    const mine = store.documentDetail(TENANT, 'sop-kasir');
+
+    expect(mine.chunks.every((chunk) => chunk.text.includes('Nusa Retail'))).toBe(true);
+    expect(mine.chunkCount).toBe(mine.chunks.length);
+    expect(store.documentsFor(TENANT).find((doc) => doc.docId === 'sop-kasir').chunkCount).toBe(
+      mine.chunks.length,
+    );
+  });
+
+  it('refuses without a tenant id', () => {
+    expect(() => createSeededKnowledgeStore().documentDetail(undefined, 'sop-layanan-v4')).toThrow(
+      TenantScopeError,
+    );
+  });
+});
+
 describe('the real knowledge store', () => {
   it('refuses without a bucket and an index rather than pretending to index', () => {
     expect(() => createVertexKnowledgeStore({})).toThrow(IngestError);

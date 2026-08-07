@@ -8,16 +8,9 @@ import { useAsyncData } from '../app/useAsyncData.js';
 import { Blueprint } from '../components/Blueprint.jsx';
 import { DataPanel, PANEL_STATUS } from '../components/states/index.js';
 import { Rich, useLocale } from '../i18n/index.js';
+import { DocumentInspector } from './knowledge/DocumentInspector.jsx';
 import { DocumentUpload } from './knowledge/DocumentUpload.jsx';
-
-/** The index states the store returns, mapped to their dictionary keys. */
-const INDEX_LABEL_KEYS = {
-  indexed: 'kb.indexIndexed',
-  diproses: 'kb.indexProcessing',
-  'menunggu-tinjauan': 'kb.indexAwaitingReview',
-  dikecualikan: 'kb.indexExcluded',
-  antre: 'kb.indexQueued',
-};
+import { IndexStateTag } from './knowledge/IndexStateTag.jsx';
 
 /**
  * Screen 11 · Pusat pengetahuan.
@@ -30,6 +23,10 @@ export function KnowledgeScreen({ onNavigate }) {
   const { knowledgeSource, role, tenant } = useSession();
   const { locale, t, fmt, errorText } = useLocale();
   const [receipt, setReceipt] = useState(null);
+  // The row a reader opened, and the title as the table already knows it — the
+  // content panel needs a name for its refusal before it has a document to
+  // read one off (AC-10.9).
+  const [openedDoc, setOpenedDoc] = useState(null);
 
   const load = useCallback(
     () => knowledgeSource.overview(tenant?.tenantId ?? 'nusa-retail'),
@@ -98,62 +95,78 @@ export function KnowledgeScreen({ onNavigate }) {
       </div>
 
       <div className="kb-grid">
-        <DataPanel
-          status={status}
-          kicker={t('kb.docsKicker')}
-          loading={{ message: t('kb.docsLoading') }}
-          empty={{ title: t('kb.docsEmptyTitle'), description: t('kb.docsEmptyDescription') }}
-          error={{
-            title: t('kb.docsErrorTitle'),
-            description: errorText(error, 'kb.docsErrorFallback'),
-            onRetry: reload,
-          }}
-        >
-          {data ? (
-            <div className="table-scroll">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th scope="col">{t('kb.colDocument')}</th>
-                    <th scope="col">{t('kb.colType')}</th>
-                    <th scope="col">{t('kb.colPages')}</th>
-                    <th scope="col">{t('kb.colChunks')}</th>
-                    <th scope="col">{t('kb.colIndexState')}</th>
-                    <th scope="col">{t('kb.colUpdated')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.documents.map((doc) => (
-                    <tr key={doc.docId}>
-                      {/* The title is the tenant's own document name. */}
-                      <th scope="row">{doc.title}</th>
-                      <td>{doc.type}</td>
-                      <td>{doc.pages ?? '—'}</td>
-                      <td>{doc.chunkCount}</td>
-                      <td>
-                        {/* Retrievable or not is the fact that matters; the
-                            label alone would let "menunggu tinjauan" read as
-                            searchable. */}
-                        <span className={`tag ${doc.retrievable ? 'tag-accent' : 'tag-outline'}`}>
-                          {INDEX_LABEL_KEYS[doc.indexState]
-                            ? t(INDEX_LABEL_KEYS[doc.indexState])
-                            : doc.indexState}
-                        </span>
-                      </td>
-                      <td>{doc.updatedAt}</td>
+        <div className="kb-main">
+          <DataPanel
+            status={status}
+            kicker={t('kb.docsKicker')}
+            loading={{ message: t('kb.docsLoading') }}
+            empty={{ title: t('kb.docsEmptyTitle'), description: t('kb.docsEmptyDescription') }}
+            error={{
+              title: t('kb.docsErrorTitle'),
+              description: errorText(error, 'kb.docsErrorFallback'),
+              onRetry: reload,
+            }}
+          >
+            {data ? (
+              <div className="table-scroll">
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th scope="col">{t('kb.colDocument')}</th>
+                      <th scope="col">{t('kb.colType')}</th>
+                      <th scope="col">{t('kb.colPages')}</th>
+                      <th scope="col">{t('kb.colChunks')}</th>
+                      <th scope="col">{t('kb.colIndexState')}</th>
+                      <th scope="col">{t('kb.colUpdated')}</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : null}
-          <p className="state-note">
-            <Rich
-              k="kb.docsNote"
-              values={{ indexed: <strong>{t('kb.indexIndexed')}</strong> }}
-            />
-          </p>
-        </DataPanel>
+                  </thead>
+                  <tbody>
+                    {data.documents.map((doc) => (
+                      <tr key={doc.docId}>
+                        {/* The title is the tenant's own document name, and it
+                            is the control that opens the document: a row that
+                            reports a chunk count should be the way to read the
+                            chunks (AC-10.8). A real button, so the keyboard and
+                            a screen reader get the same affordance the mouse
+                            does. */}
+                        <th scope="row">
+                          <button
+                            type="button"
+                            className="doc-open"
+                            aria-pressed={openedDoc?.docId === doc.docId}
+                            onClick={() => setOpenedDoc({ docId: doc.docId, title: doc.title })}
+                          >
+                            {doc.title}
+                          </button>
+                          {/* The same mark an added review carries. A document
+                              typed into the demo must never sit here looking
+                              like the tenant's own SOP (AC-10.6). */}
+                          {doc.addedInSession ? (
+                            <span className="tag tag-outline">{t('kb.demoTag')}</span>
+                          ) : null}
+                        </th>
+                        <td>{doc.type}</td>
+                        <td>{doc.pages ?? '—'}</td>
+                        <td>{doc.chunkCount}</td>
+                        <td>
+                          <IndexStateTag state={doc.indexState} retrievable={doc.retrievable} />
+                        </td>
+                        <td>{doc.updatedAt}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : null}
+            <p className="state-note">
+              <Rich k="kb.docsNote" values={{ indexed: <strong>{t('kb.indexIndexed')}</strong> }} />
+            </p>
+          </DataPanel>
+
+          {/* Below the table rather than beside it: the chunks are prose, and
+              prose in a 330px column would be a stack of two-word lines. */}
+          <DocumentInspector docId={openedDoc?.docId ?? null} title={openedDoc?.title ?? null} />
+        </div>
 
         <div className="kb-side">
           <DataPanel

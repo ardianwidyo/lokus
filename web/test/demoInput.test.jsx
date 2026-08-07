@@ -230,6 +230,107 @@ describe('One workspace, so a new document reaches the agents (T066, AC-10.2)', 
   });
 });
 
+describe('Screen 11 · reading a document back (T069)', () => {
+  beforeEach(() => {
+    window.sessionStorage.clear();
+  });
+
+  const openDocument = async (user, title) =>
+    user.click(await screen.findByRole('button', { name: title }, { timeout: 6000 }));
+
+  it('says nothing is open before a document is chosen', async () => {
+    await renderKb();
+
+    const empty = screen.getByText('Belum ada dokumen dibuka');
+    expect(empty.closest('.panel')).toHaveAttribute('data-status', 'empty');
+  });
+
+  it('opens a seeded document onto the chunks indexed from it (AC-10.8)', { timeout: 20000 }, async () => {
+    const user = userEvent.setup();
+    await renderKb();
+
+    await openDocument(user, 'SOP Layanan Pelanggan v4');
+
+    // The passage as stored, not a summary of it — this panel exists so a
+    // reader can check what retrieval actually has to work with.
+    expect(
+      await screen.findByText(/Antrean lebih dari 10 menit wajib ditangani/, {}, { timeout: 6000 }),
+    ).toBeInTheDocument();
+    // Page and token count come off the chunk, so the panel cannot claim a
+    // position the chunker never recorded.
+    expect(screen.getAllByText(/hal\. \d+ · \d+ token/).length).toBeGreaterThan(0);
+  });
+
+  it('opens a document added this session onto the text that was pasted', { timeout: 25000 }, async () => {
+    const user = userEvent.setup();
+    await renderKb();
+
+    await fillDocument(user, { title: 'SOP Poin Loyalitas v1', text: LOYALTY_SOP });
+    await user.click(screen.getByRole('button', { name: 'Indeks dokumen' }));
+    await screen.findByText(/Agen bisa mengutipnya sekarang/, {}, { timeout: 8000 });
+
+    await openDocument(user, 'SOP Poin Loyalitas v1');
+
+    expect(
+      await screen.findByText(/Poin loyalitas kartu member berlaku 12 bulan/, {}, { timeout: 6000 }),
+    ).toBeInTheDocument();
+  });
+
+  it('marks a document added this session as demo data in the table (AC-10.6)', { timeout: 25000 }, async () => {
+    const user = userEvent.setup();
+    await renderKb();
+
+    await fillDocument(user, { title: 'SOP Poin Loyalitas v1', text: LOYALTY_SOP });
+    await user.click(screen.getByRole('button', { name: 'Indeks dokumen' }));
+
+    const added = await screen.findByRole('row', { name: /SOP Poin Loyalitas v1/ }, { timeout: 8000 });
+    expect(within(added).getByText('demo')).toBeInTheDocument();
+    // The tenant's own SOP must not pick the mark up by association.
+    const seeded = screen.getByRole('row', { name: /SOP Layanan Pelanggan v4/ });
+    expect(within(seeded).queryByText('demo')).toBeNull();
+  });
+
+  it('holds a restricted document back from a manager, naming it (AC-10.9)', { timeout: 25000 }, async () => {
+    const user = userEvent.setup();
+    await renderKb();
+
+    await fillDocument(user, { title: 'Kontrak Vendor Rahasia', text: LOYALTY_SOP });
+    await user.click(screen.getByLabelText(/Batasi akses ke peran Admin/));
+    await user.click(screen.getByRole('button', { name: 'Indeks dokumen' }));
+    await screen.findByText(/Agen tidak akan mengutipnya sampai ditinjau/, {}, { timeout: 8000 });
+
+    await openDocument(user, 'Kontrak Vendor Rahasia');
+
+    const refusal = await screen.findByText(
+      /"Kontrak Vendor Rahasia" ditandai hanya untuk peran Admin/,
+      {},
+      { timeout: 6000 },
+    );
+    // Needs-permission, not error: nothing is broken, someone decided this.
+    expect(refusal.closest('.panel')).toHaveAttribute('data-status', 'needs-permission');
+    expect(screen.queryByText(/Poin loyalitas kartu member berlaku/)).toBeNull();
+  });
+
+  it('shows a restricted document to an admin, still marked unretrievable (AC-10.9)', { timeout: 25000 }, async () => {
+    const user = userEvent.setup();
+    await renderKb({ role: 'admin' });
+
+    await fillDocument(user, { title: 'Kontrak Vendor Rahasia', text: LOYALTY_SOP });
+    await user.click(screen.getByLabelText(/Batasi akses ke peran Admin/));
+    await user.click(screen.getByRole('button', { name: 'Indeks dokumen' }));
+    await screen.findByText(/Agen tidak akan mengutipnya sampai ditinjau/, {}, { timeout: 8000 });
+
+    await openDocument(user, 'Kontrak Vendor Rahasia');
+
+    expect(
+      await screen.findByText(/Poin loyalitas kartu member berlaku 12 bulan/, {}, { timeout: 6000 }),
+    ).toBeInTheDocument();
+    // Readable by an admin and still outside retrieval — two different things,
+    // and the panel says so rather than letting the reader assume.
+    expect(screen.getByText(/tersimpan tapi tidak diindeks untuk pencarian/)).toBeInTheDocument();
+  });
+});
+
 describe('Screen 05 · the review composer (T068)', () => {
   beforeEach(() => {
     window.sessionStorage.clear();
@@ -304,5 +405,47 @@ describe('Screen 05 · the review composer (T068)', () => {
 
     const alert = await screen.findByRole('alert', {}, { timeout: 8000 });
     expect(alert).toHaveTextContent(/belum punya listing di Google Maps/);
+  });
+
+  it('offers the added filter at zero, and says what it is for (AC-10.10)', { timeout: 20000 }, async () => {
+    await renderInbox();
+
+    // Present before anything has been added: zero is the true answer to "what
+    // have I put in", and a segment that appears only afterwards hides it.
+    const filter = screen.getByRole('radio', { name: /Ditambahkan \(demo\) · 0/ });
+    await userEvent.setup().click(filter);
+
+    expect(await screen.findByText('Belum ada review yang Anda tambahkan')).toBeInTheDocument();
+    expect(screen.getByText(/hanya berisi review yang ditulis lewat komposer/)).toBeInTheDocument();
+  });
+
+  it('lists exactly the reviews added this session (AC-10.10)', { timeout: 25000 }, async () => {
+    const user = userEvent.setup();
+    await renderInbox();
+
+    await compose(user, {
+      outlet: 'BKS-02',
+      rating: 2,
+      text: 'Antre 20 menit di kasir, cuma satu yang buka padahal ramai sekali.',
+    });
+    await screen.findByText(/Draft balasannya sudah dibuat/, {}, { timeout: 8000 });
+
+    await user.click(await screen.findByRole('radio', { name: /Ditambahkan \(demo\) · 1/ }));
+
+    const list = await screen.findByRole('listbox', {}, { timeout: 8000 });
+    const rows = within(list).getAllByRole('option');
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toHaveTextContent(/Antre 20 menit di kasir/);
+    // Origin, not workflow stage: the same review is still in the stage it
+    // reached rather than having been moved out of it.
+    await user.click(screen.getByRole('radio', { name: /Perlu tindakan/ }));
+    const stage = await screen.findByRole('listbox', {}, { timeout: 8000 });
+    await waitFor(() =>
+      expect(
+        within(stage)
+          .getAllByRole('option')
+          .some((row) => row.textContent.includes('Antre 20 menit di kasir')),
+      ).toBe(true),
+    );
   });
 });

@@ -19,6 +19,12 @@ const BUCKETS = [
   { id: 'perlu-tindakan', labelKey: 'review.bucketNeedsAction' },
   { id: 'draft-siap', labelKey: 'review.bucketDraftReady' },
   { id: 'terkirim', labelKey: 'review.bucketSent' },
+  // The first three are workflow stages; this one is an origin, so a review
+  // shows up here as well as in the stage it reached. It stays visible at zero:
+  // zero is the true answer to "what have I put in", and a segment that only
+  // appears after the first added review hides that question until too late
+  // (AC-10.10).
+  { id: 'ditambahkan', labelKey: 'review.bucketAdded' },
 ];
 
 /**
@@ -131,9 +137,15 @@ export function ReviewInboxScreen({ onNavigate }) {
               </span>
             }
             loading={{ message: t('review.loading') }}
+            // An empty "ditambahkan" means nothing has been handed to the
+            // console yet, which is a different fact from an inbox that has
+            // been cleared — and the copy for the second one would read as a
+            // congratulation nobody earned.
             empty={{
-              title: t('review.emptyTitle'),
-              description: t('review.emptyDescription'),
+              title: t(bucket === 'ditambahkan' ? 'review.addedEmptyTitle' : 'review.emptyTitle'),
+              description: t(
+                bucket === 'ditambahkan' ? 'review.addedEmptyDescription' : 'review.emptyDescription',
+              ),
               onAction: reload,
             }}
             error={{

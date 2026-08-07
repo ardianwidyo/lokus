@@ -370,6 +370,7 @@ export const en = {
     bucketNeedsAction: 'Needs action',
     bucketDraftReady: 'Draft ready',
     bucketSent: 'Sent',
+    bucketAdded: 'Added (demo)',
     filterLabel: 'Filter reviews',
     listLabel: 'Review list',
 
@@ -380,6 +381,9 @@ export const en = {
     emptyTitle: 'No new reviews',
     emptyDescription:
       'Every review this week has been answered. The agent checks again tonight at 23.00.',
+    addedEmptyTitle: 'You have not added a review yet',
+    addedEmptyDescription:
+      'This segment holds only the reviews written through the composer this session. Use [+ Add a review (demo)] below the list to hand the agents something they have never seen.',
     errorTitle: 'The inbox could not be loaded',
     errorFallback: 'The review service is not responding.',
     hint: '↑ ↓ move · ⏎ approve & next · E edit',
@@ -629,6 +633,26 @@ export const en = {
     colUpdated: 'Updated',
     docsNote:
       'Only documents marked {indexed} can be cited by an agent. Drafts awaiting review and excluded documents never appear in an answer.',
+    demoTag: 'demo',
+
+    docContentKicker: 'Document contents · {title}',
+    docContentKickerPlain: 'Document contents',
+    docContentChunks: '{count} indexed chunks',
+    docContentMeta: '{type} · {pages} pages · updated {updated}',
+    docContentLoading: 'Fetching the document chunks…',
+    docContentEmptyTitle: 'No document opened yet',
+    docContentEmptyDescription:
+      'Press a document name in the table to see the chunks actually indexed from it — not the file that was handed over, but what the agents read.',
+    docContentErrorTitle: 'The document contents could not be loaded',
+    docContentErrorFallback: 'The knowledge service is not responding.',
+    docContentNoChunks:
+      'This document is listed but produced no chunks, so there is nothing in it to quote.',
+    docContentNotRetrievable:
+      'The chunks below are stored but not indexed for search. No agent will quote them until the index state changes.',
+    chunkMeta: 'p. {page} · {tokens} tokens',
+    docRestrictedTitle: 'This document’s contents are restricted',
+    docRestrictedDescription:
+      '“{title}” is marked for the Admin role only, so its contents are not shown here. The row stays listed so you know the document exists and can ask an admin for it.',
 
     gapsKicker: 'Knowledge gaps',
     gapsLoading: 'Clustering the unanswered questions…',

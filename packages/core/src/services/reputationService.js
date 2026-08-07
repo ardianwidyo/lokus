@@ -68,6 +68,12 @@ export function createReputationService({ gbp, approvalStore = null, gemini = nu
       'perlu-tindakan': summary.needsActionReviews,
       'draft-siap': reviews.filter((r) => r.rating >= 3 && r.replyState === 'draft' && repliable(r)),
       terkirim: reviews.filter((r) => r.replyState === 'sent'),
+      // Not a workflow stage like the other three but an origin, so a review
+      // legitimately appears here *and* in whichever stage it reached. This is
+      // the answer to "what have I handed the system", which the stages cannot
+      // give (AC-10.10). Over HTTP it is always empty: nothing can be added
+      // through the API, and saying zero is truthful rather than misleading.
+      ditambahkan: reviews.filter((r) => r.addedInSession),
     };
 
     return {
@@ -75,6 +81,7 @@ export function createReputationService({ gbp, approvalStore = null, gemini = nu
         'perlu-tindakan': summary.needsAction,
         'draft-siap': buckets['draft-siap'].length,
         terkirim: summary.sent,
+        ditambahkan: buckets.ditambahkan.length,
       },
       // Named apart from the counts: it is not a fourth bucket, it is how much
       // of the first one is waiting on a connection rather than on a reply.

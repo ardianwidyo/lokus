@@ -83,19 +83,55 @@ export function estimateTokens(text) {
  */
 export function createSeededKnowledgeStore({ documents = DOCUMENTS, passages = PASSAGES } = {}) {
   const docs = documents.map((doc) => ({ ...doc }));
+  // A chunk inherits its document's tenant. The seed passages carry only a
+  // docId, and nothing stops two tenants from ingesting documents that slug to
+  // the same id — so selecting chunks by docId alone would hand one tenant the
+  // other's text. Harmless while chunks were only ever counted; not harmless
+  // now that a panel prints them (AC-10.8, constitution IV).
   const chunks = passages.map((passage, index) => ({
     ...passage,
+    tenantId: passage.tenantId ?? docs.find((doc) => doc.docId === passage.docId)?.tenantId ?? null,
     chunkId: `chunk-${passage.docId}-${index + 1}`,
     tokens: estimateTokens(passage.text),
   }));
+
+  const chunksFor = (tenantId, docId) =>
+    chunks.filter((chunk) => chunk.tenantId === tenantId && chunk.docId === docId);
 
   function documentsFor(tenantId) {
     assertTenant(tenantId);
     return scopeToTenant(tenantId, docs).map((doc) => ({
       ...doc,
-      chunkCount: chunks.filter((chunk) => chunk.docId === doc.docId).length,
+      chunkCount: chunksFor(tenantId, doc.docId).length,
       retrievable: RETRIEVABLE_STATES.includes(doc.indexState),
     }));
+  }
+
+  /**
+   * One document with the chunks that were actually indexed from it (AC-10.8).
+   *
+   * The chunks are returned as stored rather than reassembled into the original
+   * text: a clause the chunker split across two chunks is retrieved as two
+   * pieces, and a reader deciding whether the corpus can answer a question needs
+   * to see that, not a tidied-up version of it.
+   *
+   * `null` for a document that does not exist and for one belonging to another
+   * tenant alike — the same single refusal `gbp.reply` gives, so this cannot be
+   * used to find out which document ids another tenant holds (AC-6.1).
+   */
+  function documentDetail(tenantId, docId) {
+    assertTenant(tenantId);
+    const doc = scopeToTenant(tenantId, docs).find((entry) => entry.docId === docId);
+    if (!doc) return null;
+
+    const own = chunksFor(tenantId, docId);
+
+    return {
+      ...doc,
+      chunkCount: own.length,
+      retrievable: RETRIEVABLE_STATES.includes(doc.indexState),
+      chunks: own.map((chunk) => ({ ...chunk })),
+    };
   }
 
   /** Only indexed documents contribute. A draft awaiting review is invisible. */
@@ -108,7 +144,7 @@ export function createSeededKnowledgeStore({ documents = DOCUMENTS, passages = P
     );
 
     return chunks
-      .filter((chunk) => indexed.has(chunk.docId))
+      .filter((chunk) => chunk.tenantId === tenantId && indexed.has(chunk.docId))
       .map((chunk) => ({
         ...chunk,
         tenantId,
@@ -144,6 +180,9 @@ export function createSeededKnowledgeStore({ documents = DOCUMENTS, passages = P
       indexState: restricted ? INDEX_STATE.REVIEW : INDEX_STATE.INDEXED,
       updatedAt: new Date().toISOString().slice(0, 10),
       restricted,
+      // The same mark an added review carries (AC-10.6). A document typed into
+      // the demo must never sit in the table looking like a tenant's own SOP.
+      addedInSession: true,
     };
     docs.push(document);
 
@@ -151,6 +190,7 @@ export function createSeededKnowledgeStore({ documents = DOCUMENTS, passages = P
       chunks.push({
         chunkId: `chunk-${id}-${index + 1}`,
         docId: id,
+        tenantId,
         // Two chunks to a page, matching how the seed corpus is laid out.
         page: Math.floor(index / 2) + 1,
         text: piece,
@@ -192,7 +232,7 @@ export function createSeededKnowledgeStore({ documents = DOCUMENTS, passages = P
     };
   }
 
-  return { isSeeded: true, ingest, documentsFor, retrievablePassages, stats };
+  return { isSeeded: true, ingest, documentsFor, documentDetail, retrievablePassages, stats };
 }
 
 /**

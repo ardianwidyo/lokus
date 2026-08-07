@@ -308,6 +308,73 @@ describe('domain routes over HTTP (T058)', () => {
     });
   });
 
+  describe('knowledge documents (T069)', () => {
+    const ingestRestricted = (jwt) =>
+      call('POST', '/v1/knowledge/documents', jwt, {
+        payload: {
+          title: 'Perjanjian Waralaba 2026',
+          text: 'Pasal satu mengatur bagi hasil waralaba. '.repeat(30),
+          restricted: true,
+        },
+      });
+
+    it('serves one document with the chunks indexed from it (AC-10.8)', async () => {
+      const response = await call('GET', '/v1/knowledge/documents/sop-layanan-v4', await asViewer());
+      const body = response.json();
+
+      expect(response.statusCode).toBe(200);
+      expect(body.title).toBe('SOP Layanan Pelanggan v4');
+      expect(body.chunks.length).toBe(body.chunkCount);
+      expect(body.chunks[0]).toMatchObject({ page: expect.any(Number), text: expect.any(String) });
+    });
+
+    it('refuses a restricted document by the role on the token (AC-10.9)', async () => {
+      const manager = await asManager();
+      await ingestRestricted(manager);
+
+      const response = await call('GET', '/v1/knowledge/documents/perjanjian-waralaba-2026', manager);
+
+      expect(response.json().error.code).toBe('ROLE_FORBIDDEN');
+      expect(response.statusCode).toBe(422);
+    });
+
+    it('serves a restricted document to an admin', async () => {
+      await ingestRestricted(await asManager());
+
+      const response = await call(
+        'GET',
+        '/v1/knowledge/documents/perjanjian-waralaba-2026',
+        await asAdmin(),
+      );
+
+      expect(response.statusCode).toBe(200);
+      expect(response.json().chunks.length).toBeGreaterThan(0);
+    });
+
+    it('gives another tenant the same 404 as a missing document', async () => {
+      const jwt = await token({ [OTHER]: ROLES.ADMIN });
+
+      const foreign = await call('GET', '/v1/knowledge/documents/sop-layanan-v4', jwt, {
+        tenantId: OTHER,
+      });
+      const missing = await call('GET', '/v1/knowledge/documents/tidak-ada', jwt, { tenantId: OTHER });
+
+      expect(foreign.statusCode).toBe(404);
+      expect(foreign.json()).toEqual(missing.json());
+    });
+
+    it('accepts the added-reviews bucket and reports its count (AC-10.10)', async () => {
+      const response = await call('GET', '/v1/reviews?bucket=ditambahkan', await asViewer());
+      const body = response.json();
+
+      expect(response.statusCode).toBe(200);
+      // Nothing can be added over HTTP, so zero is the honest answer rather
+      // than a bucket the API pretends not to know.
+      expect(body.counts.ditambahkan).toBe(0);
+      expect(body.rows).toEqual([]);
+    });
+  });
+
   describe('every domain route is behind auth and a tenant', () => {
     it.each([
       ['GET', '/v1/reviews'],
@@ -321,6 +388,7 @@ describe('domain routes over HTTP (T058)', () => {
       ['GET', '/v1/admin/overview'],
       ['GET', '/v1/outlets'],
       ['GET', '/v1/outlets/BKS-02'],
+      ['GET', '/v1/knowledge/documents/sop-layanan-v4'],
     ])('%s %s rejects an anonymous caller', async (method, url) => {
       expect((await call(method, url, null)).statusCode).toBe(401);
     });

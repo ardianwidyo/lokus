@@ -11,6 +11,17 @@ import { assertTenant } from '../lib/tenantScope.js';
  * question refused in the chat and a reply the drafter could not ground show up
  * in the same report. Separate logs would each tell half the truth.
  */
+/** A restricted document is stored for admins, not hidden from everyone. */
+const RESTRICTED_READER_ROLES = new Set(['admin']);
+
+export class KnowledgeAccessError extends Error {
+  constructor(code, message) {
+    super(message);
+    this.name = 'KnowledgeAccessError';
+    this.code = code;
+  }
+}
+
 export function createKnowledgeService({ store = null, gapLog = null, gemini = null } = {}) {
   const kb = store ?? createSeededKnowledgeStore();
   const gaps = gapLog ?? new KnowledgeGapLog();
@@ -80,5 +91,33 @@ export function createKnowledgeService({ store = null, gapLog = null, gemini = n
     return data;
   }
 
-  return { overview, ask, ingest, gapLog: gaps, store: kb };
+  /**
+   * One document and the chunks indexed from it (AC-10.8).
+   *
+   * The restriction rule lives here rather than in either caller, because both
+   * of them call this: the API route reads the role off the verified token, the
+   * seeded console passes the role it holds for the tenant. Two copies would
+   * drift, and the one that drifted would be the browser's — the demo path,
+   * where nobody is checking.
+   *
+   * Refusal, not omission. Returning the document with an empty `chunks` array
+   * would say the document is blank, which is a different and false statement
+   * (AC-10.9).
+   */
+  async function document(tenantId, docId, { role = null } = {}) {
+    assertTenant(tenantId);
+    const detail = kb.documentDetail(tenantId, docId);
+    if (!detail) return null;
+
+    if (detail.restricted && !RESTRICTED_READER_ROLES.has(role)) {
+      throw new KnowledgeAccessError(
+        'ROLE_FORBIDDEN',
+        `Dokumen ${detail.title} dibatasi ke peran Admin`,
+      );
+    }
+
+    return detail;
+  }
+
+  return { overview, ask, ingest, document, gapLog: gaps, store: kb };
 }

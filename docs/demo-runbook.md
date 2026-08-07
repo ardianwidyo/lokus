@@ -69,6 +69,18 @@ jalur yang berbeda: dokumennya tersimpan, tercatat di tabel sebagai *Menunggu
 tinjauan*, dan **tidak akan pernah dikutip agen**. Ini bukan penolakan palsu —
 retrieval benar-benar tidak melihatnya.
 
+**Klik nama dokumennya di tabel.** Panel *Isi dokumen* di bawah tabel
+menampilkan potongan yang benar-benar terindeks — tiap potongan dengan nomor
+halaman dan jumlah tokennya. Ini yang layak ditunjukkan: yang tampil bukan
+berkas yang Anda serahkan, tapi apa yang dibaca agen. Kalau sebuah pasal
+terpotong di batas chunk, di sinilah terlihat, sebelum pelanggan yang
+menemukannya.
+
+Dokumen yang Anda tambahkan sesi ini membawa tag **demo** di barisnya, sama
+seperti review tambahan di layar 05. Dokumen yang dibatasi tetap bisa diklik,
+tapi isinya hanya muncul untuk peran Admin — peran lain mendapat state *perlu
+izin* yang menyebut nama dokumennya, bukan panel kosong dan bukan error.
+
 > Hanya `.txt` dan `.md`. PDF butuh ekstraktor sisi-server; konsol yang berdiri
 > sendiri di browser tidak punya itu, dan ia menolak berkas PDF dengan jujur
 > alih-alih mengindeks teks berantakan. Kalau juri membawa PDF, salin isinya ke
@@ -93,6 +105,12 @@ Dua hal yang layak ditunjukkan ke juri:
 - Pilih cabang **BSD Grand Boulevard** dan coba tambahkan. Ia menolak: cabang
   itu belum punya listing di Google Maps, jadi tidak ada review yang bisa
   ditinggalkan di sana. Itu aturan US-9 yang sama, bukan validasi form.
+
+Segmen keempat di baris filter, **Ditambahkan (demo)**, mendaftar persis review
+yang Anda masukkan sesi ini beserta jumlahnya — berguna kalau juri bertanya
+"tadi Anda memasukkan apa saja?" setelah beberapa menit berlalu. Reviewnya tetap
+ada di segmen tahapannya juga: segmen ini soal asal data, bukan tahap alur
+kerja.
 
 ### 2.3 · Membalas review pelanggan — layar 05 atau 06
 
@@ -213,7 +231,7 @@ yang dilayani demo publik.
 ## 7 · Memeriksa bahwa semuanya benar sebelum naik panggung
 
 ```bash
-npm test          # 1.055 test: core 500, api 145, web 391, eval 19
+npm test          # 1.083 test: core 514, api 151, web 399, eval 19
 npm run eval      # 60 kasus golden set, lima ambang
 npm run lint
 ```

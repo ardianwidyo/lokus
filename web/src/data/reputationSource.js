@@ -77,6 +77,10 @@ export function createSeededReputationSource({
         (review) => review.rating >= 3 && review.replyState === 'draft' && repliable(review),
       ),
       terkirim: reviews.filter((review) => review.replyState === 'sent'),
+      // Origin rather than workflow stage, so a review appears here as well as
+      // in the stage it reached — see the same bucket in `reputationService`,
+      // which the API serves from (AC-10.10).
+      ditambahkan: reviews.filter((review) => review.addedInSession),
     };
 
     const rows = (buckets[bucket] ?? []).map((review) => toRow(review, listings));
@@ -86,6 +90,7 @@ export function createSeededReputationSource({
         'perlu-tindakan': summary.needsAction,
         'draft-siap': buckets['draft-siap'].length,
         terkirim: summary.sent,
+        ditambahkan: buckets.ditambahkan.length,
       },
       needsConnection: summary.needsConnection,
       rows,

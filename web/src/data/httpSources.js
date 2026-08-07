@@ -97,6 +97,9 @@ export function createHttpSources({ baseUrl, getTenant, getLocale = null, user =
     overview: () => api.get('/v1/knowledge'),
     ask: (tenantId, question) => api.post('/v1/knowledge/ask', { question }),
     ingest: (tenantId, document) => api.post('/v1/knowledge/documents', document),
+    // No role is sent: the server reads it off the token, and a role in the
+    // query string would be a claim the client made about itself.
+    document: (tenantId, docId) => api.get(`/v1/knowledge/documents/${encodeURIComponent(docId)}`),
   };
 
   const admin = {

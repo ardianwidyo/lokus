@@ -17,7 +17,7 @@ export function reputationRoutes(fastify, { reputation }) {
 
   fastify.get('/v1/reviews', read, async (request) => {
     const bucket = request.query.bucket ?? 'perlu-tindakan';
-    if (!['perlu-tindakan', 'draft-siap', 'terkirim'].includes(bucket)) {
+    if (!['perlu-tindakan', 'draft-siap', 'terkirim', 'ditambahkan'].includes(bucket)) {
       throw badRequest('BUCKET_INVALID', `Unknown bucket: ${bucket}`);
     }
 

@@ -27,5 +27,9 @@ export function createSeededKnowledgeSource({
     ask: (forTenantId, question, options) =>
       service.ask(forTenantId, question, { ...options, locale }),
     ingest: (forTenantId, document) => service.ingest(forTenantId, document),
+    // The role travels per call rather than being closed over, mirroring the
+    // API, where it is read off the verified token on every request. The rule
+    // it feeds lives in the service, so both paths refuse identically (AC-10.9).
+    document: (forTenantId, docId, options) => service.document(forTenantId, docId, options),
   };
 }

@@ -2149,6 +2149,81 @@
   gap: 22px;
 }
 
+/* The table and the document it opens share a column: the chunks are prose,
+   and prose in the 330px side column would be a stack of two-word lines. */
+.kb-main {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  min-width: 0;
+}
+
+/* The document name *is* the control that opens it, so it keeps the type it
+   already had in the table and gains only an underline. A button styled as a
+   button here would turn a document list into a row of six buttons. */
+.doc-open {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: var(--color-divider);
+  text-underline-offset: 3px;
+}
+
+.doc-open:hover,
+.doc-open:focus-visible,
+.doc-open[aria-pressed='true'] {
+  color: var(--color-accent-700);
+  text-decoration-color: currentColor;
+}
+
+.doc-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--color-neutral-700);
+}
+
+/* Chunks are listed in store order and kept apart by their own hairline, so a
+   clause the chunker split across two of them is visibly two things rather
+   than one paragraph with a seam. The cap keeps a 48-chunk SOP from burying
+   the rest of the screen; the order is preserved by the list, not by reading
+   position, so scrolling inside it loses nothing. */
+.chunk-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.chunk-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--space-3);
+  border: 1px solid var(--color-divider);
+}
+
+.chunk-text {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.6;
+  /* Stored newlines are part of what was indexed — an SOP whose clauses arrived
+     as one wall of text should look like one here too. */
+  white-space: pre-wrap;
+}
+
 .metric-value-sm {
   font-size: 20px;
   line-height: 1.1;
