@@ -30,8 +30,11 @@ export function createSeededBriefingSource({
   tenantId = 'nusa-retail',
   ticketStore = null,
   locale = DEFAULT_LOCALE,
+  // The workspace's adapter, so a review added on screen 05 is inside the set
+  // the overnight cycle clusters rather than outside it (AC-10.4).
+  gbp: injectedGbp = null,
 } = {}) {
-  const gbp = createSeededGbpAdapter();
+  const gbp = injectedGbp ?? createSeededGbpAdapter();
   const places = createSeededPlacesAdapter();
   const tickets = ticketStore ?? createMemoryTicketStore();
 

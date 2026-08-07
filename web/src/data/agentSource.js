@@ -30,6 +30,11 @@ export function createSeededAgentSource({
   tenantId = 'nusa-retail',
   ticketStore = null,
   locale = DEFAULT_LOCALE,
+  // The workspace's adapter and live corpus. Both are why an answer here can
+  // cite a document ingested on screen 11 and quote a review added on screen 05
+  // minutes earlier (AC-10.2, AC-10.4).
+  gbp = null,
+  passages = null,
 } = {}) {
   const runStore = createMemoryRunStore();
   const places = createSeededPlacesAdapter();
@@ -38,8 +43,8 @@ export function createSeededAgentSource({
   const supervisor = withRunPersistence(
     createSupervisor({
       agents: {
-        reputation: createReputationAgent({ gbp: createSeededGbpAdapter() }),
-        knowledge: createKnowledgeAgent(),
+        reputation: createReputationAgent({ gbp: gbp ?? createSeededGbpAdapter() }),
+        knowledge: createKnowledgeAgent({ passages }),
         location: createLocationAgent({ places }),
       },
     }),

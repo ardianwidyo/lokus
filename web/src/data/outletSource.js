@@ -11,9 +11,15 @@ import { DEFAULT_LOCALE, createOutletService, createSeededGbpAdapter, createSeed
  * source when the reader's language changes, the same way it rebuilds on a
  * tenant switch.
  */
-export function createSeededOutletSource({ tenantId = 'nusa-retail', locale = DEFAULT_LOCALE } = {}) {
+export function createSeededOutletSource({
+  tenantId = 'nusa-retail',
+  locale = DEFAULT_LOCALE,
+  // The workspace's adapter, so the rating on screen 04 counts a review added
+  // on screen 05 instead of describing a different set of rows.
+  gbp = null,
+} = {}) {
   const service = createOutletService({
-    gbp: createSeededGbpAdapter(),
+    gbp: gbp ?? createSeededGbpAdapter(),
     places: createSeededPlacesAdapter(),
   });
 

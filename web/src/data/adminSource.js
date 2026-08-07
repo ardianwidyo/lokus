@@ -21,7 +21,13 @@ import evalReport from '../../../eval/report.sample.json';
  * console and a deployed one show the same models, guardrails and cost
  * breakdown rather than two hand-maintained copies that can drift.
  */
-export function createSeededAdminSource({ tenantId = 'nusa-retail', locale = DEFAULT_LOCALE } = {}) {
+export function createSeededAdminSource({
+  tenantId = 'nusa-retail',
+  locale = DEFAULT_LOCALE,
+  // The workspace's adapter, so the response-time coverage on screen 14 counts
+  // the same rows screen 05 is showing (AC-9.5).
+  gbp = null,
+} = {}) {
   const budget = createBudgetGuard();
   // Month-to-date spend for the demo tenant (design/SCREENS.md screen 14).
   budget.seed(tenantId, 1_840_000);
@@ -31,7 +37,7 @@ export function createSeededAdminSource({ tenantId = 'nusa-retail', locale = DEF
   const service = createAdminService({
     budget,
     evaluationReport: evalReport,
-    gbp: createSeededGbpAdapter(),
+    gbp: gbp ?? createSeededGbpAdapter(),
   });
 
   return {

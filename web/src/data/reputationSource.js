@@ -32,9 +32,18 @@ import {
  * changes (the same way it rebuilds on a tenant switch) — see the comment
  * there. That keeps every call site in the screens unchanged.
  */
-export function createSeededReputationSource({ tenantId = 'nusa-retail', locale = DEFAULT_LOCALE } = {}) {
-  const gbp = createSeededGbpAdapter();
-  const store = createMemoryApprovalStore();
+export function createSeededReputationSource({
+  tenantId = 'nusa-retail',
+  locale = DEFAULT_LOCALE,
+  // The workspace's adapter, corpus and approval store. All three outlive this
+  // source, which is rebuilt whenever the corpus changes so no draft survives
+  // written against a SOP that has since been added to (AC-10.2).
+  gbp: injectedGbp = null,
+  passages = null,
+  approvalStore = null,
+} = {}) {
+  const gbp = injectedGbp ?? createSeededGbpAdapter();
+  const store = approvalStore ?? createMemoryApprovalStore();
 
   // Reviews and listing levels come back from one call and are held together,
   // so a row can never be shown beside a permission read a cycle earlier (US-9).
@@ -51,7 +60,7 @@ export function createSeededReputationSource({ tenantId = 'nusa-retail', locale 
   const draftCache = new Map();
   async function draftFor(review) {
     if (!draftCache.has(review.id)) {
-      const result = await draftReply({ tenantId, review, locale });
+      const result = await draftReply({ tenantId, review, locale, passages });
       draftCache.set(review.id, result.data);
     }
     return draftCache.get(review.id);
@@ -142,7 +151,21 @@ export function createSeededReputationSource({ tenantId = 'nusa-retail', locale 
     };
   }
 
-  return { isSeeded: true, inbox, reviewDetail, approveAndSend, themeMatrix };
+  /**
+   * Adds a review and drops the cached read, so the next `inbox()` call sees it.
+   *
+   * The adapter does the refusing — tenant, outlet, rating, listing level — and
+   * this deliberately re-raises rather than translating, so a demo that adds a
+   * review to an outlet LOKUS may not reply to gets the same explanation the
+   * rest of the console gives for that outlet (AC-10.5).
+   */
+  async function addReview(input) {
+    const { data } = await gbp.addReview({ tenantId, ...input });
+    readPromise = null;
+    return data.review;
+  }
+
+  return { isSeeded: true, inbox, reviewDetail, approveAndSend, themeMatrix, addReview };
 }
 
 function toRow(review, listings = []) {

@@ -11,8 +11,15 @@ import { DEFAULT_LOCALE, createKnowledgeService } from '@lokus/core';
  * source when the reader's language changes, the same way it rebuilds on a
  * tenant switch.
  */
-export function createSeededKnowledgeSource({ tenantId = 'nusa-retail', locale = DEFAULT_LOCALE } = {}) {
-  const service = createKnowledgeService();
+export function createSeededKnowledgeSource({
+  tenantId = 'nusa-retail',
+  locale = DEFAULT_LOCALE,
+  // The workspace's store, so a document ingested here is the same one the chat
+  // agent and the reply drafter retrieve from (AC-10.2). Absent, this source
+  // still works on its own corpus — which is what the screen tests rely on.
+  store = null,
+} = {}) {
+  const service = createKnowledgeService({ store });
 
   return {
     isSeeded: true,
