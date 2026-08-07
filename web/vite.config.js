@@ -36,6 +36,13 @@ const base = process.env.LOKUS_BASE_PATH ?? '/';
 
 export default defineConfig({
   base,
+  // Vite reads `.env` from the project root, which for this workspace is
+  // `web/`. `.env.example` documents VITE_LOKUS_API_URL at the repository root
+  // alongside the API's own variables, so a developer who followed it set the
+  // value in a file nothing read — the console silently stayed on its seeded
+  // data and reported, correctly, that there was no API to ask. One env file
+  // for the whole repo is what the example promised; this is what delivers it.
+  envDir: repoRoot,
   plugins: [react(), spaFallback()],
 
   server: {
@@ -48,6 +55,12 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
+    // Emptied on purpose, and this is not belt-and-braces. Now that Vite reads
+    // the repository root `.env`, a developer with the console pointed at a
+    // local API would run these tests against that API — passing or failing on
+    // whether a process happened to be up. These tests are about the seeded
+    // console; the HTTP sources have their own, with a mocked fetch.
+    env: { VITE_LOKUS_API_URL: '' },
     setupFiles: ['./test/setup.js'],
     include: ['test/**/*.test.jsx'],
     coverage: {

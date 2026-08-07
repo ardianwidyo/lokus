@@ -5,13 +5,18 @@
  * documentation tool, not something the product runs on, and plan.md does not
  * list it in the stack. Run it through npx:
  *
- *   npm run build --workspace web
+ *   VITE_LOKUS_API_URL= npm run build --workspace web
  *   npm run preview --workspace web -- --port 4173 &
  *   npx playwright@1.62 install chromium      # first time only
  *   node scripts/screenshots.mjs
  *
  * The console runs on the seeded dataset in the browser, so no API, no
  * credentials and no network are involved and the images are reproducible.
+ *
+ * `VITE_LOKUS_API_URL=` is emptied deliberately. Vite now reads the repository
+ * root `.env`, so a developer who has the console pointed at a local API would
+ * otherwise capture screenshots of that API's data — different from everyone
+ * else's, and dependent on a process that has to be running.
  */
 import { mkdir, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
