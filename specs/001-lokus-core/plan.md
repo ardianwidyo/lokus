@@ -304,6 +304,47 @@ folded in continuously rather than left to the end.
   has no `reasoningEngine` resource. `scripts/agent-engine.mjs` creates, lists
   and deletes it instead, and says so where a reader will look.
 
+- **2026-08-07 · the supervisor is packaged for Agent Engine and blocked on one
+  IAM grant.** Agent Runtime's BYOC contract turns out to be two paths and a
+  JSON envelope — `POST /api/reasoning_engine` and
+  `POST /api/stream_reasoning_engine`, both `{class_method, input} → {output}`,
+  on `$PORT`. `api/src/agentRuntime.js` serves them over the same
+  `createServices` the HTTP API wires, so the supervisor that would run in
+  Agent Engine is the supervisor that runs here, not a second copy that drifts.
+
+  Everything up to the deployment works and is verified:
+
+  - the image builds and is in Artifact Registry
+    (`asia-southeast2-docker.pkg.dev/ebco-aihack-ardian/lokus-dev/lokus-agent:v2`);
+  - the contract is exercised by tests and by the container itself — deployed
+    to Cloud Run as a control, the same image answered
+    `intent: diagnosis_cabang, steps: 8, sources: 45`, which rules the
+    container out as the cause of what follows.
+
+  `reasoningEngines.create` with that image fails with `INTERNAL` and a generic
+  troubleshooting link, and leaves no container logs in the project at all. The
+  outstanding difference between the working Cloud Run deployment and the
+  failing one is who pulls the image: Agent Engine pulls as its own service
+  agent, `service-{number}@gcp-sa-aiplatform-re.iam.gserviceaccount.com`, which
+  has no grant on the repository. The grant cannot be made from this account —
+  `roles/editor` excludes `setIamPolicy`, at both repository and project level:
+
+  ```
+  gcloud artifacts repositories add-iam-policy-binding lokus-dev \
+    --location=asia-southeast2 --project=ebco-aihack-ardian \
+    --member="serviceAccount:service-849077080663@gcp-sa-aiplatform-re.iam.gserviceaccount.com" \
+    --role=roles/artifactregistry.reader
+  ```
+
+  This is stated as the leading hypothesis, not a proven cause: Google's
+  troubleshooting page does not cover custom containers, and an opaque
+  `INTERNAL` with no logs cannot be attributed with certainty. It is the one
+  difference that remains after the container was independently proven to run.
+
+  So the "managed agent runtime" row on screen 14 stays `planned`, and the
+  supervisor keeps running in the API process. Packaged, buildable, tested, one
+  grant away — and not claimed as running, because it is not.
+
 - **2026-07-30 · Cloud Run is not deployed; the demo runs on GitHub Pages.**
   The Google Cloud project's billing account is an expired trial and the card
   offered to reactivate it was declined by Google Payments, so no billable
