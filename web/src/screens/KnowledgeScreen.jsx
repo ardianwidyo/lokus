@@ -8,6 +8,7 @@ import { useAsyncData } from '../app/useAsyncData.js';
 import { Blueprint } from '../components/Blueprint.jsx';
 import { DataPanel, PANEL_STATUS } from '../components/states/index.js';
 import { Rich, useLocale } from '../i18n/index.js';
+import { DocumentUpload } from './knowledge/DocumentUpload.jsx';
 
 /** The index states the store returns, mapped to their dictionary keys. */
 const INDEX_LABEL_KEYS = {
@@ -236,24 +237,11 @@ export function KnowledgeScreen({ onNavigate }) {
             ) : null}
           </DataPanel>
 
-          <Blueprint className="upload-card">
-            <span className="kicker">{t('kb.uploadKicker')}</span>
-            <div className="dropzone">
-              {t('kb.dropzone')}
-              <span className="dropzone-note">
-                {t('kb.dropzoneNote', {
-                  chunkTokens: data?.stats.chunkTokens ?? 800,
-                  overlapTokens: data?.stats.overlapTokens ?? 120,
-                })}
-              </span>
-            </div>
-            <label className="radio">
-              <input type="checkbox" disabled={!mayAct} />
-              <span className="dot" />
-              {t('kb.restrictLabel')}
-            </label>
-            <p className="state-note">{t('kb.restrictNote')}</p>
-          </Blueprint>
+          {/* `reload` rather than a local insert: the document row carries a
+              chunk count and a retrievability verdict the store computed, and
+              re-reading is how this screen keeps showing what was indexed
+              rather than what was submitted. */}
+          <DocumentUpload stats={data?.stats} onIngested={reload} />
 
           <button
             type="button"

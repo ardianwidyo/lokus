@@ -632,9 +632,27 @@ export const en = {
     clauseNoteEmphasis: 'a draft for a human to review',
 
     uploadKicker: 'Upload a document',
-    dropzone: 'Drag a PDF, DOCX, or XLSX here',
-    dropzoneNote: 'max 50 MB · split into {chunkTokens}-token chunks with {overlapTokens} overlap',
-    restrictLabel: 'Restrict access to the Admin role',
+    dropzone: 'Drop a .txt or .md file here, or paste its text below',
+    dropzoneNote: 'chunked at {chunkTokens} tokens with {overlapTokens} overlap',
+    uploadDropActive: 'Release to read the file',
+    uploadTitleLabel: 'Document title',
+    uploadTitlePlaceholder: 'Counter Service SOP v5',
+    uploadTextLabel: 'Document text',
+    uploadTextPlaceholder:
+      'Paste the SOP text here. One clause per paragraph reads best to the search.',
+    uploadSubmit: 'Index document',
+    uploadWorking: 'Indexing…',
+    uploadReceipt:
+      '“{title}” indexed — {chunks} chunks, {pages} pages. The agents can cite it now.',
+    uploadReceiptRestricted:
+      '“{title}” stored as {chunks} chunks but not indexed. No agent will cite it until it is reviewed.',
+    uploadUnsupported:
+      'This console can only read text files (.txt or .md). For a PDF, paste its text into the box below.',
+    uploadFailed: 'The document could not be indexed.',
+    uploadReadOnly: 'Your role is read-only. Adding a document is done by a manager or an admin.',
+    reset: 'Restore the sample data',
+    resetDone: 'Back to the sample data. Every document and review added this session is gone.',
+    restrictLabel: 'Restrict to the Admin role',
     restrictNote:
       'A restricted document is still stored but is not indexed for general answers.',
     seeExample: 'See a worked cited answer →',

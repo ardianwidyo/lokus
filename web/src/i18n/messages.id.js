@@ -634,8 +634,27 @@ export const id = {
     clauseNoteEmphasis: 'draft untuk ditinjau manusia',
 
     uploadKicker: 'Unggah dokumen',
-    dropzone: 'Tarik PDF, DOCX, atau XLSX ke sini',
-    dropzoneNote: 'maks. 50 MB · dipotong {chunkTokens} token dengan overlap {overlapTokens}',
+    dropzone: 'Tarik berkas .txt atau .md ke sini, atau tempel isinya di bawah',
+    dropzoneNote: 'dipotong {chunkTokens} token dengan overlap {overlapTokens}',
+    uploadDropActive: 'Lepaskan untuk membaca berkasnya',
+    uploadTitleLabel: 'Judul dokumen',
+    uploadTitlePlaceholder: 'SOP Layanan Kasir v5',
+    uploadTextLabel: 'Isi dokumen',
+    uploadTextPlaceholder:
+      'Tempel isi SOP di sini. Satu pasal per paragraf terbaca paling baik oleh pencarian.',
+    uploadSubmit: 'Indeks dokumen',
+    uploadWorking: 'Mengindeks…',
+    uploadReceipt:
+      '"{title}" terindeks — {chunks} potongan, {pages} halaman. Agen bisa mengutipnya sekarang.',
+    uploadReceiptRestricted:
+      '"{title}" tersimpan dalam {chunks} potongan tapi tidak diindeks. Agen tidak akan mengutipnya sampai ditinjau.',
+    uploadUnsupported:
+      'Konsol ini hanya bisa membaca berkas teks (.txt atau .md). Untuk PDF, salin isinya ke kotak di bawah.',
+    uploadFailed: 'Dokumen gagal diindeks.',
+    uploadReadOnly: 'Peran Anda hanya bisa membaca. Menambah dokumen dilakukan oleh manajer atau admin.',
+    reset: 'Pulihkan data contoh',
+    resetDone:
+      'Kembali ke data contoh. Setiap dokumen dan review yang ditambahkan sesi ini sudah dihapus.',
     restrictLabel: 'Batasi akses ke peran Admin',
     restrictNote: 'Dokumen yang dibatasi tetap disimpan tapi tidak diindeks untuk jawaban umum.',
     seeExample: 'Lihat contoh jawaban bersitasi →',
