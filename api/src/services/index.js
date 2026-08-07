@@ -7,7 +7,8 @@ import {
   createBriefingService,
   createBudgetGuard,
   createKnowledgeAgent,
-  createGeminiAdapterIfConfigured,
+  REASONING_PATH,
+  createReasoningSwitch,
   createKnowledgeService,
   createLocationAgent,
   createLocationService,
@@ -46,21 +47,31 @@ export function agentEngineFromEnv(env = process.env) {
 }
 
 /**
- * Vertex AI is opt-in, because `GOOGLE_CLOUD_PROJECT` is set on every run and
- * gating on it alone would silently start billing a demo. `LOKUS_REASONING`
- * has to say `vertex` in so many words; anything else keeps the deterministic
- * path, which is what the public demo and every test run.
+ * Both reasoning paths, built from the environment, plus which one starts
+ * active. Credentials are resolved here and nowhere else: the switch decides
+ * which adapter answers, it never holds a key.
+ *
+ * `LOKUS_REASONING` names the starting path. `LOKUS_REASONING_SWITCHABLE`
+ * decides whether screen 14 may change it — read-only by default, because the
+ * choice is process-wide and one tenant's admin must not be able to change how
+ * another tenant's answers are produced.
  */
-export function vertexFromEnv(env = process.env) {
-  if ((env.LOKUS_REASONING ?? '').toLowerCase() !== 'vertex') return {};
-
+export function reasoningFromEnv(env = process.env) {
   const projectId = env.GOOGLE_CLOUD_PROJECT ?? null;
+
   return {
-    projectId,
-    // `global` unless pinned: these models are not served from
-    // asia-southeast2, where the rest of the stack lives (measured 2026-08-07).
-    location: env.GOOGLE_CLOUD_LOCATION || undefined,
-    getAccessToken: projectId ? createAccessTokenProvider({ env }) : null,
+    path: (env.LOKUS_REASONING ?? REASONING_PATH.DETERMINISTIC).toLowerCase(),
+    mutable: env.LOKUS_REASONING_SWITCHABLE === 'true',
+    vertex: {
+      projectId,
+      // `global` unless pinned: these models are not served from
+      // asia-southeast2, where the rest of the stack lives (measured 2026-08-07).
+      location: env.GOOGLE_CLOUD_LOCATION || undefined,
+      getAccessToken: projectId ? createAccessTokenProvider({ env }) : null,
+    },
+    // Free from AI Studio and needs no billing account, which is why it stays
+    // on offer: it is the cheapest way to run this repo for real.
+    apikey: { apiKey: env.GEMINI_API_KEY ?? null },
   };
 }
 
@@ -78,17 +89,20 @@ export function createServices({
   budgets = {},
   onBudgetAlert = null,
   onAgentEngineError = null,
+  onReasoningChange = null,
   // Credentials are resolved in this process and nowhere else. Unconfigured,
   // every call site uses its deterministic path — which is what the public demo
   // serves, since GitHub Pages has no API behind it and a browser that could
   // mint a Google token would be a browser handing one out.
-  vertex = vertexFromEnv(),
+  reasoning = reasoningFromEnv(),
   agentEngine = agentEngineFromEnv(),
   env = process.env,
 } = {}) {
   const gbp = createSeededGbpAdapter();
   const places = createSeededPlacesAdapter();
-  const gemini = createGeminiAdapterIfConfigured(vertex);
+  // One object the whole domain shares, so flipping the path on screen 14
+  // takes effect on the next question rather than on the next deploy.
+  const gemini = createReasoningSwitch({ ...reasoning, onChange: onReasoningChange });
   const knowledge = createKnowledgeService({ gemini });
   const runStore = agentEngine
     ? createAgentEngineRunStore({
@@ -128,10 +142,15 @@ export function createServices({
     gemini,
     // Reported so /healthz and screen 14 can state which reasoning path is
     // live, rather than leaving a reader to guess how the process is configured.
-    reasoning: gemini ? 'vertex' : 'deterministic',
+    // Reported live: the path can change while the process runs.
+    get reasoning() {
+      return gemini.path;
+    },
     // The pin the reasoning tier would use. Named here rather than at the route
     // because the route should report configuration, not re-derive it.
-    reasoningModel: gemini ? MODEL_FOR_TIER[MODEL_TIER.REASONING] : null,
+    get reasoningModel() {
+      return gemini.enabled ? MODEL_FOR_TIER[MODEL_TIER.REASONING] : null;
+    },
     runStore,
     ticketStore,
     budget,
@@ -147,10 +166,18 @@ export function createServices({
       evaluationReport,
       gbp,
       runtime: {
-        reasoning: gemini ? 'vertex' : 'deterministic',
-        model: gemini ? MODEL_FOR_TIER[MODEL_TIER.REASONING] : null,
-        flashModel: gemini ? MODEL_FOR_TIER[MODEL_TIER.FLASH] : null,
-        location: gemini?.location ?? null,
+        get reasoning() {
+          return gemini.path;
+        },
+        get model() {
+          return gemini.enabled ? MODEL_FOR_TIER[MODEL_TIER.REASONING] : null;
+        },
+        get flashModel() {
+          return gemini.enabled ? MODEL_FOR_TIER[MODEL_TIER.FLASH] : null;
+        },
+        get location() {
+          return gemini.path === REASONING_PATH.VERTEX ? (reasoning.vertex?.location ?? 'global') : null;
+        },
         // Cloud Run sets K_SERVICE. Asserting a deployment from a config value
         // instead would put "Cloud Run" on the screen of a laptop.
         onCloudRun: Boolean(env.K_SERVICE),

@@ -1599,6 +1599,81 @@
   text-align: right;
 }
 
+/* The reasoning-path chooser on screen 14. Rectangular and flat like every
+   other control here: the rail already carries the selection, so the option
+   needs contrast, not decoration. */
+.path-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.path-option {
+  width: 100%;
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border: 0;
+  border-bottom: 1px solid var(--color-divider);
+  background: none;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--color-neutral-900);
+  text-align: left;
+  cursor: pointer;
+}
+
+.path-option:last-child {
+  border-bottom: 0;
+}
+
+/* Disabled means one of two things — the path is not configured, or nothing
+   may change it — and both read the same way: present, legible, inert. */
+.path-option:disabled {
+  cursor: default;
+  color: var(--color-neutral-600);
+}
+
+.path-option.is-active {
+  color: var(--color-accent-700);
+}
+
+.path-mark {
+  font-size: 11px;
+  line-height: 1;
+}
+
+.path-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.path-detail {
+  font-size: 11px;
+  color: var(--color-neutral-600);
+}
+
+/* A refusal the operator has to act on, marked the way every other error in
+   this system is: a rule down the left, not a colour. There is no danger token
+   in design/tokens.css, and inventing one here would be a second palette. */
+.state-note.is-error {
+  padding-left: 13px;
+  border-left: 2px solid var(--color-accent-400);
+  color: var(--color-neutral-900);
+}
+
+.path-state {
+  margin-left: auto;
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-neutral-600);
+}
+
 /* A row the architecture names but nothing calls yet. Quieter than the value it
    qualifies, and never in the accent colour a live state uses — the difference
    between "running" and "planned" has to survive a glance. */

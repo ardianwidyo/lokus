@@ -98,7 +98,8 @@ export async function writeReply({
   tier = MODEL_TIER.FLASH,
   fallbackText,
 }) {
-  if (!gemini || !sopPassage) {
+  // See groundedWriter: a switch set to deterministic is not a failure.
+  if (!gemini || gemini.enabled === false || !sopPassage) {
     return { text: fallbackText, generated: false, checks: [], reason: 'no-model', step: null };
   }
 

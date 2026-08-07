@@ -93,7 +93,9 @@ export async function writeGroundedAnswer({
   tier,
   fallbackText,
 }) {
-  if (!gemini || citations.length === 0) {
+  // `enabled === false` is the deterministic path chosen deliberately, which
+  // is the same situation as no model at all: quoted, not broken.
+  if (!gemini || gemini.enabled === false || citations.length === 0) {
     return { text: fallbackText, generated: false, checks: [], reason: 'no-model', step: null };
   }
 

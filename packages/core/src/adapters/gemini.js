@@ -85,8 +85,26 @@ export class GeminiError extends Error {
   }
 }
 
+/**
+ * Two ways to reach the same models, and they are not equivalent.
+ *
+ * `vertex` authenticates with an identity — no stored secret, the API's own
+ * service account in production. `apikey` authenticates with a bearer string
+ * from AI Studio, which needs no billing account and is therefore the cheapest
+ * way for someone to run this repo without a Google Cloud project at all.
+ *
+ * Both are offered because they fail differently: an expired credential and a
+ * revoked key are different outages, and an operator who can switch between
+ * them at 3 a.m. is an operator who is not blocked by either.
+ */
+export const TRANSPORT = Object.freeze({ VERTEX: 'vertex', API_KEY: 'apikey' });
+
+const AI_STUDIO_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models';
+
 /** `global` is served from the unprefixed host; every region prefixes its own. */
-export function endpointFor({ projectId, location, model }) {
+export function endpointFor({ transport = TRANSPORT.VERTEX, projectId, location, model }) {
+  if (transport === TRANSPORT.API_KEY) return `${AI_STUDIO_ENDPOINT}/${model}:generateContent`;
+
   const host = location === 'global' ? 'aiplatform.googleapis.com' : `${location}-aiplatform.googleapis.com`;
   return `https://${host}/v1/projects/${projectId}/locations/${location}/publishers/google/models/${model}:generateContent`;
 }
@@ -97,25 +115,36 @@ export function endpointFor({ projectId, location, model }) {
  * than reporting an estimate (constitution III).
  */
 export function createGeminiAdapter({
+  transport = TRANSPORT.VERTEX,
   projectId = null,
   location = DEFAULT_LOCATION,
   getAccessToken = null,
+  apiKey = null,
   tier = MODEL_TIER.REASONING,
   timeoutMs = DEFAULT_TIMEOUT_MS,
   fetchImpl = globalThis.fetch,
   now = () => Date.now(),
 } = {}) {
-  if (!projectId) {
-    throw new GeminiError(
-      'GEMINI_NOT_CONFIGURED',
-      'Project Vertex AI belum diset. Gunakan jalur deterministik secara eksplisit.',
-    );
-  }
-  if (typeof getAccessToken !== 'function') {
-    throw new GeminiError(
-      'GEMINI_NOT_CONFIGURED',
-      'Penyedia access token Vertex AI belum diberikan. Gunakan jalur deterministik secara eksplisit.',
-    );
+  if (transport === TRANSPORT.API_KEY) {
+    if (!apiKey) {
+      throw new GeminiError(
+        'GEMINI_NOT_CONFIGURED',
+        'GEMINI_API_KEY belum diset. Gunakan jalur deterministik secara eksplisit.',
+      );
+    }
+  } else {
+    if (!projectId) {
+      throw new GeminiError(
+        'GEMINI_NOT_CONFIGURED',
+        'Project Vertex AI belum diset. Gunakan jalur deterministik secara eksplisit.',
+      );
+    }
+    if (typeof getAccessToken !== 'function') {
+      throw new GeminiError(
+        'GEMINI_NOT_CONFIGURED',
+        'Penyedia access token Vertex AI belum diberikan. Gunakan jalur deterministik secara eksplisit.',
+      );
+    }
   }
   if (typeof fetchImpl !== 'function') {
     throw new GeminiError('GEMINI_NO_FETCH', 'fetch tidak tersedia di runtime ini.');
@@ -131,20 +160,29 @@ export function createGeminiAdapter({
     // the wait the caller actually had rather than the part we like.
     const startedAt = now();
 
-    let token;
-    try {
-      token = await getAccessToken();
-    } catch (error) {
-      throw new GeminiError(
-        'GEMINI_NO_CREDENTIALS',
-        `Kredensial Google tidak bisa diambil: ${error?.message ?? 'sebab tidak diketahui'}`,
-      );
-    }
-    if (!token) {
-      throw new GeminiError(
-        'GEMINI_NO_CREDENTIALS',
-        'Kredensial Google kosong. Jalankan `gcloud auth application-default login` atau beri service account pada runtime.',
-      );
+    // On the key path there is nothing to mint: the credential is the string
+    // the operator configured, and it is sent as a header, never in the URL.
+    const headers = { 'content-type': 'application/json' };
+
+    if (transport === TRANSPORT.API_KEY) {
+      headers['x-goog-api-key'] = apiKey;
+    } else {
+      let token;
+      try {
+        token = await getAccessToken();
+      } catch (error) {
+        throw new GeminiError(
+          'GEMINI_NO_CREDENTIALS',
+          `Kredensial Google tidak bisa diambil: ${error?.message ?? 'sebab tidak diketahui'}`,
+        );
+      }
+      if (!token) {
+        throw new GeminiError(
+          'GEMINI_NO_CREDENTIALS',
+          'Kredensial Google kosong. Jalankan `gcloud auth application-default login` atau beri service account pada runtime.',
+        );
+      }
+      headers.authorization = `Bearer ${token}`;
     }
 
     // An abandoned request still costs the caller's latency budget, so the
@@ -154,9 +192,9 @@ export function createGeminiAdapter({
 
     let response;
     try {
-      response = await fetchImpl(endpointFor({ projectId, location, model }), {
+      response = await fetchImpl(endpointFor({ transport, projectId, location, model }), {
         method: 'POST',
-        headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
+        headers,
         body: JSON.stringify({
           contents: [{ role: 'user', parts: [{ text: prompt }] }],
           generationConfig: { temperature, maxOutputTokens, responseMimeType: 'text/plain' },
@@ -232,18 +270,22 @@ export function createGeminiAdapter({
     };
   }
 
-  return { isSeeded: false, projectId, location, generate };
+  return { isSeeded: false, enabled: true, transport, projectId, location, generate };
+}
+
+/** Whether the options describe a path that could actually be dialled. */
+export function isConfigured(options = {}) {
+  if (options?.transport === TRANSPORT.API_KEY) return Boolean(options?.apiKey);
+  return Boolean(options?.projectId) && typeof options?.getAccessToken === 'function';
 }
 
 /**
- * Builds the adapter when Vertex is configured and returns `null` when it is
+ * Builds the adapter when the path is configured and returns `null` when it is
  * not, so a caller writes `gemini ?? deterministic` instead of a try/catch.
  * An unconfigured reasoning layer is a normal configuration, not an error.
  */
 export function createGeminiAdapterIfConfigured(options = {}) {
-  return options?.projectId && typeof options?.getAccessToken === 'function'
-    ? createGeminiAdapter(options)
-    : null;
+  return isConfigured(options) ? createGeminiAdapter(options) : null;
 }
 
 export function costOf(model, { input = 0, output = 0 } = {}) {

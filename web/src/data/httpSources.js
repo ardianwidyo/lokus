@@ -105,6 +105,10 @@ export function createHttpSources({ baseUrl, getTenant, getLocale = null, user =
   const admin = {
     isSeeded: false,
     overview: () => api.get('/v1/admin/overview'),
+    // Which reasoning paths this process could take. Absent behind a seeded
+    // console, which has no process to ask.
+    reasoning: () => api.get('/v1/admin/reasoning'),
+    selectReasoning: (path) => api.post('/v1/admin/reasoning', { path }),
   };
 
   /**

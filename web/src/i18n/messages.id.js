@@ -774,6 +774,25 @@ export const id = {
     modelsEmpty: 'Konfigurasi tak tersedia',
     modelsError: 'Konfigurasi tak bisa dimuat',
     notConnected: 'belum tersambung',
+
+    reasoningKicker: 'Jalur penalaran',
+    reasoningLoading: 'Membaca jalur yang tersedia…',
+    reasoningEmpty: 'Tidak tersedia di mode contoh',
+    reasoningEmptyBody:
+      'Konsol ini menjalankan seluruh logika di browser, jadi tidak ada proses API yang punya kredensial untuk dipilih. Jalankan lewat API untuk mengubah jalur.',
+    reasoningError: 'Jalur penalaran tak bisa dibaca',
+    reasoningForbidden: 'Hanya Admin yang boleh melihat jalur penalaran',
+    reasoningFailed: 'Jalur tidak bisa diubah',
+    reasoningLocked:
+      'Terkunci pada proses ini. Set LOKUS_REASONING_SWITCHABLE=true untuk membukanya — pilihan ini berlaku untuk seluruh proses, bukan per tenant.',
+    reasoningMutable:
+      'Berlaku pada pertanyaan berikutnya, tanpa restart. Pilihan ini berlaku untuk seluruh proses, bukan per tenant.',
+    pathUnavailable: 'belum dikonfigurasi',
+    path: {
+      deterministic: 'Deterministik',
+      vertex: 'Vertex AI',
+      apikey: 'API key (AI Studio)',
+    },
     modelsNote:
       'Dibaca dari proses yang sedang berjalan, bukan daftar tetap. Model dipilih per tugas — Flash untuk pekerjaan massal, model penalaran hanya untuk diagnosis. Baris bertanda [belum tersambung] ada di arsitektur tapi belum dipanggil kode mana pun.',
 

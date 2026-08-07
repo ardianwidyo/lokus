@@ -61,9 +61,17 @@ export {
   DEFAULT_LOCATION as VERTEX_DEFAULT_LOCATION,
   GeminiError,
   MODEL_FOR_TIER,
+  TRANSPORT as GEMINI_TRANSPORT,
   createGeminiAdapter,
   createGeminiAdapterIfConfigured,
+  isConfigured as isGeminiConfigured,
 } from './adapters/gemini.js';
+export {
+  REASONING_PATH,
+  REASONING_PATHS,
+  ReasoningSwitchError,
+  createReasoningSwitch,
+} from './adapters/reasoningSwitch.js';
 export {
   buildAnswerPrompt,
   checkGrounding,

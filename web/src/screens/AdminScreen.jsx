@@ -7,6 +7,7 @@ import { Blueprint } from '../components/Blueprint.jsx';
 import { ListingBadge } from '../components/ListingNotice.jsx';
 import { DataPanel } from '../components/states/index.js';
 import { Rich, useLocale } from '../i18n/index.js';
+import { ReasoningPanel } from './admin/ReasoningPanel.jsx';
 
 /**
  * Screen 14 · Admin: model, guardrail, biaya.
@@ -63,6 +64,8 @@ export function AdminScreen() {
             </>
           ) : null}
         </DataPanel>
+
+        <ReasoningPanel adminSource={adminSource} />
 
         <DataPanel
           status={status}

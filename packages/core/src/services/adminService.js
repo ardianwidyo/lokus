@@ -26,22 +26,26 @@ export function createAdminService({
   gbp = null,
   runtime = {},
 }) {
-  const stack = {
+  // Read per request, not once at construction: the reasoning path can be
+  // changed from screen 14 while the process runs, and a panel that reported
+  // the value it was built with would be reporting the past.
+  const stackNow = () => ({
     reasoning: 'deterministic',
     model: null,
     flashModel: null,
     location: null,
     onCloudRun: false,
     region: null,
+    sessions: null,
     ...runtime,
-  };
+  });
 
   async function overview(tenantId, { locale = DEFAULT_LOCALE } = {}) {
     assertTenant(tenantId);
     const state = budget.stateOf(tenantId);
 
     return {
-      models: modelRows(locale, stack),
+      models: modelRows(locale, stackNow()),
       // Null without an adapter rather than zeroed: a screen must be able to
       // tell "we measured nothing" from "we measured zero".
       coverage: gbp ? await coverageRows(tenantId, gbp, locale) : null,
@@ -155,27 +159,36 @@ function costBreakdown(spentIdr, locale = DEFAULT_LOCALE) {
  * the true thing: this is where the design is going, and it is not there yet.
  */
 function modelRows(locale, runtime) {
-  const live = runtime.reasoning === 'vertex';
+  const onVertex = runtime.reasoning === 'vertex';
+  const live = onVertex || runtime.reasoning === 'apikey';
   const deterministic = t(locale, 'admin.pathDeterministic');
+  // Which door the same model was reached through. An operator debugging a 429
+  // needs to know whether it came from a quota or from a key.
+  const via = onVertex ? 'Vertex AI' : 'AI Studio';
 
   return [
     {
       label: t(locale, 'admin.modelReasoning'),
       // The pin, not the family name: a trace recorded against an older pin
       // should not be mistaken for this one.
-      value: live ? `${runtime.model} · Vertex AI` : deterministic,
+      value: live ? `${runtime.model} · ${via}` : deterministic,
       status: live ? 'live' : 'off',
     },
     {
       label: t(locale, 'admin.modelBulk'),
-      value: live ? `${runtime.flashModel} · Vertex AI` : deterministic,
+      value: live ? `${runtime.flashModel} · ${via}` : deterministic,
       status: live ? 'live' : 'off',
     },
     {
       label: t(locale, 'admin.modelEndpoint'),
-      // Deliberately the location and host, not the project id: this payload
-      // reaches a browser, and naming the billable resource there buys nothing.
-      value: live ? `${runtime.location} · aiplatform.googleapis.com` : '—',
+      // Deliberately the location and host, not the project id or the key:
+      // this payload reaches a browser, and naming a billable resource or a
+      // credential there buys nothing.
+      value: onVertex
+        ? `${runtime.location} · aiplatform.googleapis.com`
+        : live
+          ? 'generativelanguage.googleapis.com'
+          : '—',
       status: live ? 'live' : 'off',
     },
     {

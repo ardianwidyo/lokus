@@ -772,6 +772,25 @@ export const en = {
     modelsEmpty: 'Configuration unavailable',
     modelsError: 'The configuration could not be loaded',
     notConnected: 'not connected',
+
+    reasoningKicker: 'Reasoning path',
+    reasoningLoading: 'Reading the available paths…',
+    reasoningEmpty: 'Not available in sample mode',
+    reasoningEmptyBody:
+      'This console runs the whole domain in the browser, so there is no API process holding credentials to choose between. Run it through the API to change the path.',
+    reasoningError: 'The reasoning path could not be read',
+    reasoningForbidden: 'Only an Admin may see the reasoning path',
+    reasoningFailed: 'The path could not be changed',
+    reasoningLocked:
+      'Locked on this process. Set LOKUS_REASONING_SWITCHABLE=true to open it — this choice applies to the whole process, not per tenant.',
+    reasoningMutable:
+      'Takes effect on the next question, without a restart. This choice applies to the whole process, not per tenant.',
+    pathUnavailable: 'not configured',
+    path: {
+      deterministic: 'Deterministic',
+      vertex: 'Vertex AI',
+      apikey: 'API key (AI Studio)',
+    },
     modelsNote:
       'Read from the running process, not a fixed list. Models are chosen per task rather than one model for everything — Flash for bulk work, the reasoning model only for diagnosis. Rows marked [not connected] are in the architecture but nothing calls them yet.',
 

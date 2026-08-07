@@ -51,6 +51,8 @@ export function buildServer({
       // the logs, not a silence to discover when a run cannot be produced.
       onAgentEngineError: (failure) =>
         fastify.log.warn(failure, `agent engine ${failure.operation} gagal: ${failure.message}`),
+      onReasoningChange: (change) =>
+        fastify.log.warn({ event: 'reasoning.path_changed', ...change }, `jalur penalaran: ${change.from} → ${change.to}`),
     });
 
   const directory = tenantDirectory ?? createSeededTenantDirectory();
@@ -99,13 +101,16 @@ export function buildServer({
       .send({ error: { code: 'INTERNAL', message: 'Request failed' } });
   });
 
-  healthRoutes(fastify, { config, reasoning: domain.reasoning, model: domain.reasoningModel });
+  healthRoutes(fastify, {
+    config,
+    snapshot: () => ({ reasoning: domain.reasoning, model: domain.reasoningModel }),
+  });
   sessionRoutes(fastify, { tenantDirectory: directory });
   runRoutes(fastify, { runStore: runs });
   reputationRoutes(fastify, { reputation: domain.reputation });
   briefingRoutes(fastify, { briefing: domain.briefing, tickets: domain.ticketStore });
   agentRoutes(fastify, { supervisor: domain.supervisor, budget: domain.budget });
-  adminRoutes(fastify, { admin: domain.admin });
+  adminRoutes(fastify, { admin: domain.admin, reasoning: domain.gemini });
   locationRoutes(fastify, { location: domain.location });
   knowledgeRoutes(fastify, { knowledge: domain.knowledge });
   outletRoutes(fastify, { outlets: domain.outlets });
