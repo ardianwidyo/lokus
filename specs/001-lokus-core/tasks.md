@@ -161,3 +161,22 @@ One commit per task, prefixed with the task id.
   dataset gains one outlet at each level, so all three paths are visible in the
   demo rather than only the happy one.
   [AC-9.1, AC-9.2, AC-9.3, AC-9.4, AC-9.5, AC-9.6]
+- **T065** Seeded state becomes live state. `searchPassages` accepts a passage
+  *provider* as well as an array, so an agent constructed once keeps reading a
+  corpus that grows; the seeded Business Profile adapter gains `addReview`, which
+  appends through the same tenant scope and listing-level checks a real review
+  passes. Without this, ingest can only ever be visible to the screen that
+  performed it. [AC-10.2, AC-10.5]
+- **T066** One workspace per tenant behind the seeded sources. The knowledge
+  store and the Business Profile adapter are built once in
+  `web/src/data/demoWorkspace.js` and handed to every seeded source, so screens
+  05, 06, 10, 11 and 12 read the same mutable state. Carries the reset that
+  returns the console to the seeded dataset. [AC-10.2, AC-10.6]
+- **T067** Screen 11's dropzone stops being decoration. Drop a `.txt`/`.md` file
+  or paste the text, mark it restricted or not, and the document is chunked and
+  indexed for real — the receipt states chunk count and index state, and the
+  table updates without a reload. [AC-10.1, AC-10.3]
+- **T068** Screen 05 can take a review. A demo composer adds a review to the
+  chosen outlet, which then flows through the inbox, the theme clusters and the
+  drafter unchanged — labelled as demo data throughout, and refused for an
+  outlet LOKUS may not reply to. [AC-10.4, AC-10.5, AC-10.6]

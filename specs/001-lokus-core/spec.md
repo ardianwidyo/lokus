@@ -172,6 +172,45 @@ L0 or L1 is a normal state to be reported, not an error and not a blocker.
   the outlet's review count, so a quiet branch and a capped one do not read the
   same.
 
+### US-10 Demonstrable without a cloud project
+As U4 — and as a judge with nothing but a browser — I can add a SOP document and
+a review, watch the agents use both, and reply to a customer, without a Google
+Cloud project, a billing account, or a single credential.
+
+The console already runs the whole domain in the browser when
+`VITE_LOKUS_API_URL` is unset (T059): supervisor routing, retrieval, guardrails
+and the refusal rule are the same code the API executes, and only the Google
+adapters are seeded. What it cannot do is *take input*. The corpus and the review
+set are fixed at build time, so the one thing that proves the system reasons
+rather than replays — giving it something it has never seen and watching it cite
+it — is exactly the thing that cannot be shown.
+
+Two consequences, and the second is the reason this is a story rather than a
+chore. Seeded state is currently rebuilt per data source: screen 11 holds one
+knowledge store, the chat agent reads the frozen seed corpus, and the reply
+drafter reads a third copy. A document added to one is invisible to the other
+two. So "ingest works" is not enough; the state has to be *one* state.
+
+- **AC-10.1** A SOP document added from screen 11 is chunked, indexed and listed
+  with its real chunk count, and no page reload is needed to see it.
+- **AC-10.2** That same document is immediately retrievable by the chat agent
+  (screen 10), the cited-answer view (screen 12) and the reply drafter (screen
+  06). One knowledge store serves all of them.
+- **AC-10.3** A document marked restricted is stored and listed but never
+  retrievable, and the console says so — the existing `menunggu-tinjauan` state,
+  reachable at last.
+- **AC-10.4** A review added from screen 05 appears in the inbox, is clustered by
+  the theme detector, and gets a draft reply grounded in the corpus — including a
+  document added minutes earlier under AC-10.1.
+- **AC-10.5** An added review obeys every existing rule rather than bypassing
+  them: tenant scope, the listing level of the outlet it names (US-9), and the
+  1-2 star human-approval gate.
+- **AC-10.6** Added data is visibly demo data. The console never presents it as
+  having come from Google, and a single control returns the console to the seeded
+  dataset so the demo can be run again.
+- **AC-10.7** None of the above requires an API, a key, or a cloud project. The
+  same build serves it from GitHub Pages and from `npm run dev`.
+
 ## Success metrics
 
 | Metric | Baseline | Target |
