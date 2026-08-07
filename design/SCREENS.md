@@ -74,12 +74,21 @@ blok **Kirim tautan masuk** · catatan 11.5px "Dilindungi SSO organisasi. LOKUS
 tidak menyimpan kata sandi."
 
 Panel tenant: kicker "SETELAH MASUK · PILIH TENANT" lalu tiga baris hairline —
-Nusa Retail (42 cabang · minimarket · peran: Area Manager, tag "Terakhir
+Nusa Retail (42 cabang · minimarket · peran: Admin, tag "Terakhir
 dibuka", border `--color-accent`) · Klinik Sehat Prima (11 cabang · klinik ·
 peran: Viewer, tag "Baca saja") · Dealer Arta Motor (7 cabang · otomotif ·
-peran: Admin, tag "Uji coba · 12 hari"). Catatan penutup 12.5px: "Pemisahan
-tenant dan peran ditampilkan sejak layar pertama — ini bukti nyata kesiapan
-multi-tenant, bukan klaim di slide."
+peran: Area Manager, tag "Uji coba · 12 hari"). Catatan penutup 12.5px:
+"Pemisahan tenant dan peran ditampilkan sejak layar pertama — ini bukti nyata
+kesiapan multi-tenant, bukan klaim di slide."
+
+Ketiga peran tetap terwakili, jadi gerbang RBAC tetap bisa didemokan. Yang
+berubah 2026-08-07 adalah tenant mana yang memegang Admin: layar 14 hanya
+terbuka untuk Admin, dan sebelumnya satu-satunya tenant yang membukanya adalah
+Dealer Arta Motor — tenant yang belum punya satu pun dokumen atau biaya. Layar
+bukti kesiapan produksi karenanya hanya bisa dibuka dalam keadaan kosong. Peran
+Admin dipindah ke tenant yang punya datanya; Dealer Arta Motor turun ke Area
+Manager, dan karena rank bersifat hierarkis (`admin ≥ manager ≥ viewer`) tidak
+ada layar lain yang kehilangan akses.
 
 **Perilaku**: memilih tenant menyimpan `tenantId` + `role`, membuang cache, lalu
 membuka layar 02. Peran viewer menyembunyikan semua tombol yang mengubah data.
