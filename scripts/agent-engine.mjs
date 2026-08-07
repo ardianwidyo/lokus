@@ -9,7 +9,8 @@
  * The engine holds sessions; it runs none of our code. That distinction is the
  * whole point — see plan.md, 2026-08-07.
  *
- *   node scripts/agent-engine.mjs create
+ *   node scripts/agent-engine.mjs create            # sessions-only, no runtime
+ *   node scripts/agent-engine.mjs deploy <imageUri>  # container-backed supervisor
  *   node scripts/agent-engine.mjs list
  *   node scripts/agent-engine.mjs delete <id>
  *
@@ -72,6 +73,40 @@ switch (command) {
     break;
   }
 
+  case 'deploy': {
+    // The container-backed engine: this one actually runs the supervisor.
+    // Blocked until the Agent Engine service agent can read the image — see
+    // plan.md, 2026-08-07. Build first:
+    //   gcloud builds submit --config infra/cloudbuild-agent.yaml \
+    //     --substitutions _IMAGE=<image> --service-account=<sa> .
+    if (!argument) {
+      console.error('Sebutkan image-nya: node scripts/agent-engine.mjs deploy <imageUri>');
+      process.exit(1);
+    }
+
+    const operation = await request(base, {
+      method: 'POST',
+      body: JSON.stringify({
+        displayName: `${DISPLAY_NAME}-supervisor`,
+        description: 'LOKUS supervisor: routing, parallel delegation, merge, guardrails, numbered trace.',
+        spec: {
+          containerSpec: { imageUri: argument, port: 8080 },
+          // Must match what api/src/agentRuntime.js actually serves; a method
+          // declared here and missing there is a 400 discovered by a caller.
+          classMethods: [
+            { name: 'ask', api_mode: '' },
+            { name: 'briefing', api_mode: '' },
+          ],
+          agentFramework: 'custom',
+        },
+      }),
+    });
+    console.log(operation.name);
+    console.log('\nDeployment berjalan beberapa menit. Pantau:');
+    console.log(`  gcloud ai operations describe ${operation.name.split('/').pop()} --region ${LOCATION}`);
+    break;
+  }
+
   case 'list': {
     const body = await request(base);
     for (const engine of body.reasoningEngines ?? []) {
@@ -93,6 +128,6 @@ switch (command) {
   }
 
   default:
-    console.error('Perintah: create | list | delete <id>');
+    console.error('Perintah: create | deploy <imageUri> | list | delete <id>');
     process.exit(1);
 }

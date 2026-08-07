@@ -1,0 +1,41 @@
+# LOKUS supervisor — Vertex AI Agent Engine container (BYOC).
+#
+# Same image shape as api/Dockerfile and a different entrypoint: this one
+# serves Agent Runtime's two-path contract instead of the tenant-facing HTTP
+# API. Kept as a second Dockerfile rather than a runtime switch, because which
+# server a container runs should be readable from the image, not from an
+# environment variable someone forgot to set.
+#
+# Build context is the repo root: api depends on packages/core through the
+# workspace.
+
+FROM node:20-slim AS deps
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+COPY packages/core/package.json ./packages/core/
+COPY api/package.json ./api/
+COPY web/package.json ./web/
+COPY eval/package.json ./eval/
+
+RUN npm ci --omit=dev --ignore-scripts --workspace @lokus/api --include-workspace-root
+
+
+FROM node:20-slim AS runtime
+WORKDIR /app
+
+# PORT is set by Agent Runtime; the default matches the contract's own.
+ENV NODE_ENV=production \
+    PORT=8080
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY package.json ./
+COPY packages/core ./packages/core
+COPY api/package.json ./api/
+COPY api/src ./api/src
+
+USER node
+
+EXPOSE 8080
+
+CMD ["node", "api/src/agentRuntime.js"]
