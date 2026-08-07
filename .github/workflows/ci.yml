@@ -98,6 +98,42 @@ jobs:
       - name: Validate
         run: terraform validate -no-color
 
+  # One real call, so "the reasoning layer is wired" is a claim CI checks rather
+  # than a claim the README makes. Kept out of the eval job on purpose: the
+  # eval's thresholds must be reproducible and free, and a live model is
+  # neither — a rate limit should degrade this job, not invalidate the gates.
+  live-model:
+    name: Live model smoke
+    runs-on: ubuntu-latest
+    env:
+      # From a repository secret, never from the repo. The `secrets` job below
+      # exists to keep it that way.
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      LOKUS_REASONING: apikey
+      GOOGLE_CLOUD_PROJECT: ci
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      # Skipped rather than failed when the secret is absent, so a fork — which
+      # cannot read it — still gets a green CI instead of a red one it has no
+      # way to fix.
+      - name: Install
+        if: env.GEMINI_API_KEY != ''
+        run: npm ci
+
+      - name: Ask the model one question
+        if: env.GEMINI_API_KEY != ''
+        run: node scripts/smoke-model.mjs
+
+      - name: Say why nothing ran
+        if: env.GEMINI_API_KEY == ''
+        run: echo "::notice::GEMINI_API_KEY tidak tersedia — smoke model dilewati."
+
   secrets:
     name: No secrets in the repository
     runs-on: ubuntu-latest
