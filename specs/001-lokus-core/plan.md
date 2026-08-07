@@ -304,6 +304,45 @@ folded in continuously rather than left to the end.
   has no `reasoningEngine` resource. `scripts/agent-engine.mjs` creates, lists
   and deletes it instead, and says so where a reader will look.
 
+- **2026-08-07 · the reasoning path is a choice, and screen 14 makes it —
+  without ever touching a credential.** Vertex AI replaced the AI Studio key
+  earlier today, and replacing it outright was one option too few. The two fail
+  differently: an expired identity and a revoked key are different outages, and
+  an operator who can move between them is not blocked by either. AI Studio also
+  needs no billing account, which makes it the cheapest way for anyone to run
+  this repo for real.
+
+  So there are three paths — `deterministic`, `vertex`, `apikey` — and one
+  switch object the whole domain shares, so a change takes effect on the next
+  question rather than the next deploy.
+
+  The control on screen 14 selects among paths; it does not accept a key. A
+  field that took one would send a credential from a browser across the network
+  and store it somewhere, which is the single thing this repo's credential
+  design exists to prevent. The key and the token provider are resolved in the
+  API process from its own environment. What the browser receives is which
+  paths are configured and, for the ones that are not, the variable that is
+  missing — never the key, never a prefix of it, and not the project id either.
+  A test asserts all three stay out of the payload; it caught the project id
+  leaking through the panel's own detail line while this was being written.
+
+  Two refusals rather than conveniences. A path that is not configured cannot
+  be selected — refused with its reason, because a control that reports success
+  while nothing changed teaches an operator to distrust the screen. And the
+  switch is read-only unless `LOKUS_REASONING_SWITCHABLE=true`: the choice is
+  process-wide, so one tenant's admin must not be able to change how another
+  tenant's answers are produced. Making it per-tenant means threading a tenant
+  through every `generate` call, which is a larger change than this control
+  earns; the limitation is stated in the panel rather than hidden.
+
+  A start-up path that cannot be dialled falls back instead of failing to boot.
+  An API that refuses to start because a key expired turns a degraded reasoning
+  layer into an outage.
+
+  One bug this surfaced and fixed: `/healthz` and the screen 14 panel both read
+  their values once, at registration. After a switch they reported the boot
+  value forever. Both now read per request.
+
 - **2026-08-07 · the supervisor is packaged for Agent Engine and blocked on one
   IAM grant.** Agent Runtime's BYOC contract turns out to be two paths and a
   JSON envelope — `POST /api/reasoning_engine` and
