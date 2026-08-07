@@ -8,7 +8,7 @@
 | Domain | `packages/core` — plain JS, no cloud SDK | theme clustering, guardrails, draft assembly, scoring, seeded dataset |
 | API | Cloud Run (Node 20 + Fastify) | Identity Platform auth, RBAC middleware |
 | Agents | supervisor + 3 specialised agents in `packages/core` | Vertex AI Agent Engine needs billing; see the 2026-07-30 deviation |
-| Models | Gemini (reasoning), Gemini Flash (bulk) via AI Studio REST | **wired**, key-gated, falls back to deterministic drafting |
+| Models | Gemini (reasoning), Gemini Flash (bulk) via Vertex AI REST | **wired** on `ebco-aihack-ardian`, ADC-authenticated, falls back to deterministic drafting |
 | Retrieval | keyword scoring in `packages/core`, threshold 0.70 | Vertex AI Search + `text-embedding-004` needs billing; chunking is 800/120 as planned |
 | Analytics | deterministic JS over the seeded dataset | BigQuery + GIS needs billing; the queries it replaces are named in the trace |
 | State | Firestore | tenants, tickets, agent runs/traces |
@@ -214,6 +214,50 @@ folded in continuously rather than left to the end.
   implementation rather than failing — the same rule the Business Profile
   adapter already follows.
 
+  **Superseded 2026-08-07: the endpoint is now Vertex AI. See below.**
+
+- **2026-08-07 · Gemini moves from AI Studio to Vertex AI on project
+  `ebco-aihack-ardian`.** The premise of the note above no longer holds: that
+  project has an active billing account, so `aiplatform.googleapis.com` — the
+  endpoint this plan's stack table always named — can be called for real. The
+  stack table stops describing an intention for the model layer.
+
+  What changed is the identity, not the transport. It is still one `fetch`
+  against a documented HTTP API with no SDK and no new dependency. The
+  difference is that Vertex authenticates with an OAuth access token minted
+  from Application Default Credentials instead of a bearer API key, so:
+
+  - there is no long-lived model secret to store, mount, rotate, or leak, and
+    `GEMINI_API_KEY` is gone from the repository entirely;
+  - on Cloud Run the API calls Gemini as its own service account, which
+    `infra/iam.tf` already grants `roles/aiplatform.user` — the grant existed
+    before anything used it;
+  - locally the developer runs `gcloud auth application-default login`, and CI
+    can pass `GOOGLE_ACCESS_TOKEN` or a service account key file.
+
+  Credential resolution lives in `api/src/lib/googleAccessToken.js`, not in
+  `packages/core`: it needs `node:fs` and `node:crypto`, and core is bundled
+  into the browser console. A credential path reachable from browser code is a
+  credential path that will eventually be reached from browser code. The
+  adapter in core takes an injected `getAccessToken` and stays transport-only.
+
+  Two things this deliberately does **not** do. Vertex AI is opt-in behind
+  `LOKUS_REASONING=vertex`, because `GOOGLE_CLOUD_PROJECT` is set on every run
+  and gating on it alone would start billing a demo silently; unset, every call
+  site falls back to the deterministic implementation exactly as before. And it
+  claims nothing about the rest of the Vertex surface — Agent Engine, Vertex AI
+  Search and BigQuery are still not adopted, and the rows above still say so.
+  Active billing makes them possible, not done.
+
+  Measured on 2026-08-07 against `ebco-aihack-ardian`: `global` and
+  `asia-southeast1` both answer 200; `asia-southeast2`, where the rest of the
+  stack lives, answers 400 `FAILED_PRECONDITION` — these models are not served
+  from Jakarta. `GOOGLE_CLOUD_LOCATION` therefore defaults to `global` and is
+  separate from `var.region`, which the Terraform validation still pins. One
+  live cited answer through the API wiring: `gemini-3.5-flash`, 6311 ms,
+  Rp 6,82, 282 input / 95 visible / 900 thought tokens — recorded in the
+  execution trace as a numbered step, per constitution III.
+
 - **2026-07-30 · Cloud Run is not deployed; the demo runs on GitHub Pages.**
   The Google Cloud project's billing account is an expired trial and the card
   offered to reactivate it was declined by Google Payments, so no billable
@@ -226,6 +270,11 @@ folded in continuously rather than left to the end.
   credentials. What that demo does not exercise is the API layer: auth, tenant
   isolation and RBAC are covered by tests and by two local commands, not by the
   public URL. README and `docs/deploy.md` say so in those words.
+
+  Partly overtaken on 2026-08-07: `ebco-aihack-ardian` has an active billing
+  account, so billable resources are now possible. The model layer has moved
+  there (see the 2026-08-07 entry above). Cloud Run itself is still not
+  deployed, and this entry stays true of the deployment until it is.
 
 - **2026-07-30 · a dev token may omit the tenant, and screen 01 depends on it.**
   T058 defined the local token as `dev:<userId>:<tenantId>:<role>`, and the

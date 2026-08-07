@@ -114,9 +114,10 @@ One commit per task, prefixed with the task id.
   `VITE_LOKUS_API_URL`. Until this lands, the auth, tenant-isolation and RBAC
   layers are tested but never exercised from a browser.
 - **T060** Gemini adapter: one interface, two implementations. The real one
-  calls `generativelanguage.googleapis.com` with `fetch` and an API key from
-  `GEMINI_API_KEY`; the null one refuses to construct without a key so a caller
-  falls back deterministically instead of silently receiving invented text.
+  calls `aiplatform.googleapis.com` with `fetch` and an access token minted from
+  Application Default Credentials — no API key anywhere; the null one refuses to
+  construct without a project and a token source, so a caller falls back
+  deterministically instead of silently receiving invented text.
   Model tier follows the budget: Gemini for reasoning, Flash past 90%, refusal
   at the hard cap. Every call returns tokens and cost so the step can carry
   them. [AC-5.1, AC-5.2, AC-5.3]
@@ -124,7 +125,7 @@ One commit per task, prefixed with the task id.
   are written rather than concatenated — both still grounded. The model sees
   only the retrieved passages, the output goes through the existing guardrail
   and the 0.70 threshold, and a draft whose claims lost their citations is
-  refused rather than sent. With no key the deterministic path runs unchanged,
+  refused rather than sent. Unconfigured, the deterministic path runs unchanged,
   which is what the public demo does. [AC-3.2, AC-3.4, AC-4.1, AC-4.2]
 - **T062** Agent-authored copy learns a locale. One translator and two
   dictionaries in `packages/core/src/i18n`, a `locale` parameter on every
