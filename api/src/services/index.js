@@ -60,6 +60,7 @@ export function createServices({
   // serves, since GitHub Pages has no API behind it and a browser that could
   // mint a Google token would be a browser handing one out.
   vertex = vertexFromEnv(),
+  env = process.env,
 } = {}) {
   const gbp = createSeededGbpAdapter();
   const places = createSeededPlacesAdapter();
@@ -102,7 +103,23 @@ export function createServices({
     briefing: createBriefingService({ gbp, places, ticketStore }),
     // `gbp` so screen 14 can report response-time coverage over the outlets
     // whose history is complete, and name the ones it left out (spec AC-9.5).
-    admin: createAdminService({ budget, evaluationReport, gbp }),
+    // `runtime` so the same screen reports the stack this process actually has
+    // rather than the one the architecture diagram hopes for.
+    admin: createAdminService({
+      budget,
+      evaluationReport,
+      gbp,
+      runtime: {
+        reasoning: gemini ? 'vertex' : 'deterministic',
+        model: gemini ? MODEL_FOR_TIER[MODEL_TIER.REASONING] : null,
+        flashModel: gemini ? MODEL_FOR_TIER[MODEL_TIER.FLASH] : null,
+        location: gemini?.location ?? null,
+        // Cloud Run sets K_SERVICE. Asserting a deployment from a config value
+        // instead would put "Cloud Run" on the screen of a laptop.
+        onCloudRun: Boolean(env.K_SERVICE),
+        region: env.LOKUS_REGION ?? null,
+      },
+    }),
     location: createLocationService({ places }),
     outlets: createOutletService({ gbp, places }),
     knowledge,

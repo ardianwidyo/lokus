@@ -11,17 +11,37 @@ import { assertTenant } from '../lib/tenantScope.js';
  * disk here, because core must stay usable in a browser — the API passes the
  * committed report, the web build imports it.
  *
- * The row *labels* follow the reader's locale; the values do not. "Gemini ·
- * Vertex AI", "asia-southeast2" and "v0.9.4" are names of things, and a judge
- * checking the claim needs to read the same string the infrastructure uses.
+ * The row *labels* follow the reader's locale; the values do not, unless the
+ * value is prose. "gemini-3.5-flash", "asia-southeast2" and "v0.9.4" are names
+ * of things, and a judge checking the claim needs to read the same string the
+ * infrastructure uses.
+ *
+ * `runtime` describes what this process actually has, so screen 14 reports the
+ * stack rather than reciting it. Its default is the truth for a browser tab:
+ * no model, no Cloud Run.
  */
-export function createAdminService({ budget, evaluationReport, gbp = null }) {
+export function createAdminService({
+  budget,
+  evaluationReport,
+  gbp = null,
+  runtime = {},
+}) {
+  const stack = {
+    reasoning: 'deterministic',
+    model: null,
+    flashModel: null,
+    location: null,
+    onCloudRun: false,
+    region: null,
+    ...runtime,
+  };
+
   async function overview(tenantId, { locale = DEFAULT_LOCALE } = {}) {
     assertTenant(tenantId);
     const state = budget.stateOf(tenantId);
 
     return {
-      models: modelRows(locale),
+      models: modelRows(locale, stack),
       // Null without an adapter rather than zeroed: a screen must be able to
       // tell "we measured nothing" from "we measured zero".
       coverage: gbp ? await coverageRows(tenantId, gbp, locale) : null,
@@ -120,14 +140,71 @@ function costBreakdown(spentIdr, locale = DEFAULT_LOCALE) {
   return rows;
 }
 
-function modelRows(locale) {
+/**
+ * What this process actually runs, and what it only intends to.
+ *
+ * These rows used to be six literal strings. They named Vertex AI Agent Engine,
+ * `text-embedding-004` and "Cloud Run · 2 svc" on every render, including a
+ * browser tab with no cloud behind it at all — a panel that answered "which
+ * stack is live" without consulting anything. Enabling an API does not make it
+ * called, and the scoring criterion is a stack that is *used*, not one that is
+ * named, so every row now either reports a runtime fact or is marked `planned`.
+ *
+ * `planned` rows are kept rather than deleted. Dropping them would hide the
+ * intended architecture; showing them unmarked would claim it. Marked, they say
+ * the true thing: this is where the design is going, and it is not there yet.
+ */
+function modelRows(locale, runtime) {
+  const live = runtime.reasoning === 'vertex';
+  const deterministic = t(locale, 'admin.pathDeterministic');
+
   return [
-    { label: t(locale, 'admin.modelReasoning'), value: 'Gemini · Vertex AI' },
-    { label: t(locale, 'admin.modelBulk'), value: 'Gemini Flash' },
-    { label: t(locale, 'admin.modelEmbedding'), value: 'text-embedding-004' },
-    { label: t(locale, 'admin.modelRuntime'), value: 'Vertex AI Agent Engine' },
-    { label: t(locale, 'admin.modelRegion'), value: 'asia-southeast2' },
-    { label: t(locale, 'admin.modelServices'), value: 'Cloud Run · 2 svc' },
+    {
+      label: t(locale, 'admin.modelReasoning'),
+      // The pin, not the family name: a trace recorded against an older pin
+      // should not be mistaken for this one.
+      value: live ? `${runtime.model} · Vertex AI` : deterministic,
+      status: live ? 'live' : 'off',
+    },
+    {
+      label: t(locale, 'admin.modelBulk'),
+      value: live ? `${runtime.flashModel} · Vertex AI` : deterministic,
+      status: live ? 'live' : 'off',
+    },
+    {
+      label: t(locale, 'admin.modelEndpoint'),
+      // Deliberately the location and host, not the project id: this payload
+      // reaches a browser, and naming the billable resource there buys nothing.
+      value: live ? `${runtime.location} · aiplatform.googleapis.com` : '—',
+      status: live ? 'live' : 'off',
+    },
+    {
+      label: t(locale, 'admin.modelRetrieval'),
+      value: t(locale, 'admin.retrievalKeyword'),
+      status: 'live',
+    },
+    {
+      label: t(locale, 'admin.modelRuntime'),
+      value: t(locale, 'admin.runtimeSupervisor'),
+      status: 'live',
+    },
+    {
+      label: t(locale, 'admin.modelApiRuntime'),
+      // Cloud Run sets K_SERVICE; the API passes what it found rather than
+      // asserting a deployment that has not happened.
+      value: runtime.onCloudRun ? `Cloud Run · ${runtime.region}` : t(locale, 'admin.runtimeLocal'),
+      status: 'live',
+    },
+    {
+      label: t(locale, 'admin.modelSearchIndex'),
+      value: 'Vertex AI Search · text-embedding-004',
+      status: 'planned',
+    },
+    {
+      label: t(locale, 'admin.modelManagedRuntime'),
+      value: 'Vertex AI Agent Engine',
+      status: 'planned',
+    },
   ];
 }
 

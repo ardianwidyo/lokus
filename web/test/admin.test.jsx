@@ -24,12 +24,47 @@ describe('Screen 14 · Admin (AC-6.2)', () => {
     window.sessionStorage.clear();
   });
 
-  it('names the model used for each job', async () => {
+  it('reports the stack this build actually runs, not the one it plans', async () => {
+    // The seeded console is a browser tab: no model, no Cloud Run. It used to
+    // print "Gemini · Vertex AI" and "Cloud Run · 2 svc" here regardless, which
+    // is the one claim on this screen a judge could disprove from the URL bar.
     await renderAdmin();
 
-    expect(screen.getByText('Gemini Flash')).toBeInTheDocument();
-    expect(screen.getByText('text-embedding-004')).toBeInTheDocument();
-    expect(screen.getByText('asia-southeast2')).toBeInTheDocument();
+    expect(screen.getAllByText('Jalur deterministik').length).toBeGreaterThan(0);
+    expect(screen.getByText('Node lokal')).toBeInTheDocument();
+    expect(screen.getByText('Skoring kata kunci · packages/core')).toBeInTheDocument();
+  });
+
+  it('keeps the planned stack visible but marked, never claimed', async () => {
+    // Deleting these rows would hide the architecture; printing them unmarked
+    // would assert it. Marked is the only honest third option.
+    await renderAdmin();
+
+    const searchIndex = screen.getByText('Vertex AI Search · text-embedding-004');
+    const agentEngine = screen.getByText('Vertex AI Agent Engine');
+
+    expect(within(searchIndex.closest('dd')).getByText('belum tersambung')).toBeInTheDocument();
+    expect(within(agentEngine.closest('dd')).getByText('belum tersambung')).toBeInTheDocument();
+  });
+
+  it('names the live model pin when the API reports one', async () => {
+    // What a judge sees when the console runs against an API with Vertex on.
+    const source = {
+      isSeeded: false,
+      overview: async () => ({
+        ...(await createSeededAdminSource().overview()),
+        models: [
+          { label: 'Penalaran', value: 'gemini-3.5-flash · Vertex AI', status: 'live' },
+          { label: 'Endpoint model', value: 'global · aiplatform.googleapis.com', status: 'live' },
+        ],
+      }),
+    };
+
+    await renderAdmin(source);
+
+    expect(screen.getByText('gemini-3.5-flash · Vertex AI')).toBeInTheDocument();
+    expect(screen.getByText('global · aiplatform.googleapis.com')).toBeInTheDocument();
+    expect(screen.queryByText('Jalur deterministik')).not.toBeInTheDocument();
   });
 
   it('lists the guardrails and says where each is enforced', async () => {

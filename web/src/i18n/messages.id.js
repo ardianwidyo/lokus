@@ -773,8 +773,9 @@ export const id = {
     modelsLoading: 'Membaca konfigurasi runtime…',
     modelsEmpty: 'Konfigurasi tak tersedia',
     modelsError: 'Konfigurasi tak bisa dimuat',
+    notConnected: 'belum tersambung',
     modelsNote:
-      'Model dipilih per tugas, bukan satu model untuk semua — Flash untuk pekerjaan massal, model penalaran hanya untuk diagnosis.',
+      'Dibaca dari proses yang sedang berjalan, bukan daftar tetap. Model dipilih per tugas — Flash untuk pekerjaan massal, model penalaran hanya untuk diagnosis. Baris bertanda [belum tersambung] ada di arsitektur tapi belum dipanggil kode mana pun.',
 
     guardrailsKicker: 'Guardrail & kendali manusia',
     guardrailsLoading: 'Membaca kebijakan guardrail…',

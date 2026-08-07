@@ -771,8 +771,9 @@ export const en = {
     modelsLoading: 'Reading the runtime configuration…',
     modelsEmpty: 'Configuration unavailable',
     modelsError: 'The configuration could not be loaded',
+    notConnected: 'not connected',
     modelsNote:
-      'Models are chosen per task rather than one model for everything — Flash for bulk work, the reasoning model only for diagnosis.',
+      'Read from the running process, not a fixed list. Models are chosen per task rather than one model for everything — Flash for bulk work, the reasoning model only for diagnosis. Rows marked [not connected] are in the architecture but nothing calls them yet.',
 
     guardrailsKicker: 'Guardrails & human control',
     guardrailsLoading: 'Reading the guardrail policy…',

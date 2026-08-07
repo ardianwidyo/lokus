@@ -47,7 +47,15 @@ export function AdminScreen() {
                 {data.models.map((row) => (
                   <div key={row.label} className="kv-row">
                     <dt>{row.label}</dt>
-                    <dd>{row.value}</dd>
+                    <dd>
+                      {row.value}
+                      {/* A row the architecture intends but nothing calls yet.
+                          Kept and marked rather than deleted: dropping it hides
+                          the design, showing it unmarked claims it. */}
+                      {row.status === 'planned' ? (
+                        <span className="kv-tag">{t('admin.notConnected')}</span>
+                      ) : null}
+                    </dd>
                   </div>
                 ))}
               </dl>

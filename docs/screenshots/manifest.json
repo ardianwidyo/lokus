@@ -121,6 +121,7 @@
     "file": "11-pengetahuan.png",
     "panels": [
       "ready",
+      "empty",
       "empty"
     ]
   },
@@ -152,6 +153,7 @@
     "role": "admin",
     "file": "14-admin.png",
     "panels": [
+      "ready",
       "ready",
       "ready",
       "ready",

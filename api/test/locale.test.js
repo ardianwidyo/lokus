@@ -104,14 +104,23 @@ describe('T062 · the locale travels on the request (AC-8.4)', () => {
       expect(labels).not.toContain('Antrean kasir');
     });
 
-    it('labels the admin rows in the language and leaves the values alone', async () => {
-      const english = await call('/v1/admin/overview', { locale: 'en' });
-      const body = english.json();
+    it('labels the admin rows in the language, and translates prose values but not names', async () => {
+      const english = (await call('/v1/admin/overview', { locale: 'en' })).json();
+      const indonesian = (await call('/v1/admin/overview')).json();
 
-      expect(body.models[0].label).toBe('Reasoning');
-      // Names of things a judge has to be able to match against the infra.
-      expect(body.models[0].value).toBe('Gemini · Vertex AI');
-      expect(body.models.find((row) => row.value === 'asia-southeast2')).toBeTruthy();
+      expect(english.models[0].label).toBe('Reasoning');
+      expect(indonesian.models[0].label).toBe('Penalaran');
+
+      // A prose value is a sentence about the system and follows the reader.
+      // These services run without Vertex configured, so that is what it says.
+      expect(english.models[0].value).toBe('Deterministic path');
+      expect(indonesian.models[0].value).toBe('Jalur deterministik');
+
+      // A name is a name in every language: a judge has to be able to match it
+      // against the infrastructure and the plan.
+      const named = (body) => body.models.find((row) => row.status === 'planned').value;
+      expect(named(english)).toBe('Vertex AI Search · text-embedding-004');
+      expect(named(indonesian)).toBe(named(english));
     });
 
     it('scores the site scout in the language', async () => {

@@ -1599,6 +1599,22 @@
   text-align: right;
 }
 
+/* A row the architecture names but nothing calls yet. Quieter than the value it
+   qualifies, and never in the accent colour a live state uses — the difference
+   between "running" and "planned" has to survive a glance. */
+.kv-tag {
+  /* Its own line: inline, it competed with the value for the row's width and
+     broke a model name across two lines — and a name that has to be matched
+     against the infrastructure has to be readable in one piece. */
+  display: block;
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-neutral-600);
+}
+
 .kv-note {
   font-family: var(--font-body);
   font-weight: 400;
