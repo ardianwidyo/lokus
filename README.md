@@ -103,17 +103,31 @@ teraplikasi** — deploy Cloud Run menunggu billing account yang aktif
 **Nusa Retail** (Area Manager) untuk akses penuh, atau **Klinik Sehat Prima**
 (Viewer) untuk melihat gerbang peran bekerja.
 
-### Tiga hal yang paling layak diuji
+### Empat hal yang paling layak diuji
 
-1. **Tanya sesuatu yang tidak ada di SOP.** `/chat` → *"Bagaimana resep rendang
+Yang pertama adalah yang paling sulit dipalsukan, jadi mulailah dari sana.
+
+1. **Beri agennya dokumen yang belum pernah ia lihat.** `/pengetahuan` → kartu
+   **Unggah dokumen** → tempel satu pasal SOP yang Anda karang sendiri →
+   **Indeks dokumen**. Lalu buka `/chat` dan tanyakan isinya. Agen mengutipnya
+   dengan judul dan halaman. Tidak ada model yang bisa menghafal teks yang
+   ditulis semenit lalu — ini retrieval yang benar-benar berjalan. Centang
+   **Batasi akses** sebelum mengindeks, dan dokumen yang sama menjadi tidak bisa
+   dikutip sama sekali.
+2. **Tanya sesuatu yang tidak ada di SOP.** `/chat` → *"Bagaimana resep rendang
    padang?"* Agen menolak dan mencatat celah pengetahuan. Tidak ada yang
    dikarang.
-2. **Setujui satu keputusan.** `/briefing` → **Setujui & buat tiket** → buka
-   `/tindakan`. Tiketnya ada, dengan tautan balik ke keputusan yang
-   melahirkannya.
-3. **Lihat jejak eksekusinya.** `/chat` → *"Kenapa rating cabang Bekasi Timur
+3. **Tulis review baru, dan lihat temanya ditemukan.** `/review` → **+ Tambah
+   review (demo)** → tulis keluhan dengan kalimat Anda sendiri. Clusterer
+   menemukan temanya dari teks itu, drafternya membuat balasan bersitasi, dan
+   barisnya ditandai **demo** di setiap layar — konsol ini tidak pernah mengaku
+   punya data Google yang tidak ia punya.
+4. **Lihat jejak eksekusinya.** `/chat` → *"Kenapa rating cabang Bekasi Timur
    turun bulan ini?"* Chip jejak ada di dalam jawaban, lengkap dengan tool,
    latensi, dan biaya.
+
+Langkah demi langkah, termasuk alur enam menit untuk presentasi dan apa yang
+harus dilakukan bila ada yang macet: [`docs/demo-runbook.md`](docs/demo-runbook.md).
 
 ---
 
@@ -341,7 +355,7 @@ eval            golden set + runner yang menggerbangi deploy
 infra           Terraform: Cloud Run ×2, Firestore, BigQuery, Storage, Secret Manager, WIF
 specs           spec, plan, tasks — ditulis sebelum kodenya
 design          tokens.css, UI-GUIDELINES.md, SCREENS.md
-docs            deploy.md, demo-script.md
+docs            deploy.md, demo-script.md, demo-runbook.md
 ```
 
 ## Status build

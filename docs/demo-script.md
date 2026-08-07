@@ -6,6 +6,11 @@ keputusan → tindakan yang bisa dibuktikan.**
 Jalankan di URL yang sudah ter-deploy, bukan di laptop (konstitusi VII). Buka
 tab kedua di `/admin` sebelum mulai supaya tidak perlu menunggu apa pun.
 
+Butuh cara menyalakannya tanpa proyek GCP, atau versi enam menit yang memakai
+komposer review dan unggah SOP secara langsung? Lihat
+[demo-runbook.md](demo-runbook.md). Skrip di bawah ini adalah versi lima menit
+yang berjalan sepenuhnya di atas dataset contoh.
+
 **Peran demo:** masuk sebagai **Nusa Retail · Area Manager**.
 
 ---
@@ -115,6 +120,13 @@ Bagaimana resep rendang padang?
 > pengetahuan. Tidak ada jawaban yang dikarang — dan itu bisa Anda uji sendiri
 > sekarang juga."
 
+**Kalau juri ingin bukti yang lebih keras dari itu**, dan waktunya ada: buka
+`/pengetahuan`, tempel satu pasal SOP yang mereka dikte sendiri, tekan **Indeks
+dokumen**, lalu kembali ke sini dan tanyakan isinya. Agen mengutip dokumen yang
+belum ada satu menit sebelumnya, dengan judul dan halamannya. Tidak ada model
+yang bisa menghafal itu. Langkah lengkapnya di
+[demo-runbook.md](demo-runbook.md) §2.
+
 ---
 
 ## 4.20 — 5.00 · Layar 14 · Admin
@@ -146,13 +158,17 @@ Tutup:
 |---|---|
 | Layar kosong / cold start | Muat ulang sekali; Cloud Run scale-to-zero butuh ~3 detik |
 | Chat lambat | Lanjut bicara; jawabannya deterministik, pasti muncul |
-| Deploy bermasalah | Jalankan lokal: `npm install && npm run dev` — datanya sama persis |
+| Deploy bermasalah | Jalankan lokal: `npm install && npm run dev` — datanya sama persis, tanpa GCP |
+| Data demo berantakan | Tekan **Pulihkan data contoh** di layar 05 atau 11, atau muat ulang |
 | Waktu habis | Potong bagian 07; alur 02 → 06 → 10 sudah cukup |
 
 ## Yang jangan dijanjikan
 
 - Konsol berjalan di atas **dataset contoh**, bukan review Google sungguhan.
   Adapternya sama; akses API tenant pilot masih menunggu (spec.md Q1).
+- Review dan dokumen yang ditambahkan lewat komposer **bukan data Google**, dan
+  konsol menandainya begitu di setiap layar. Jangan menyebutnya "review yang
+  baru masuk".
 - Grafik layar 04 menggambar 8 pekan, bukan 12 seperti di `design/SCREENS.md`:
   8 pekan adalah seluruh rentang review yang ada. Layarnya mengatakan itu.
 - Garis "pesaing baru buka" hanya muncul di **Depok Margonda** — di sanalah
