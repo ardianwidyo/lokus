@@ -47,6 +47,10 @@ export function buildServer({
       evaluationReport,
       onBudgetAlert: (alert) =>
         fastify.log.warn({ event: 'budget_degraded', ...alert }, alert.message),
+      // A trace store that fell back to memory is a degradation worth seeing in
+      // the logs, not a silence to discover when a run cannot be produced.
+      onAgentEngineError: (failure) =>
+        fastify.log.warn(failure, `agent engine ${failure.operation} gagal: ${failure.message}`),
     });
 
   const directory = tenantDirectory ?? createSeededTenantDirectory();

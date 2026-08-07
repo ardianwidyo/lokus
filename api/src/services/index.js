@@ -1,6 +1,9 @@
+import { randomUUID } from 'node:crypto';
+
 import {
   MODEL_FOR_TIER,
   MODEL_TIER,
+  createAgentEngineRunStore,
   createBriefingService,
   createBudgetGuard,
   createKnowledgeAgent,
@@ -22,6 +25,25 @@ import {
 } from '@lokus/core';
 
 import { createAccessTokenProvider } from '../lib/googleAccessToken.js';
+
+/**
+ * Where agent runs are kept. Unset, they live in this process and die with it —
+ * fine for a test, thin for a judge who asks to see yesterday's trace.
+ * `LOKUS_AGENT_ENGINE` points at a reasoningEngine created by
+ * `scripts/agent-engine.mjs`; the sessions under it hold the runs.
+ */
+export function agentEngineFromEnv(env = process.env) {
+  const engine = env.LOKUS_AGENT_ENGINE ?? null;
+  if (!engine) return null;
+
+  return {
+    engine,
+    // Agent Engine serves asia-southeast2, unlike the Gemini models, so the
+    // runs stay in the region the constitution pins the tenant's data to.
+    location: env.LOKUS_AGENT_ENGINE_LOCATION || 'asia-southeast2',
+    getAccessToken: createAccessTokenProvider({ env }),
+  };
+}
 
 /**
  * Vertex AI is opt-in, because `GOOGLE_CLOUD_PROJECT` is set on every run and
@@ -55,18 +77,29 @@ export function createServices({
   evaluationReport,
   budgets = {},
   onBudgetAlert = null,
+  onAgentEngineError = null,
   // Credentials are resolved in this process and nowhere else. Unconfigured,
   // every call site uses its deterministic path — which is what the public demo
   // serves, since GitHub Pages has no API behind it and a browser that could
   // mint a Google token would be a browser handing one out.
   vertex = vertexFromEnv(),
+  agentEngine = agentEngineFromEnv(),
   env = process.env,
 } = {}) {
   const gbp = createSeededGbpAdapter();
   const places = createSeededPlacesAdapter();
   const gemini = createGeminiAdapterIfConfigured(vertex);
   const knowledge = createKnowledgeService({ gemini });
-  const runStore = createMemoryRunStore();
+  const runStore = agentEngine
+    ? createAgentEngineRunStore({
+        ...agentEngine,
+        // A failing trace store degrades to memory rather than taking the
+        // answer down with it — but it says so in the log, because a quiet
+        // degradation is how you find out weeks later that nothing was kept.
+        onError: (failure) =>
+          onAgentEngineError?.({ event: 'agent_engine_degraded', ...failure }),
+      })
+    : createMemoryRunStore();
   const ticketStore = createMemoryTicketStore({ seed: seedTickets({ tenantId: 'nusa-retail' }) });
 
   const budget = createBudgetGuard({ budgets, onAlert: onBudgetAlert });
@@ -75,6 +108,10 @@ export function createServices({
 
   const supervisor = withRunPersistence(
     createSupervisor({
+      // A counter restarts at 1 with the process. That was harmless while runs
+      // died with it too; against a store that outlives the process, today's
+      // `run-1` would collide with yesterday's.
+      idFactory: () => randomUUID(),
       gapLog: knowledge.gapLog,
       agents: {
         reputation: createReputationAgent({ gbp }),
@@ -118,6 +155,10 @@ export function createServices({
         // instead would put "Cloud Run" on the screen of a laptop.
         onCloudRun: Boolean(env.K_SERVICE),
         region: env.LOKUS_REGION ?? null,
+        // Where the numbered steps behind screen 13 are kept. Named only when
+        // the store is really Agent Engine — the memory store is not a managed
+        // service and must not be printed as one.
+        sessions: runStore.kind === 'agent-engine' ? runStore.location : null,
       },
     }),
     location: createLocationService({ places }),

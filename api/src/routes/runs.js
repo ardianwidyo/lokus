@@ -35,7 +35,10 @@ export function runRoutes(fastify, { runStore }) {
           question: run.question,
           intent: run.intent,
           status: run.status,
-          stepCount: run.steps.length,
+          // A store that keeps runs remotely records the count when the run
+          // finishes, because counting them here would mean one request per row
+          // just to render a number.
+          stepCount: run.stepCount ?? run.steps.length,
           latencyMs: run.latencyMs,
           costIdr: run.costIdr,
           startedAt: run.startedAt,

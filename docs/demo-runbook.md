@@ -242,7 +242,7 @@ curl -s localhost:8080/healthz
 ## 7 · Memeriksa bahwa semuanya benar sebelum naik panggung
 
 ```bash
-npm test          # 1.116 test: core 526, api 170, web 401, eval 19
+npm test          # 1.126 test: core 536, api 170, web 401, eval 19
 npm run eval      # 60 kasus golden set, lima ambang
 npm run lint
 ```

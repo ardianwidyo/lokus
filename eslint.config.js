@@ -57,7 +57,11 @@ export default [
         setTimeout: 'readonly',
         clearTimeout: 'readonly',
         URL: 'readonly',
+        // The Agent Engine store builds its list filters with it, rather than
+        // hand-escaping a query string containing a tenant id.
+        URLSearchParams: 'readonly',
         console: 'readonly',
+        Date: 'readonly',
         // Both present in Node 20 and every target browser; the Gemini
         // adapter uses them to put a ceiling on a call that never returns.
         AbortController: 'readonly',

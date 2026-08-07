@@ -225,7 +225,8 @@ pernah dipanggil adalah klaim yang tidak bisa dipertanggungjawabkan.
 
 | Berjalan sungguhan | Belum tersambung |
 |---|---|
-| **Gemini** (`gemini-3.5-flash` / `-lite`) menulis draft balasan (layar 06) dan jawaban bersitasi (layar 12) lewat **Vertex AI** REST di project `ebco-aihack-ardian`, tanpa API key — [`gemini.js`](packages/core/src/adapters/gemini.js) | **Vertex AI Agent Engine** & **Vertex AI Search**: billing sudah aktif, keduanya belum diadopsi |
+| **Gemini** (`gemini-3.5-flash` / `-lite`) menulis draft balasan (layar 06) dan jawaban bersitasi (layar 12) lewat **Vertex AI** REST di project `ebco-aihack-ardian`, tanpa API key — [`gemini.js`](packages/core/src/adapters/gemini.js) | **Vertex AI Agent Engine sebagai runtime agen**: supervisor masih berjalan di proses API, bukan di Agent Engine |
+| **Vertex AI Agent Engine Sessions** menyimpan setiap agent run dan langkah bernomornya di `asia-southeast2`; matikan API, nyalakan lagi, jejak lama tetap bisa diambil — [`agentEngineRunStore.js`](packages/core/src/agents/agentEngineRunStore.js) | **Vertex AI Search**: retrieval masih skoring kata kunci di `packages/core` |
 | Supervisor: routing, delegasi paralel, merge, guardrail, jejak langkah bernomor | **BigQuery + GIS**: klasterisasi, tren, dan jarak dihitung deterministik di `packages/core` |
 | Retrieval berambang 0,70, penolakan, dan pencatatan celah pengetahuan | **Firestore** & **Cloud Storage**: state di memori |
 | Isolasi tenant, RBAC, guardrail, batas biaya | **Business Profile** & **Places**: adapter sengaja tidak diimplementasi, bukan dipalsukan |

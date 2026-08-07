@@ -196,6 +196,15 @@ function modelRows(locale, runtime) {
       status: 'live',
     },
     {
+      label: t(locale, 'admin.modelSessions'),
+      // Agent Engine really does hold the runs when this says so — the store
+      // reports its own kind, so a memory fallback cannot print this row.
+      value: runtime.sessions
+        ? `Agent Engine Sessions · ${runtime.sessions}`
+        : t(locale, 'admin.sessionsInMemory'),
+      status: runtime.sessions ? 'live' : 'off',
+    },
+    {
       label: t(locale, 'admin.modelSearchIndex'),
       value: 'Vertex AI Search · text-embedding-004',
       status: 'planned',
