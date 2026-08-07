@@ -180,3 +180,9 @@ One commit per task, prefixed with the task id.
   chosen outlet, which then flows through the inbox, the theme clusters and the
   drafter unchanged — labelled as demo data throughout, and refused for an
   outlet LOKUS may not reply to. [AC-10.4, AC-10.5, AC-10.6]
+- **T069** What was put in can be read back. A document row on screen 11 opens
+  the chunks that were actually indexed from it — page, tokens and text — with
+  the restricted ones held back from everyone but an admin; screen 05 gains a
+  fourth filter listing the reviews added this session. Chunks gain a tenant id
+  on the way, because a panel that prints chunk text cannot select them by
+  document id alone. [AC-10.8, AC-10.9, AC-10.10]

@@ -211,6 +211,27 @@ two. So "ingest works" is not enough; the state has to be *one* state.
 - **AC-10.7** None of the above requires an API, a key, or a cloud project. The
   same build serves it from GitHub Pages and from `npm run dev`.
 
+Adding data and *seeing what was added* are not the same capability, and only the
+first is covered above. A document row reports a chunk count; the chunks
+themselves have never been visible anywhere except as a citation inside an
+answer, so a reader who wants to know what the agent was actually given has to
+ask it a question and hope. An added review is in the inbox, but only in whichever
+workflow bucket it fell into. The three that follow close that: the console can
+show what it holds, not only what it can do with it.
+
+- **AC-10.8** Every document on screen 11 can be opened, and what opens is what
+  was indexed — each chunk with its page, its token count and its text — rather
+  than the file that was handed over. A document added this session carries the
+  same demo mark an added review does (AC-10.6).
+- **AC-10.9** A restricted document is listed and openable, but its contents are
+  shown to an admin only. Everyone else gets the needs-permission state naming
+  the document, not an error and not an empty panel — the restriction is a
+  decision someone made, not a fault. One service decides it, so the browser and
+  the API refuse identically.
+- **AC-10.10** The reviews added this session can be listed as such, with their
+  own count, so a demo can show what it handed the system without hunting
+  through the workflow buckets for it.
+
 ## Success metrics
 
 | Metric | Baseline | Target |

@@ -190,8 +190,16 @@ review baru** dan sekunder blok **Tanya agen soal cabang ini**.
 ## 05 · Kotak masuk review (daftar padat + pratinjau)
 
 Baris filter: segmented control **Perlu tindakan · 24** / Draft siap · 63 /
-Terkirim · 187; di kanan tag tema: antrean kasir 31 (outline) · parkir 13 ·
-stok 7 · kebersihan 5.
+Terkirim · 187 / Ditambahkan (demo) · 0; di kanan tag tema: antrean kasir 31
+(outline) · parkir 13 · stok 7 · kebersihan 5.
+
+Segmen keempat menampilkan review yang ditambahkan lewat komposer di sesi ini,
+lengkap dengan jumlahnya. Ia tetap ditampilkan ketika jumlahnya nol — nol adalah
+jawaban yang benar untuk "apa yang sudah saya masukkan", dan segmen yang muncul
+tiba-tiba setelah review pertama ditambahkan justru menyembunyikan pertanyaan
+itu sampai terlambat. Tiga segmen pertama adalah tahap alur kerja; yang keempat
+adalah asal data, jadi sebuah review bisa muncul di dua segmen sekaligus dan itu
+memang seharusnya.
 
 Grid `320px 1fr`, dua panel `blueprint` menempel (panel kanan `border-left: 0`).
 
@@ -379,6 +387,23 @@ Panduan Nada Brand 2026 / PDF / 12 / Terindeks · SOP Penanganan Keluhan (draft
 v5) / DOCX / 18 / **Menunggu tinjauan** · Katalog Produk Q3 / XLSX / — /
 Terindeks / 21 Jul · Perjanjian Layanan Waralaba / PDF / 26 / **Diproses · 60%**
 · Notulen Rapat Ops Juni / PDF / 9 / Dikecualikan / 02 Jul.
+
+Nama dokumen di kolom pertama adalah tombol. Menekannya membuka panel **Isi
+dokumen** di bawah tabel: kicker "ISI DOKUMEN · <judul>", satu baris meta
+(jenis · halaman · potongan · status indeks · diperbarui), lalu daftar potongan
+apa adanya — tiap potongan dengan label "hal. 12 · 180 token" dan teks 13px
+`--font-body` di dalam bingkai hairline. Yang ditampilkan adalah potongan yang
+benar-benar terindeks, bukan berkas yang diunggah: kalau chunker memotong sebuah
+pasal di tengah, panel ini memperlihatkannya terpotong. Di situlah gunanya.
+
+Dokumen yang ditambahkan sesi ini membawa tag outline **demo** di barisnya,
+sama seperti review tambahan di layar 05.
+
+Dokumen yang dibatasi ("Batasi akses ke peran Admin") tetap terdaftar dan tetap
+bisa ditekan, tapi isinya hanya muncul untuk peran Admin. Peran lain mendapat
+state **perlu izin** yang menyebut nama dokumennya — bukan state error, karena
+tidak ada yang rusak, dan bukan panel kosong, karena pembatasan itu keputusan
+seseorang dan pembaca berhak tahu keputusan itu ada.
 
 Kanan: kartu celah pengetahuan (latar aksen-100) — "Tambahkan klausa batas waktu
 antrean": "12 pertanyaan staf bulan ini menanyakan batas waktu antrean yang wajib
