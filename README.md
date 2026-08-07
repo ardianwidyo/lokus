@@ -63,10 +63,10 @@ tenant, dan RBAC benar-benar dilewati — jalankan keduanya:
 
 ```bash
 # terminal 1 — API
-GOOGLE_CLOUD_PROJECT=demo \
+GOOGLE_CLOUD_PROJECT=ebco-aihack-ardian \
 LOKUS_AUTH_MODE=dev \
 LOKUS_ALLOWED_ORIGINS=http://localhost:5173 \
-GEMINI_API_KEY=...  \
+LOKUS_REASONING=vertex \
 npm run dev --workspace @lokus/api
 
 # terminal 2 — konsol
@@ -75,14 +75,16 @@ VITE_LOKUS_API_URL=http://localhost:8080 npm run dev
 
 Buka `http://localhost:5173/masuk`, pilih **Nusa Retail**, lalu buka layar
 **12 · Jawaban bersitasi** dari rail kiri. Di bawah judul panel akan tertulis
-**"ditulis gemini-3.5-flash, lolos cek sitasi"**. Kosongkan `GEMINI_API_KEY`,
+**"ditulis gemini-3.5-flash, lolos cek sitasi"**. Hapus `LOKUS_REASONING=vertex`,
 jalankan ulang, dan kalimat itu berubah jadi **"dikutip apa adanya dari SOP"**
 — beserta teks jawabannya. Itu cara termurah membuktikan modelnya benar-benar
 dipanggil, tanpa mempercayai klaim di halaman ini.
 
-`GEMINI_API_KEY` opsional dan gratis dari
-[AI Studio](https://aistudio.google.com/apikey) — tanpa billing account. Tanpa
-key, semuanya tetap jalan di jalur deterministik.
+**Tidak ada API key.** Gemini dipanggil lewat Vertex AI, yang memakai identitas,
+bukan rahasia: di lokal cukup `gcloud auth application-default login` sekali,
+di Cloud Run service account-nya sendiri (`roles/aiplatform.user`, sudah ada di
+[`infra/iam.tf`](infra/iam.tf)). Tanpa `LOKUS_REASONING=vertex` — atau tanpa
+kredensial sama sekali — semuanya tetap jalan di jalur deterministik.
 
 `LOKUS_AUTH_MODE=dev` menerima identitas tanpa verifikasi dan **hanya untuk
 lokal** — server menolak start bila mode itu aktif saat `NODE_ENV=production`.
@@ -93,7 +95,7 @@ dataset contoh **di dalam browser**, jadi yang Anda lihat di sana adalah
 aplikasi yang sama dengan yang dijalankan `npm run dev`.
 
 Yang **tidak** ada di demo URL itu: lapisan API. Auth, isolasi tenant, dan RBAC
-diuji oleh 145 test di workspace `api` dan bisa Anda lewati sendiri dengan dua
+diuji oleh 167 test di workspace `api` dan bisa Anda lewati sendiri dengan dua
 perintah di atas, tapi tidak dilewati oleh demo publik. Terraform di
 [`infra/`](infra/) tervalidasi terhadap provider Google 6.12 dan **belum
 teraplikasi** — deploy Cloud Run menunggu billing account yang aktif
@@ -174,7 +176,7 @@ flowchart TB
     kno["Agen Pengetahuan"]
   end
 
-  gem["<b>Gemini</b> · AI Studio REST<br/>draft balasan · jawaban bersitasi"]
+  gem["<b>Gemini</b> · Vertex AI REST<br/>draft balasan · jawaban bersitasi"]
 
   subgraph data["Data"]
     bq[("BigQuery + GIS<br/>fakta review · rollup tema")]
@@ -219,7 +221,7 @@ pernah dipanggil adalah klaim yang tidak bisa dipertanggungjawabkan.
 
 | Berjalan sungguhan | Belum tersambung |
 |---|---|
-| **Gemini** (`gemini-3.5-flash` / `-lite`) menulis draft balasan (layar 06) dan jawaban bersitasi (layar 12) lewat AI Studio REST — [`gemini.js`](packages/core/src/adapters/gemini.js) | **Vertex AI Agent Engine** & **Vertex AI Search**: butuh billing account aktif |
+| **Gemini** (`gemini-3.5-flash` / `-lite`) menulis draft balasan (layar 06) dan jawaban bersitasi (layar 12) lewat **Vertex AI** REST di project `ebco-aihack-ardian`, tanpa API key — [`gemini.js`](packages/core/src/adapters/gemini.js) | **Vertex AI Agent Engine** & **Vertex AI Search**: billing sudah aktif, keduanya belum diadopsi |
 | Supervisor: routing, delegasi paralel, merge, guardrail, jejak langkah bernomor | **BigQuery + GIS**: klasterisasi, tren, dan jarak dihitung deterministik di `packages/core` |
 | Retrieval berambang 0,70, penolakan, dan pencatatan celah pengetahuan | **Firestore** & **Cloud Storage**: state di memori |
 | Isolasi tenant, RBAC, guardrail, batas biaya | **Business Profile** & **Places**: adapter sengaja tidak diimplementasi, bukan dipalsukan |
@@ -248,10 +250,10 @@ layar 14 menghitungnya sungguhan, tapi yang layak diperiksa di sana adalah
 bukan dipercaya. Jawaban yang tidak menyebut sumber dibuang; jawaban yang
 menyebut `[9]` padahal hanya ada tiga kutipan dibuang; yang sampai ke pembaca
 adalah jawaban deterministik. Layar 12 menyebutkan mana yang terjadi —
-*"ditulis gemini-2.0-flash, lolos cek sitasi"* atau *"dikutip apa adanya dari
-SOP"*. Tanpa `GEMINI_API_KEY` seluruh sistem berjalan di jalur deterministik,
-dan itulah yang dilayani demo publik, karena key di dalam bundel browser adalah
-key yang bocor.
+*"ditulis gemini-3.5-flash, lolos cek sitasi"* atau *"dikutip apa adanya dari
+SOP"*. Tanpa `LOKUS_REASONING=vertex` seluruh sistem berjalan di jalur
+deterministik, dan itulah yang dilayani demo publik — kredensial Google
+diselesaikan di proses API saja, tidak pernah sampai ke bundel browser.
 
 ---
 

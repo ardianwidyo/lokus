@@ -54,6 +54,7 @@ export { GBP_TOOL_NAMES, GbpError, createGoogleGbpAdapter, createSeededGbpAdapte
 export { COMPLAINT_MATRIX, TARGET_RATING, generateReviews } from './seed/reviews.js';
 
 export {
+  DEFAULT_LOCATION as VERTEX_DEFAULT_LOCATION,
   GeminiError,
   MODEL_FOR_TIER,
   createGeminiAdapter,

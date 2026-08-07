@@ -1,20 +1,31 @@
 import { MODEL_TIER } from '../cost/budget.js';
 
 /**
- * Gemini, over the AI Studio REST endpoint.
+ * Gemini, over the Vertex AI REST endpoint.
  *
  * No SDK: one `fetch` against a documented HTTP API is the whole requirement,
- * and plan.md does not list a Google client library. Vertex AI Agent Engine
- * would be the production home for this, but it needs an active billing
- * account and the project's is an expired trial — recorded in plan.md
- * (2026-07-30).
+ * and plan.md does not list a Google client library. What changed on
+ * 2026-08-07 is not the transport but the identity — the AI Studio endpoint
+ * authenticated with a bearer API key, Vertex authenticates with an OAuth
+ * access token minted from Application Default Credentials, so there is no
+ * long-lived secret to store, mount, or leak. `aiplatform.googleapis.com` is
+ * also the endpoint plan.md's stack table always named.
  *
- * The key is read by the API process only. A key shipped to a browser is a
- * public key, so the console never holds one and the GitHub Pages demo runs
- * the deterministic path instead.
+ * The token is fetched by the caller and injected as `getAccessToken`, because
+ * resolving credentials needs `node:fs` and `node:crypto` and this file is in
+ * the bundle the browser console ships. The console never holds a credential:
+ * the GitHub Pages demo runs the deterministic path instead.
  */
 
-const ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models';
+/**
+ * The multi-region endpoint. Measured against project `ebco-aihack-ardian` on
+ * 2026-08-07: `global` and `asia-southeast1` both answer 200; `asia-southeast2`
+ * — the region the rest of the stack lives in — answers 400 FAILED_PRECONDITION,
+ * because these models are not served from Jakarta. `global` is the default
+ * because it has the widest capacity; set `GOOGLE_CLOUD_LOCATION` to pin a
+ * region when data residency has to win over availability.
+ */
+export const DEFAULT_LOCATION = 'global';
 
 /**
  * Which published model backs each budget tier.
@@ -23,12 +34,12 @@ const ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models';
  * the trace to say what actually ran, and an alias can be repointed under a
  * recorded run, which makes the trace a guess after the fact.
  *
- * Both were confirmed reachable on 2026-07-30. `gemini-2.0-*`, the earlier
- * choice, returns 429 on this project — its free-tier daily allowance is spent
- * elsewhere, which is exactly why a rate-limited model must degrade rather
- * than fail.
+ * Both were confirmed reachable on Vertex on 2026-08-07, and before that on AI
+ * Studio on 2026-07-30. `gemini-2.0-*`, the earlier choice, returned 429 on the
+ * AI Studio path — a spent free-tier allowance, which is exactly why a
+ * rate-limited model must degrade rather than fail.
  *
- * Measured the same day, on a short constrained prompt:
+ * Measured 2026-07-30, on a short constrained prompt:
  *
  *   gemini-3.6-flash        342 thought tokens   5729 ms
  *   gemini-3.5-flash        328 thought tokens   2565 ms
@@ -48,7 +59,9 @@ export const MODEL_FOR_TIER = Object.freeze({
 /**
  * Rupiah per 1M tokens, input/output. Rough published rates converted at
  * Rp 16.000 — precise enough to make the budget guard bite before real money
- * does, which is the only job these numbers have here.
+ * does, which is the only job these numbers have here. Vertex bills the same
+ * per-token rates as AI Studio's paid tier, so the table did not move when the
+ * endpoint did; what moved is that these tokens are now billed at all.
  */
 const RATE_IDR_PER_MTOK = Object.freeze({
   'gemini-3.5-flash': { input: 1_600, output: 6_400 },
@@ -72,22 +85,36 @@ export class GeminiError extends Error {
   }
 }
 
+/** `global` is served from the unprefixed host; every region prefixes its own. */
+export function endpointFor({ projectId, location, model }) {
+  const host = location === 'global' ? 'aiplatform.googleapis.com' : `${location}-aiplatform.googleapis.com`;
+  return `https://${host}/v1/projects/${projectId}/locations/${location}/publishers/google/models/${model}:generateContent`;
+}
+
 /**
  * The real adapter. Returns `{ text, tokens, costIdr, model, ms }` so the
  * caller can put the call in the execution trace with what it cost, rather
  * than reporting an estimate (constitution III).
  */
 export function createGeminiAdapter({
-  apiKey = null,
+  projectId = null,
+  location = DEFAULT_LOCATION,
+  getAccessToken = null,
   tier = MODEL_TIER.REASONING,
   timeoutMs = DEFAULT_TIMEOUT_MS,
   fetchImpl = globalThis.fetch,
   now = () => Date.now(),
 } = {}) {
-  if (!apiKey) {
+  if (!projectId) {
     throw new GeminiError(
       'GEMINI_NOT_CONFIGURED',
-      'GEMINI_API_KEY belum diset. Gunakan jalur deterministik secara eksplisit.',
+      'Project Vertex AI belum diset. Gunakan jalur deterministik secara eksplisit.',
+    );
+  }
+  if (typeof getAccessToken !== 'function') {
+    throw new GeminiError(
+      'GEMINI_NOT_CONFIGURED',
+      'Penyedia access token Vertex AI belum diberikan. Gunakan jalur deterministik secara eksplisit.',
     );
   }
   if (typeof fetchImpl !== 'function') {
@@ -99,7 +126,26 @@ export function createGeminiAdapter({
   // answer came back cut off mid-sentence at 900.
   async function generate({ prompt, tier: callTier = tier, temperature = 0.2, maxOutputTokens = 4_096 }) {
     const model = MODEL_FOR_TIER[callTier] ?? MODEL_FOR_TIER[MODEL_TIER.REASONING];
+    // The clock starts before the token is fetched: a cached token costs
+    // nothing, an expired one costs a round trip, and the trace should report
+    // the wait the caller actually had rather than the part we like.
     const startedAt = now();
+
+    let token;
+    try {
+      token = await getAccessToken();
+    } catch (error) {
+      throw new GeminiError(
+        'GEMINI_NO_CREDENTIALS',
+        `Kredensial Google tidak bisa diambil: ${error?.message ?? 'sebab tidak diketahui'}`,
+      );
+    }
+    if (!token) {
+      throw new GeminiError(
+        'GEMINI_NO_CREDENTIALS',
+        'Kredensial Google kosong. Jalankan `gcloud auth application-default login` atau beri service account pada runtime.',
+      );
+    }
 
     // An abandoned request still costs the caller's latency budget, so the
     // timeout is enforced here rather than left to the platform default.
@@ -108,9 +154,9 @@ export function createGeminiAdapter({
 
     let response;
     try {
-      response = await fetchImpl(`${ENDPOINT}/${model}:generateContent`, {
+      response = await fetchImpl(endpointFor({ projectId, location, model }), {
         method: 'POST',
-        headers: { 'content-type': 'application/json', 'x-goog-api-key': apiKey },
+        headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` },
         body: JSON.stringify({
           contents: [{ role: 'user', parts: [{ text: prompt }] }],
           generationConfig: { temperature, maxOutputTokens, responseMimeType: 'text/plain' },
@@ -129,7 +175,7 @@ export function createGeminiAdapter({
     }
 
     if (!response.ok) {
-      // The body carries Google's reason; the key itself must never be echoed.
+      // The body carries Google's reason; the token itself must never be echoed.
       const detail = await safeText(response);
       throw new GeminiError('GEMINI_HTTP_ERROR', `Gemini menolak permintaan (${response.status}). ${detail}`, {
         status: response.status,
@@ -164,9 +210,9 @@ export function createGeminiAdapter({
     const usage = body?.usageMetadata ?? {};
     // Thinking tokens are billed at the output rate but are not included in
     // candidatesTokenCount, and on a thinking model they dwarf the visible
-    // answer — 328 against 12 in one measurement. Leaving them out would have
-    // under-reported the spend by an order of magnitude and let the budget
-    // guard wave through calls it should have degraded (constitution V).
+    // answer — 487 against 21 in one Vertex measurement. Leaving them out would
+    // under-report the spend by an order of magnitude and let the budget guard
+    // wave through calls it should have degraded (constitution V).
     const thoughts = usage.thoughtsTokenCount ?? 0;
     const tokens = {
       input: usage.promptTokenCount ?? 0,
@@ -186,16 +232,18 @@ export function createGeminiAdapter({
     };
   }
 
-  return { isSeeded: false, generate };
+  return { isSeeded: false, projectId, location, generate };
 }
 
 /**
- * Builds the adapter when a key exists and returns `null` when it does not,
- * so a caller writes `gemini ?? deterministic` instead of a try/catch. Absence
- * of a key is a normal configuration, not an error.
+ * Builds the adapter when Vertex is configured and returns `null` when it is
+ * not, so a caller writes `gemini ?? deterministic` instead of a try/catch.
+ * An unconfigured reasoning layer is a normal configuration, not an error.
  */
 export function createGeminiAdapterIfConfigured(options = {}) {
-  return options?.apiKey ? createGeminiAdapter(options) : null;
+  return options?.projectId && typeof options?.getAccessToken === 'function'
+    ? createGeminiAdapter(options)
+    : null;
 }
 
 export function costOf(model, { input = 0, output = 0 } = {}) {
@@ -208,6 +256,10 @@ function extractText(body) {
   const parts = body?.candidates?.[0]?.content?.parts;
   if (!Array.isArray(parts)) return '';
   return parts
+    // Vertex can return the model's own thinking as a part flagged `thought`.
+    // That is working notes, not an answer, and it must never be published as
+    // one — nor counted as text when deciding whether the model said anything.
+    .filter((part) => !part?.thought)
     .map((part) => part?.text ?? '')
     .join('')
     .trim();

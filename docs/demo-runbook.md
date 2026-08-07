@@ -221,17 +221,21 @@ konsol tidak berhak membuangnya. Unggah SOP tetap bekerja lewat
 `POST /v1/knowledge/documents`.
 
 Untuk menjalankan penalaran Gemini yang sungguhan alih-alih jalur
-deterministik, ambil kunci gratis di <https://aistudio.google.com/apikey> —
-kunci AI Studio tidak butuh akun billing — dan set `GEMINI_API_KEY` di proses
-API. Tanpa kunci, semuanya tetap berjalan lewat jalur deterministik, dan itulah
-yang dilayani demo publik.
+deterministik, jalankan sekali `gcloud auth application-default login`, lalu
+tambahkan `GOOGLE_CLOUD_PROJECT=ebco-aihack-ardian LOKUS_REASONING=vertex` di
+proses API. Tidak ada API key: Vertex AI memakai identitas Anda, bukan rahasia
+yang disimpan. Tanpa flag itu — atau tanpa kredensial — semuanya tetap berjalan
+lewat jalur deterministik, dan itulah yang dilayani demo publik.
+
+Kalau kredensialnya bermasalah di pagi hari demo, biayanya nol: panel jawaban
+berubah jadi *"dikutip apa adanya dari SOP"* dan tidak ada layar yang rusak.
 
 ---
 
 ## 7 · Memeriksa bahwa semuanya benar sebelum naik panggung
 
 ```bash
-npm test          # 1.083 test: core 514, api 151, web 399, eval 19
+npm test          # 1.106 test: core 521, api 167, web 399, eval 19
 npm run eval      # 60 kasus golden set, lima ambang
 npm run lint
 ```

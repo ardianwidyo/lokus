@@ -19,6 +19,27 @@ import {
   withRunPersistence,
 } from '@lokus/core';
 
+import { createAccessTokenProvider } from '../lib/googleAccessToken.js';
+
+/**
+ * Vertex AI is opt-in, because `GOOGLE_CLOUD_PROJECT` is set on every run and
+ * gating on it alone would silently start billing a demo. `LOKUS_REASONING`
+ * has to say `vertex` in so many words; anything else keeps the deterministic
+ * path, which is what the public demo and every test run.
+ */
+export function vertexFromEnv(env = process.env) {
+  if ((env.LOKUS_REASONING ?? '').toLowerCase() !== 'vertex') return {};
+
+  const projectId = env.GOOGLE_CLOUD_PROJECT ?? null;
+  return {
+    projectId,
+    // `global` unless pinned: these models are not served from
+    // asia-southeast2, where the rest of the stack lives (measured 2026-08-07).
+    location: env.GOOGLE_CLOUD_LOCATION || undefined,
+    getAccessToken: projectId ? createAccessTokenProvider({ env }) : null,
+  };
+}
+
 /**
  * Wires the domain for the API process.
  *
@@ -32,14 +53,15 @@ export function createServices({
   evaluationReport,
   budgets = {},
   onBudgetAlert = null,
-  // The key lives in this process and nowhere else. Absent, every call site
-  // uses its deterministic path — which is what the public demo serves, since
-  // GitHub Pages has no API behind it and a browser-side key is a public key.
-  geminiApiKey = process.env.GEMINI_API_KEY ?? null,
+  // Credentials are resolved in this process and nowhere else. Unconfigured,
+  // every call site uses its deterministic path — which is what the public demo
+  // serves, since GitHub Pages has no API behind it and a browser that could
+  // mint a Google token would be a browser handing one out.
+  vertex = vertexFromEnv(),
 } = {}) {
   const gbp = createSeededGbpAdapter();
   const places = createSeededPlacesAdapter();
-  const gemini = createGeminiAdapterIfConfigured({ apiKey: geminiApiKey });
+  const gemini = createGeminiAdapterIfConfigured(vertex);
   const knowledge = createKnowledgeService({ gemini });
   const runStore = createMemoryRunStore();
   const ticketStore = createMemoryTicketStore({ seed: seedTickets({ tenantId: 'nusa-retail' }) });
@@ -65,8 +87,8 @@ export function createServices({
     places,
     gemini,
     // Reported so /healthz and screen 14 can state which reasoning path is
-    // live, rather than leaving a reader to guess whether a key is present.
-    reasoning: gemini ? 'gemini' : 'deterministic',
+    // live, rather than leaving a reader to guess how the process is configured.
+    reasoning: gemini ? 'vertex' : 'deterministic',
     runStore,
     ticketStore,
     budget,

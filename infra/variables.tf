@@ -43,6 +43,28 @@ variable "api_max_instances" {
   default     = 4
 }
 
+variable "reasoning_path" {
+  description = "Where reply drafts and cited answers come from: Vertex AI, or the deterministic path."
+  type        = string
+  default     = "vertex"
+
+  validation {
+    condition     = contains(["vertex", "deterministic"], var.reasoning_path)
+    error_message = "reasoning_path must be one of: vertex, deterministic."
+  }
+}
+
+variable "vertex_location" {
+  description = "Vertex AI endpoint for Gemini. Not var.region: asia-southeast2 does not serve these models (measured 2026-08-07)."
+  type        = string
+  default     = "global"
+
+  validation {
+    condition     = contains(["global", "asia-southeast1", "us-central1"], var.vertex_location)
+    error_message = "vertex_location must be an endpoint that serves the pinned models: global, asia-southeast1, or us-central1."
+  }
+}
+
 variable "identity_platform_tenant_claim" {
   description = "Custom JWT claim that carries the tenant id. Must match api/src/config.js."
   type        = string

@@ -51,6 +51,18 @@ resource "google_cloud_run_v2_service" "api" {
         name  = "LOKUS_TENANT_CLAIM"
         value = var.identity_platform_tenant_claim
       }
+      # Gemini runs on Vertex AI under this service's own identity — no key, no
+      # secret, nothing to rotate. `roles/aiplatform.user` is granted in
+      # iam.tf; the location is separate from var.region because these models
+      # are not served from asia-southeast2.
+      env {
+        name  = "LOKUS_REASONING"
+        value = var.reasoning_path
+      }
+      env {
+        name  = "GOOGLE_CLOUD_LOCATION"
+        value = var.vertex_location
+      }
       env {
         name  = "BQ_MARTS_DATASET"
         value = google_bigquery_dataset.marts.dataset_id
