@@ -258,6 +258,52 @@ folded in continuously rather than left to the end.
   Rp 6,82, 282 input / 95 visible / 900 thought tokens — recorded in the
   execution trace as a numbered step, per constitution III.
 
+- **2026-08-07 · agent runs are kept in Agent Engine Sessions; the supervisor
+  still runs here.** The stack table names Vertex AI Agent Engine as the agent
+  runtime. That row is still not true, and this entry does not make it true —
+  what it does is connect the part of Agent Engine that can be connected
+  honestly today.
+
+  `reasoningEngines` is reachable in `asia-southeast2`, unlike the Gemini
+  models, so the traces stay in the region the constitution pins the tenant's
+  data to. An engine created without a `spec` runs nothing and builds nothing;
+  its `sessions` and `memories` sub-resources are usable on their own. The
+  mapping is one session per run, one event per numbered step:
+
+  ```
+  run        → Session, displayName = run id, userId = tenant id
+  run header → sessionState (question, intent, agents, outcome)
+  step       → SessionEvent, appended as it happens, rawEvent = the step
+  ```
+
+  This is what constitution III was missing. The trace used to live in a `Map`
+  that died with the process — faithful to the interface, but a run nobody can
+  fetch tomorrow only exists during the demo. Measured after the change: kill
+  the API, start it again with an empty memory, ask for a run id from before
+  the restart, and its eight steps come back.
+
+  `userId` carries the tenant because `sessions.list` filters on `user_id`
+  server-side, so a cross-tenant read is refused by Google before it is refused
+  by us — and refused by us as well, on the way out. A run belonging to another
+  tenant answers 404, not 403.
+
+  Two constraints the API imposed, both kept rather than worked around. Session
+  state cannot be PATCHed: *"you can only update it by appending an event"*, so
+  the outcome is a final event carrying a `stateDelta` — the record is appended
+  to, never edited, which is the rule the constitution already imposed on us.
+  And run ids came from a per-process counter, which was harmless while runs
+  died with the process; against a store that outlives it, today's `run-1`
+  would collide with yesterday's, so the API now mints a UUID.
+
+  Failure is a degradation, not an outage. Every write also lands in memory and
+  every read falls back to it, with a `agent_engine_degraded` warning on the
+  log line — a trace store that is down must not take the answer down with it,
+  and must not lose the trace in silence either.
+
+  Not in Terraform: the Google provider 6.12 that `infra/` validates against
+  has no `reasoningEngine` resource. `scripts/agent-engine.mjs` creates, lists
+  and deletes it instead, and says so where a reader will look.
+
 - **2026-07-30 · Cloud Run is not deployed; the demo runs on GitHub Pages.**
   The Google Cloud project's billing account is an expired trial and the card
   offered to reactivate it was declined by Google Payments, so no billable
