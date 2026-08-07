@@ -80,6 +80,10 @@ jalankan ulang, dan kalimat itu berubah jadi **"dikutip apa adanya dari SOP"**
 — beserta teks jawabannya. Itu cara termurah membuktikan modelnya benar-benar
 dipanggil, tanpa mempercayai klaim di halaman ini.
 
+Kalau ingin memastikannya sebelum mengklik apa pun, `curl -s localhost:8080/healthz`
+menjawab `"reasoning":"vertex","model":"gemini-3.5-flash"` — atau
+`"reasoning":"deterministic","model":null`.
+
 **Tidak ada API key.** Gemini dipanggil lewat Vertex AI, yang memakai identitas,
 bukan rahasia: di lokal cukup `gcloud auth application-default login` sekali,
 di Cloud Run service account-nya sendiri (`roles/aiplatform.user`, sudah ada di
@@ -95,7 +99,7 @@ dataset contoh **di dalam browser**, jadi yang Anda lihat di sana adalah
 aplikasi yang sama dengan yang dijalankan `npm run dev`.
 
 Yang **tidak** ada di demo URL itu: lapisan API. Auth, isolasi tenant, dan RBAC
-diuji oleh 167 test di workspace `api` dan bisa Anda lewati sendiri dengan dua
+diuji oleh 170 test di workspace `api` dan bisa Anda lewati sendiri dengan dua
 perintah di atas, tapi tidak dilewati oleh demo publik. Terraform di
 [`infra/`](infra/) tervalidasi terhadap provider Google 6.12 dan **belum
 teraplikasi** — deploy Cloud Run menunggu billing account yang aktif

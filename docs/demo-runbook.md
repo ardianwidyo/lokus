@@ -229,13 +229,20 @@ lewat jalur deterministik, dan itulah yang dilayani demo publik.
 
 Kalau kredensialnya bermasalah di pagi hari demo, biayanya nol: panel jawaban
 berubah jadi *"dikutip apa adanya dari SOP"* dan tidak ada layar yang rusak.
+Untuk tahu mana yang sedang aktif tanpa membakar token sepeser pun:
+
+```bash
+curl -s localhost:8080/healthz
+# {"status":"ok",…,"reasoning":"vertex","model":"gemini-3.5-flash"}
+# atau                "reasoning":"deterministic","model":null
+```
 
 ---
 
 ## 7 · Memeriksa bahwa semuanya benar sebelum naik panggung
 
 ```bash
-npm test          # 1.106 test: core 521, api 167, web 399, eval 19
+npm test          # 1.109 test: core 521, api 170, web 399, eval 19
 npm run eval      # 60 kasus golden set, lima ambang
 npm run lint
 ```

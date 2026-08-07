@@ -95,7 +95,7 @@ export function buildServer({
       .send({ error: { code: 'INTERNAL', message: 'Request failed' } });
   });
 
-  healthRoutes(fastify, { config });
+  healthRoutes(fastify, { config, reasoning: domain.reasoning, model: domain.reasoningModel });
   sessionRoutes(fastify, { tenantDirectory: directory });
   runRoutes(fastify, { runStore: runs });
   reputationRoutes(fastify, { reputation: domain.reputation });

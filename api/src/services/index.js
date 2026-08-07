@@ -1,4 +1,6 @@
 import {
+  MODEL_FOR_TIER,
+  MODEL_TIER,
   createBriefingService,
   createBudgetGuard,
   createKnowledgeAgent,
@@ -89,6 +91,9 @@ export function createServices({
     // Reported so /healthz and screen 14 can state which reasoning path is
     // live, rather than leaving a reader to guess how the process is configured.
     reasoning: gemini ? 'vertex' : 'deterministic',
+    // The pin the reasoning tier would use. Named here rather than at the route
+    // because the route should report configuration, not re-derive it.
+    reasoningModel: gemini ? MODEL_FOR_TIER[MODEL_TIER.REASONING] : null,
     runStore,
     ticketStore,
     budget,
