@@ -373,4 +373,4 @@ export function generateReviews({ now = DEMO_NOW, seed = 'lokus-2026' } = {}) {
   return reviews.sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
 }
 
-export { FEATURED, FEATURED_POSITIVE, evenSpread };
+export { FEATURED, FEATURED_POSITIVE, buildReview, evenSpread };

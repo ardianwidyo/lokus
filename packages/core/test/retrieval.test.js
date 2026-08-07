@@ -100,3 +100,54 @@ describe('rag.search envelope', () => {
     expect(result.sources).toEqual([]);
   });
 });
+
+describe('a corpus that grows after the agent was built (AC-10.2)', () => {
+  const TENANT = 'nusa-retail';
+
+  /** The shape `createSeededKnowledgeStore().retrievablePassages` returns. */
+  const passage = (text) => ({
+    chunkId: 'chunk-demo-1',
+    docId: 'sop-demo',
+    page: 1,
+    title: 'SOP Penanganan Antrean Kasir',
+    text,
+    tenantId: TENANT,
+  });
+
+  it('re-reads a provider on every search, so a document added later is found', () => {
+    const corpus = [];
+    const provider = () => corpus;
+    const query = 'kasir tambahan antrean kasir jam sibuk';
+
+    // Built once, asked twice — exactly how the chat agent is constructed.
+    const before = searchPassages({ tenantId: TENANT, query, passages: provider });
+    expect(before.chunks).toHaveLength(0);
+
+    corpus.push(
+      passage(
+        'Kasir tambahan wajib dibuka ketika antrean kasir mencapai lima orang pada jam sibuk. ' +
+          'Supervisor toko memantau antrean setiap 15 menit.',
+      ),
+    );
+
+    const after = searchPassages({ tenantId: TENANT, query, passages: provider });
+    expect(after.chunks).toHaveLength(1);
+    expect(after.chunks[0].docId).toBe('sop-demo');
+  });
+
+  it('treats a provider returning nothing as an empty corpus, not as the seed', () => {
+    const found = searchPassages({
+      tenantId: TENANT,
+      query: 'antrean kasir jam sibuk',
+      passages: () => null,
+    });
+
+    expect(found.chunks).toHaveLength(0);
+    expect(found.rejectedCount).toBe(0);
+  });
+
+  it('still falls back to the seeded corpus when nothing is passed', () => {
+    const found = searchPassages({ tenantId: TENANT, query: 'antrean kasir jam sibuk' });
+    expect(found.chunks.length).toBeGreaterThan(0);
+  });
+});

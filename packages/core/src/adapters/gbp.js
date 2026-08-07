@@ -1,7 +1,8 @@
 import { DEMO_NOW } from '../domain/clock.js';
-import { listingFor } from '../domain/listingLevel.js';
+import { LISTING_LEVELS, listingFor } from '../domain/listingLevel.js';
+import { findOutlet } from '../domain/outlets.js';
 import { seedListings } from '../seed/listings.js';
-import { generateReviews } from '../seed/reviews.js';
+import { buildReview, generateReviews } from '../seed/reviews.js';
 import { toolResult } from '../lib/toolResult.js';
 import { assertTenant, scopeToTenant } from '../lib/tenantScope.js';
 
@@ -53,6 +54,10 @@ export function createSeededGbpAdapter({ now = DEMO_NOW, seed = 'lokus-2026', cl
   // Copied, not shared: reply state is per-adapter.
   const reviews = generatedRows(now, seed).map((review) => ({ ...review }));
   const byId = new Map(reviews.map((review) => [review.id, review]));
+
+  // Ids for rows added at runtime. Per adapter, so two adapters cannot mint the
+  // same id and a reset genuinely starts over.
+  let demoCounter = 0;
 
   async function listReviews({ tenantId, outletId = null, since = null, limit = 500 } = {}) {
     const startedAt = Date.now();
@@ -139,7 +144,83 @@ export function createSeededGbpAdapter({ now = DEMO_NOW, seed = 'lokus-2026', cl
     });
   }
 
-  return { isSeeded: true, listReviews, reply, __reviews: reviews };
+  /**
+   * Adds a review the seed did not contain (AC-10.4).
+   *
+   * This is the demo's only way to hand the agents something they have never
+   * seen, and it is the whole point: a theme rediscovered from text written in
+   * the room is evidence the clusterer reads, where the seeded matrix is only
+   * evidence it was configured.
+   *
+   * It goes in through the same gates a Google row does rather than beside
+   * them (AC-10.5). Tenant scope is asserted, the outlet must belong to that
+   * tenant, and the listing level decides the reply state exactly as it does in
+   * `buildReview` — so a review added for an L1 outlet is unrepliable here for
+   * the same reason it would be unrepliable if Google had sent it.
+   *
+   * `source: 'demo'` and the absent `sourceUri` are load-bearing, not
+   * cosmetic: nothing downstream may cite this row as having come from Google
+   * (AC-10.6), and a citation with no URI is one a reader cannot mistake for a
+   * live listing.
+   */
+  async function addReview({ tenantId, outletId, rating, author, text, publishedAt = null } = {}) {
+    const startedAt = Date.now();
+    assertTenant(tenantId);
+
+    const outlet = findOutlet(outletId);
+    if (!outlet || outlet.tenantId !== tenantId) {
+      // Same refusal for "belongs to another tenant" and "does not exist", for
+      // the same reason `reply` gives one refusal for both (AC-6.1).
+      throw new GbpError('OUTLET_NOT_FOUND', 'Cabang tidak ditemukan untuk tenant ini');
+    }
+
+    const stars = Number(rating);
+    if (!Number.isInteger(stars) || stars < 1 || stars > 5) {
+      throw new GbpError('RATING_INVALID', 'Rating harus bilangan bulat 1 sampai 5');
+    }
+    if (!String(text ?? '').trim()) {
+      throw new GbpError('TEXT_REQUIRED', 'Review tanpa teks tidak bisa dianalisis');
+    }
+
+    const listing = listingFor(seedListings({ tenantId, now: clock() }), outletId);
+    if (listing.level === LISTING_LEVELS.ABSENT) {
+      // L0 is not a permission problem and no click fixes it: an outlet with no
+      // listing on Maps is an outlet no review could have been left on (US-9).
+      throw new GbpError(
+        'LISTING_ABSENT',
+        'Cabang ini belum punya listing di Google Maps, jadi tidak bisa menerima review',
+      );
+    }
+
+    const at = publishedAt ? new Date(publishedAt) : clock();
+    const review = {
+      ...buildReview({
+        id: `rev-${outletId}-demo-${++demoCounter}`,
+        tenantId,
+        outletId,
+        rating: stars,
+        author: String(author ?? '').trim() || 'Tamu',
+        text: String(text).trim(),
+        publishedAt: at,
+        now: clock(),
+        level: listing.level,
+      }),
+      source: 'demo',
+      sourceUri: null,
+      addedInSession: true,
+    };
+
+    reviews.unshift(review);
+    byId.set(review.id, review);
+
+    return toolResult({
+      data: { review: { ...review }, total: scopeToTenant(tenantId, reviews).length },
+      sources: [{ type: 'review', id: review.id, outletId, uri: null, publishedAt: review.publishedAt }],
+      startedAt,
+    });
+  }
+
+  return { isSeeded: true, listReviews, reply, addReview, __reviews: reviews };
 }
 
 /**

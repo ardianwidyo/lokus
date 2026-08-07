@@ -242,3 +242,118 @@ describe('the seeded dataset', () => {
     expect(COMPLAINT_MATRIX.kebersihan['CKR-01']).toBe(17);
   });
 });
+
+describe('gbp.addReview', () => {
+  it('adds a review the seed never contained and returns it in the next read', async () => {
+    const gbp = createSeededGbpAdapter();
+    const before = await gbp.listReviews({ tenantId: TENANT });
+
+    const { data } = await gbp.addReview({
+      tenantId: TENANT,
+      outletId: 'BKS-02',
+      rating: 2,
+      author: 'Juri EBCO',
+      text: 'Antre lama sekali di kasir, hanya satu yang buka.',
+    });
+
+    const after = await gbp.listReviews({ tenantId: TENANT });
+    expect(after.data.total).toBe(before.data.total + 1);
+    expect(after.data.reviews.some((review) => review.id === data.review.id)).toBe(true);
+  });
+
+  it('never claims an added review came from Google (AC-10.6)', async () => {
+    const gbp = createSeededGbpAdapter();
+
+    const { data, sources } = await gbp.addReview({
+      tenantId: TENANT,
+      outletId: 'BKS-02',
+      rating: 4,
+      author: 'Juri EBCO',
+      text: 'Kasir cepat dan stafnya membantu mengarahkan antrean.',
+    });
+
+    expect(data.review.source).toBe('demo');
+    expect(data.review.sourceUri).toBeNull();
+    expect(sources[0].uri).toBeNull();
+  });
+
+  it('keeps the human-approval gate on an added 1-2 star review (AC-10.5)', async () => {
+    const gbp = createSeededGbpAdapter();
+    const { data } = await gbp.addReview({
+      tenantId: TENANT,
+      outletId: 'BKS-02',
+      rating: 1,
+      author: 'Juri EBCO',
+      text: 'Kasir tutup semua dan antrean mengular sampai luar.',
+    });
+
+    await expect(
+      gbp.reply({ tenantId: TENANT, reviewId: data.review.id, text: 'Mohon maaf.' }),
+    ).rejects.toMatchObject({ code: 'APPROVAL_REQUIRED' });
+  });
+
+  it('adds an unrepliable review for an outlet LOKUS only reads (US-9 L1)', async () => {
+    const gbp = createSeededGbpAdapter();
+    const { data } = await gbp.addReview({
+      tenantId: TENANT,
+      outletId: 'KRW-01',
+      rating: 4,
+      author: 'Juri EBCO',
+      text: 'Barangnya lengkap dan kasirnya cepat.',
+    });
+
+    expect(data.review.replyState).toBe('none');
+    await expect(
+      gbp.reply({ tenantId: TENANT, reviewId: data.review.id, text: 'Terima kasih.' }),
+    ).rejects.toMatchObject({ code: 'LISTING_UNCLAIMED' });
+  });
+
+  it('refuses an outlet with no listing at all, because no review could exist there', async () => {
+    const gbp = createSeededGbpAdapter();
+
+    await expect(
+      gbp.addReview({
+        tenantId: TENANT,
+        outletId: 'BSD-02',
+        rating: 5,
+        author: 'Juri EBCO',
+        text: 'Cabang baru yang rapi.',
+      }),
+    ).rejects.toMatchObject({ code: 'LISTING_ABSENT' });
+  });
+
+  it('refuses another tenant’s outlet the same way it refuses an unknown one', async () => {
+    const gbp = createSeededGbpAdapter();
+    const mine = OUTLETS.find((outlet) => outlet.tenantId === TENANT);
+    const attempt = (tenantId, outletId) =>
+      gbp.addReview({ tenantId, outletId, rating: 3, author: 'Juri EBCO', text: 'Tokonya nyaman.' });
+
+    // One refusal for both, so this cannot be used to probe whether an outlet
+    // exists inside a tenant the caller has no membership for (AC-6.1).
+    await expect(attempt('kopi-arunika', mine.outletId)).rejects.toMatchObject({
+      code: 'OUTLET_NOT_FOUND',
+    });
+    await expect(attempt('kopi-arunika', 'TIDAK-ADA')).rejects.toMatchObject({
+      code: 'OUTLET_NOT_FOUND',
+    });
+  });
+
+  it('refuses a rating outside 1-5 and a review with no text', async () => {
+    const gbp = createSeededGbpAdapter();
+    const base = { tenantId: TENANT, outletId: 'BKS-02', author: 'Juri EBCO' };
+
+    await expect(gbp.addReview({ ...base, rating: 6, text: 'Bagus.' })).rejects.toMatchObject({
+      code: 'RATING_INVALID',
+    });
+    await expect(gbp.addReview({ ...base, rating: 3, text: '   ' })).rejects.toMatchObject({
+      code: 'TEXT_REQUIRED',
+    });
+  });
+
+  it('scopes an added review to its tenant', async () => {
+    const gbp = createSeededGbpAdapter();
+    await expect(
+      gbp.addReview({ tenantId: '', outletId: 'BKS-02', rating: 3, text: 'Bagus.' }),
+    ).rejects.toBeInstanceOf(TenantScopeError);
+  });
+});

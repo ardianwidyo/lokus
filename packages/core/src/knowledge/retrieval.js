@@ -86,6 +86,20 @@ function buildIdf(passages) {
 }
 
 /**
+ * The corpus to search, from an array, a provider, or the frozen seed.
+ *
+ * The provider form is what makes an ingested document reachable. An agent is
+ * constructed once and answers many questions; handing it an array binds it to
+ * the corpus as it stood at construction, so a document added afterwards is
+ * invisible to it no matter how correctly it was indexed (AC-10.2). A function
+ * is re-read per search, so the agent sees the corpus as it is now.
+ */
+function resolveCorpus(tenantId, passages) {
+  if (typeof passages === 'function') return passages(tenantId) ?? [];
+  return passages ?? retrievablePassages(tenantId);
+}
+
+/**
  * Scores every passage against the query and returns them ranked.
  * `rejectedCount` is the number considered but left below the threshold —
  * AC-4.3 puts that number on screen so the reader knows what was discarded.
@@ -99,7 +113,7 @@ export function searchPassages({
 }) {
   assertTenant(tenantId);
 
-  const corpus = passages ?? retrievablePassages(tenantId);
+  const corpus = resolveCorpus(tenantId, passages);
   if (corpus.length === 0) return { chunks: [], rejected: [], rejectedCount: 0 };
 
   const { idf, isKnown } = buildIdf(corpus);
