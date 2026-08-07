@@ -24,3 +24,13 @@ tfplan
 .DS_Store
 Thumbs.db
 eval-report.json
+
+# Agent tooling installed into this checkout, not part of LOKUS. Its scripts
+# are linted by `eslint .` and account for every error the project's own
+# sources do not produce, which made a clean lint run unreadable.
+# `.claude/skills/speckit-*` stays tracked on purpose: the Spec Kit workflow is
+# evidence of how this repository is built.
+.claude/skills/impeccable/
+.github/agents/
+.github/hooks/
+.github/skills/

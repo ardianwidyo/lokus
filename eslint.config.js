@@ -7,7 +7,21 @@ import reactHooks from 'eslint-plugin-react-hooks';
  *  by the workspace's own block below rather than in a second config file. */
 export default [
   {
-    ignores: ['**/dist/**', '**/node_modules/**', '**/coverage/**', 'design/reference/**'],
+    ignores: [
+      '**/dist/**',
+      '**/node_modules/**',
+      '**/coverage/**',
+      'design/reference/**',
+      // Agent tooling installed into this checkout, not part of LOKUS. It is
+      // gitignored, but a flat config does not read .gitignore, so `npm run
+      // lint` would still report thousands of errors from code this project
+      // does not own — and a lint run nobody can read is a lint run nobody
+      // runs.
+      '.claude/skills/impeccable/**',
+      '.github/agents/**',
+      '.github/hooks/**',
+      '.github/skills/**',
+    ],
   },
 
   js.configs.recommended,
