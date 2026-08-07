@@ -126,9 +126,9 @@ describe('Screen 01 · Masuk & pilih tenant', () => {
 
       expect(rows).toHaveLength(3);
       expect(rows[0]).toHaveTextContent('Nusa Retail');
-      expect(rows[0]).toHaveTextContent('42 cabang · minimarket · peran: Area Manager');
+      expect(rows[0]).toHaveTextContent('42 cabang · minimarket · peran: Admin');
       expect(rows[1]).toHaveTextContent('11 cabang · klinik · peran: Viewer');
-      expect(rows[2]).toHaveTextContent('7 cabang · otomotif · peran: Admin');
+      expect(rows[2]).toHaveTextContent('7 cabang · otomotif · peran: Area Manager');
     });
 
     it('tags the most recently opened tenant "Terakhir dibuka"', async () => {
@@ -172,7 +172,7 @@ describe('Screen 01 · Masuk & pilih tenant', () => {
       await userEvent.click(await screen.findByRole('button', { name: /^Buka Nusa Retail/ }));
 
       await waitFor(() => expect(window.location.pathname).toBe('/briefing'));
-      expect(readActiveTenant()).toMatchObject({ tenantId: 'nusa-retail', role: 'manager' });
+      expect(readActiveTenant()).toMatchObject({ tenantId: 'nusa-retail', role: 'admin' });
       expect(screen.getByText('Layar 02')).toBeInTheDocument();
     });
 

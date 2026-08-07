@@ -214,7 +214,10 @@ describe('T062 · a dev token without a tenant', () => {
     ).json();
 
     const roles = Object.fromEntries(tenants.map((t) => [t.tenantId, t.role]));
-    expect(roles['nusa-retail']).toBe('manager');
+    // Admin sits on the tenant that has documents, reviews and spend, because
+    // screen 14 is admin-only and is the screen a judge is meant to check.
+    expect(roles['nusa-retail']).toBe('admin');
+    expect(roles['dealer-arta-motor']).toBe('manager');
     expect(roles['klinik-sehat-prima']).toBe('viewer');
   });
 

@@ -37,7 +37,7 @@ const SEED_TENANTS = Object.freeze([
     area: 'Jabodetabek',
     plan: 'pilot',
     trialDaysLeft: null,
-    role: 'manager',
+    role: 'admin',
     lastOpenedAt: '2026-07-28T06:00:00+07:00',
   },
   {
@@ -59,7 +59,7 @@ const SEED_TENANTS = Object.freeze([
     area: 'Surabaya',
     plan: 'trial',
     trialDaysLeft: 12,
-    role: 'admin',
+    role: 'manager',
     lastOpenedAt: null,
   },
 ]);

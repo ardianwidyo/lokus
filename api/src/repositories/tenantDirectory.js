@@ -43,9 +43,9 @@ const SEED_TENANTS = Object.freeze([
  * manager.
  */
 const DEMO_ROLES = Object.freeze({
-  'nusa-retail': 'manager',
+  'nusa-retail': 'admin',
   'klinik-sehat-prima': 'viewer',
-  'dealer-arta-motor': 'admin',
+  'dealer-arta-motor': 'manager',
 });
 
 export function createSeededTenantDirectory({ tenants = SEED_TENANTS, clock = () => new Date() } = {}) {
