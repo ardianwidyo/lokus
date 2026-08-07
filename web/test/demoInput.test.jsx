@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
 
@@ -227,5 +227,82 @@ describe('One workspace, so a new document reaches the agents (T066, AC-10.2)', 
     const afterCount = after.themes.find((theme) => theme.theme === 'antrean-kasir').byOutlet['BGR-01'];
     // Rediscovered from the text; nothing told the clusterer which theme it was.
     expect(afterCount).toBe(beforeCount + 1);
+  });
+});
+
+describe('Screen 05 · the review composer (T068)', () => {
+  beforeEach(() => {
+    window.sessionStorage.clear();
+  });
+
+  const renderInbox = async () => {
+    signIn();
+    window.history.pushState({}, '', '/review');
+    // No injected reputation source: the composer writes into the workspace
+    // SessionContext builds, which is what the rest of the console reads.
+    const utils = render(<App sessionSource={createSeededSessionSource()} />);
+    await screen.findByRole('listbox', {}, { timeout: 6000 });
+    await userEvent.setup().click(screen.getByRole('button', { name: /Tambah review/ }));
+    return utils;
+  };
+
+  const compose = async (user, { outlet, rating, text }) => {
+    await user.selectOptions(screen.getByLabelText('Cabang'), outlet);
+    await user.selectOptions(screen.getByLabelText('Bintang'), String(rating));
+    await user.click(screen.getByLabelText('Teks review'));
+    await user.paste(text);
+    await user.click(screen.getByRole('button', { name: 'Tambahkan' }));
+  };
+
+  it('adds a review and selects it, drafted and ready (AC-10.4)', { timeout: 20000 }, async () => {
+    const user = userEvent.setup();
+    await renderInbox();
+
+    await compose(user, {
+      outlet: 'BKS-02',
+      rating: 2,
+      text: 'Antre 20 menit di kasir, cuma satu yang buka padahal ramai sekali.',
+    });
+
+    const receipt = await screen.findByText(/Draft balasannya sudah dibuat/, {}, { timeout: 8000 });
+    expect(receipt).toBeInTheDocument();
+
+    // Twice: the list row, and the preview panel that followed it. The preview
+    // moving on its own is the point — a presenter should not have to hunt for
+    // what they just typed.
+    await waitFor(() =>
+      expect(screen.getAllByText(/Antre 20 menit di kasir/)).toHaveLength(2),
+    );
+    // Drafted, and therefore sendable — the added row is not a second-class one.
+    expect(screen.getByRole('button', { name: /Setujui & kirim/ })).toBeEnabled();
+  });
+
+  it('never presents an added review as a Google one (AC-10.6)', { timeout: 20000 }, async () => {
+    const user = userEvent.setup();
+    await renderInbox();
+
+    await compose(user, {
+      outlet: 'BKS-02',
+      rating: 2,
+      text: 'Kasir cuma satu yang buka dan antreannya panjang sekali.',
+    });
+
+    await screen.findByText(/Draft balasannya sudah dibuat/, {}, { timeout: 8000 });
+    expect(await screen.findByText(/Ditambahkan di demo/)).toBeInTheDocument();
+    expect(screen.getAllByText('demo').length).toBeGreaterThan(0);
+  });
+
+  it('refuses a branch with no Google listing, in the console’s own words', { timeout: 20000 }, async () => {
+    const user = userEvent.setup();
+    await renderInbox();
+
+    await compose(user, {
+      outlet: 'BSD-02',
+      rating: 4,
+      text: 'Cabang baru yang rapi dan kasirnya cepat.',
+    });
+
+    const alert = await screen.findByRole('alert', {}, { timeout: 8000 });
+    expect(alert).toHaveTextContent(/belum punya listing di Google Maps/);
   });
 });

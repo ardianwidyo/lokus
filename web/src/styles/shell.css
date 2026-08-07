@@ -519,6 +519,15 @@
   align-items: start;
 }
 
+/* The list panel and the demo composer share the 320px column. Only the panel
+   butts against the preview, so the composer is stacked below it rather than
+   made a second grid child. */
+.inbox-list-column {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
 .inbox-list-panel {
   padding: 0;
 }
@@ -598,6 +607,11 @@
 }
 
 .review-row-outlet {
+  /* Flex so the demo tag sits on the branch name's baseline instead of
+     pushing it off. */
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   font-family: var(--font-heading);
   font-weight: var(--font-heading-weight);
   font-size: 15px;
@@ -2189,6 +2203,28 @@
   text-align: center;
   font-size: 13px;
   color: var(--color-neutral-700);
+}
+
+/* The demo composer sits under the inbox list, inside the same panel, so it
+   reads as an affordance of that list rather than as a second panel competing
+   with it. */
+.composer-toggle {
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-divider);
+}
+
+.review-composer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  padding: var(--space-3);
+}
+
+.review-composer form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
 }
 
 .dropzone {

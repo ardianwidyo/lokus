@@ -7,6 +7,7 @@ import { ListingNotice } from '../components/ListingNotice.jsx';
 import { DataPanel, PANEL_STATUS } from '../components/states/index.js';
 import { useLocale } from '../i18n/index.js';
 import { DraftBlock } from './review/DraftBlock.jsx';
+import { ReviewComposer } from './review/ReviewComposer.jsx';
 import { ReviewList, Stars } from './review/ReviewList.jsx';
 
 /**
@@ -105,45 +106,61 @@ export function ReviewInboxScreen({ onNavigate }) {
       </div>
 
       <div className="inbox-grid">
-        <DataPanel
-          status={rows.length === 0 && status === PANEL_STATUS.READY ? PANEL_STATUS.EMPTY : status}
-          className="inbox-list-panel"
-          kicker={t('review.kicker', {
-            count: data?.counts?.[bucket] ?? 0,
-            bucket: t(activeBucket.labelKey).toLowerCase(),
-          })}
-          meta={
-            <span className="panel-meta">
-              {t('review.metaPriority')}
-              {/* Part of the count above needs a connection, not a reply. Saying
-                  so here keeps "perlu tindakan" from implying every row is one
-                  click from an answer (AC-9.4). */}
-              {data?.needsConnection
-                ? ` · ${t('review.metaNeedsConnection', { count: data.needsConnection })}`
-                : ''}
-            </span>
-          }
-          loading={{ message: t('review.loading') }}
-          empty={{
-            title: t('review.emptyTitle'),
-            description: t('review.emptyDescription'),
-            onAction: reload,
-          }}
-          error={{
-            title: t('review.errorTitle'),
-            description: errorText(error, 'review.errorFallback'),
-            onRetry: reload,
-          }}
-        >
-          <ReviewList
-            rows={rows}
-            selectedId={selectedId}
-            onSelect={setSelectedId}
-            onApprove={approve}
-            onEdit={(id) => onNavigate?.(`/draft?review=${id}`)}
+        {/* The list panel and the composer share a column. The composer sits
+            outside the panel because a DataPanel swaps its children out for the
+            loading state, and the reload that follows an add would unmount the
+            composer mid-receipt — taking the confirmation of the thing that
+            just happened with it. */}
+        <div className="inbox-list-column">
+          <DataPanel
+            status={rows.length === 0 && status === PANEL_STATUS.READY ? PANEL_STATUS.EMPTY : status}
+            className="inbox-list-panel"
+            kicker={t('review.kicker', {
+              count: data?.counts?.[bucket] ?? 0,
+              bucket: t(activeBucket.labelKey).toLowerCase(),
+            })}
+            meta={
+              <span className="panel-meta">
+                {t('review.metaPriority')}
+                {/* Part of the count above needs a connection, not a reply. Saying
+                    so here keeps "perlu tindakan" from implying every row is one
+                    click from an answer (AC-9.4). */}
+                {data?.needsConnection
+                  ? ` · ${t('review.metaNeedsConnection', { count: data.needsConnection })}`
+                  : ''}
+              </span>
+            }
+            loading={{ message: t('review.loading') }}
+            empty={{
+              title: t('review.emptyTitle'),
+              description: t('review.emptyDescription'),
+              onAction: reload,
+            }}
+            error={{
+              title: t('review.errorTitle'),
+              description: errorText(error, 'review.errorFallback'),
+              onRetry: reload,
+            }}
+          >
+            <ReviewList
+              rows={rows}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
+              onApprove={approve}
+              onEdit={(id) => onNavigate?.(`/draft?review=${id}`)}
+            />
+            <p className="inbox-hint">{t('review.hint')}</p>
+          </DataPanel>
+
+          {/* Selecting the new row is the point of adding one: a presenter should
+              not have to hunt for what they just typed. */}
+          <ReviewComposer
+            onAdded={async (review) => {
+              await reload();
+              setSelectedId(review.id);
+            }}
           />
-          <p className="inbox-hint">{t('review.hint')}</p>
-        </DataPanel>
+        </div>
 
         <DataPanel
           status={detail ? PANEL_STATUS.READY : status}
@@ -162,11 +179,19 @@ export function ReviewInboxScreen({ onNavigate }) {
         >
           {detail ? (
             <>
+              {/* The channel is named rather than assumed: a row added in the
+                  demo did not come from Google, and this line is where a reader
+                  looks to find out where it did come from (AC-10.6). */}
               <p className="review-meta">
-                {t('review.reviewMeta', {
-                  author: detail.review.author,
-                  relative: detail.review.relative,
-                })}
+                {detail.review.addedInSession
+                  ? t('review.reviewMetaDemo', {
+                      author: detail.review.author,
+                      relative: detail.review.relative,
+                    })
+                  : t('review.reviewMeta', {
+                      author: detail.review.author,
+                      relative: detail.review.relative,
+                    })}
               </p>
               <Stars rating={detail.review.rating} />
               <blockquote className="review-quote">{detail.review.text}</blockquote>

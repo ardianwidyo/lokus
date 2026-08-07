@@ -80,7 +80,12 @@ export function ReviewList({ rows, selectedId, onSelect, onApprove, onEdit }) {
               <Stars rating={row.rating} />
               <span className="review-row-time">{row.relative}</span>
             </span>
-            <span className="review-row-outlet">{row.outletName}</span>
+            <span className="review-row-outlet">
+              {row.outletName}
+              {/* AC-10.6: a row typed into the demo composer never passes for a
+                  Google one, in the list or anywhere it is opened. */}
+              {row.addedInSession ? <span className="tag tag-outline">{t('review.demoTag')}</span> : null}
+            </span>
             <span className="review-row-snippet">{row.text}</span>
           </button>
         </li>
