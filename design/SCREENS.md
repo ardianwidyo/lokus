@@ -212,6 +212,18 @@ dan "Nada Brand · hal. 3") · tombol [Setujui & kirim ⏎] [Ubah teks] [Jadikan
 tiket] [Abaikan] · kaki 12px: "Guardrail lolos 4/4 · Berikutnya: Depok
 Margonda" + kanan "23 tersisa di antrean ini".
 
+Di bawah daftar kiri, tombol teks [+ Tambah review (demo)] membuka komposer:
+pilih cabang, bintang 1–5, nama penulis, teks review, lalu [Tambahkan]. Review
+yang ditambahkan masuk ke daftar seperti review lain — dikelompokkan tema,
+didraftkan balasan, dan tunduk pada aturan yang sama — tapi barisnya membawa tag
+outline **demo** dan panel kanannya menyebut sumbernya bukan Google.
+
+Komposer ini ada karena demo tanpa proyek cloud tidak punya cara lain
+membuktikan agen menalar, bukan memutar ulang: satu kalimat keluhan yang belum
+pernah dilihat siapa pun, dan tema yang ditemukan darinya, lebih meyakinkan
+daripada seluruh matriks yang sudah di-seed. Tag demo tidak boleh dilepas —
+tanpa itu layar ini mengaku punya data Google yang tidak ia punya.
+
 ---
 
 ## 06 · Draft balasan AI
@@ -372,9 +384,23 @@ Kanan: kartu celah pengetahuan (latar aksen-100) — "Tambahkan klausa batas wak
 antrean": "12 pertanyaan staf bulan ini menanyakan batas waktu antrean yang wajib
 dilaporkan. SOP v4 menyebut 'jam sibuk' tanpa angka. Draft klausa: *'Antrean
 lebih dari 10 menit wajib dilaporkan ke area manager pada hari yang sama.'*" +
-[Kirim ke pemilik SOP] [Ubah draft]. Lalu kartu unggah: dropzone dashed "Tarik
-PDF, DOCX, atau XLSX ke sini / maks. 50 MB · diindeks dalam ±2 menit" + checkbox
-"Batasi akses ke peran Admin".
+[Kirim ke pemilik SOP] [Ubah draft]. Lalu kartu unggah, yang benar-benar
+mengindeks: field judul, dropzone dashed "Tarik berkas .txt atau .md ke sini,
+atau tempel isinya di bawah / dipotong 800 token dengan overlap 120", textarea
+isi dokumen, checkbox "Batasi akses ke peran Admin", tombol [Indeks dokumen].
+Setelah berhasil, tanda terima menyebut jumlah potongan dan status indeks, dan
+baris dokumen muncul di tabel kiri tanpa muat ulang.
+
+Dropzone-nya menyebut .txt dan .md, bukan PDF/DOCX/XLSX seperti draft awal.
+Ekstraksi PDF dan DOCX terjadi di sisi server saat ingest berjalan di Cloud
+Storage; konsol yang berjalan sendiri di browser tidak punya keduanya, dan
+menjanjikan format yang tidak bisa dibaca adalah cara tercepat membuat unggahan
+gagal di depan juri. Batas 50 MB juga hilang: yang membatasi di sini memori tab,
+bukan kuota bucket.
+
+Di bawahnya, tombol [Pulihkan data contoh] — menghapus setiap dokumen dan review
+yang ditambahkan sesi ini, supaya demo bisa dijalankan ulang untuk juri
+berikutnya.
 
 ---
 
