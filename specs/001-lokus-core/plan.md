@@ -477,6 +477,40 @@ folded in continuously rather than left to the end.
   screen — arrived at an error panel instead of being asked which tenant to
   open.
 
+- **2026-08-08 · a document can be stored before it can be read, and
+  `@fastify/multipart` is added to make that possible.** Ingest accepted only
+  text typed or pasted into the console, so the only documents LOKUS ever held
+  a file for were the ones a demo operator had retyped. The corpus a tenant
+  actually owns is PDF and DOCX, and none of it could be handed over at all.
+
+  Extraction is the expensive half and it is not built: T020's Cloud Storage
+  path and a text extractor for PDF/DOCX are still ahead. Storage is the cheap
+  half and it is independently useful — a franchise agreement nobody can search
+  is still a franchise agreement someone needs to download. So the two are
+  separated rather than waited on: a file is stored, downloadable and audited
+  the moment it arrives, and it becomes searchable when extraction exists.
+
+  That makes a new index state necessary, not optional. `menunggu-ekstraksi`
+  says the file is held and its text has not been read yet — distinct from
+  `diproses`, which claims work is under way, and from `dikecualikan`, which
+  claims a decision was made. A document sitting at zero chunks under a state
+  that means anything else would be the console lying about its own corpus
+  (constitution I).
+
+  `@fastify/multipart` is the new dependency, and it is here rather than a
+  hand-rolled parser for one reason: a multipart parser is a place where bugs
+  are security bugs. It is the Fastify organisation's own plugin over busboy,
+  and it brings the limits this needs — a byte ceiling enforced during the
+  stream rather than after the buffer is full, which is what keeps an upload
+  from becoming a memory-exhaustion route and what the cost ceiling in V
+  requires. The console's own browser path uses no parser at all: it reads the
+  file with `FileReader` and keeps the bytes, so the GitHub Pages demo gains
+  the capability without gaining the dependency (AC-10.7).
+
+  What is deliberately *not* done: no format is guessed at, no extractor is
+  faked, and a stored-but-unread document is never counted as indexed
+  anywhere — not in the KPI tile, not in coverage, not in retrieval.
+
 ## Definition of done (per phase)
 
 1. All tasks in the phase committed with their task-id prefixes.

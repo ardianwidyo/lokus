@@ -197,3 +197,13 @@ One commit per task, prefixed with the task id.
   production path is the same route returning a signed Cloud Storage URL to
   redirect to, so nothing above the store changes when the bucket exists.
   [AC-10.11, AC-10.9]
+- **T071** Storing a document stops requiring that it be readable. `kb.ingest`
+  accepts bytes as well as text: a PDF or DOCX is kept whole under the new
+  `menunggu-ekstraksi` state — zero chunks, not retrievable, outside the indexed
+  count and the coverage probe — while a `.txt`/`.md` is stored *and* indexed in
+  one step as before. `POST /v1/knowledge/documents/upload` carries the file
+  over multipart with a byte ceiling enforced during the stream and a type
+  allowlist; the seeded console reads the file in the browser instead, so the
+  demo gains the capability without an API. Extraction (T020) is what turns
+  those chunks from zero into something, and until it exists the console says so
+  rather than implying it. [AC-10.12, AC-10.11]

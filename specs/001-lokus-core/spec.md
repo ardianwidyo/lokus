@@ -250,6 +250,22 @@ console listed six documents and offered no way to get one.
   rather than proxied, and the route that serves it carries the tenant and role
   checks every other route carries.
 
+Which leaves the documents a tenant actually owns. Ingest took text only, so
+LOKUS held a file for exactly those documents someone had retyped into a
+textarea — and a corpus of PDF and DOCX could not be handed to it at all.
+Reading a PDF needs an extractor that does not exist yet. Holding one does not.
+
+- **AC-10.12** A document can be stored before it can be read. Uploading a PDF,
+  DOCX, XLSX or CSV keeps the file itself — downloadable under AC-10.11 the
+  moment it lands — and the row says plainly that its text has not been read
+  yet: a state of its own, zero chunks, not retrievable, and excluded from the
+  indexed count, the coverage figure and every retrieval. No agent may cite it,
+  and the console never implies one could. A text file (`.txt`, `.md`) is both
+  stored and indexed in the same step, as it is today. An upload is refused for
+  a type LOKUS cannot store, or one larger than the configured ceiling, and the
+  refusal names which of the two it was. The browser-only console does this
+  without an API, so the public demo can be handed a real PDF and hand it back.
+
 ## Success metrics
 
 | Metric | Baseline | Target |
