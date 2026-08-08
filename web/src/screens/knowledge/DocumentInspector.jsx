@@ -111,6 +111,13 @@ export function DocumentInspector({ docId, title = null }) {
             <p className="state-note">{t('kb.docContentNotRetrievable')}</p>
           ) : null}
 
+          {/* Zero chunks has two very different causes, and the reader is owed
+              the right one: a document nobody has read yet is not a document
+              that produced nothing (AC-10.12). */}
+          {!data.chunks.length && data.indexState === 'menunggu-ekstraksi' ? (
+            <p className="state-note">{t('kb.docContentNotRead')}</p>
+          ) : null}
+
           {data.chunks.length ? (
             <ol className="chunk-list">
               {data.chunks.map((chunk) => (
@@ -130,7 +137,7 @@ export function DocumentInspector({ docId, title = null }) {
                 </li>
               ))}
             </ol>
-          ) : (
+          ) : data.indexState === 'menunggu-ekstraksi' ? null : (
             <p className="state-note">{t('kb.docContentNoChunks')}</p>
           )}
         </>

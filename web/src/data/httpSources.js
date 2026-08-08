@@ -101,6 +101,16 @@ export function createHttpSources({ baseUrl, getTenant, getLocale = null, user =
     overview: () => api.get('/v1/knowledge'),
     ask: (tenantId, question) => api.post('/v1/knowledge/ask', { question }),
     ingest: (tenantId, document) => api.post('/v1/knowledge/documents', document),
+    // The file goes up as multipart rather than as base64 in JSON: a 25 MB PDF
+    // becomes 34 MB of string on that route, and the string has to be built,
+    // held and parsed whole at both ends (AC-10.12).
+    uploadDocument: (tenantId, { title, restricted = false, file }) => {
+      const form = new FormData();
+      form.append('title', title);
+      form.append('restricted', String(restricted));
+      form.append('file', file, file.name);
+      return api.postForm('/v1/knowledge/documents/upload', form);
+    },
     // No role is sent: the server reads it off the token, and a role in the
     // query string would be a claim the client made about itself.
     document: (tenantId, docId) => api.get(`/v1/knowledge/documents/${encodeURIComponent(docId)}`),

@@ -9,6 +9,8 @@ import {
   fileSlug,
   renderIndexedText,
 } from './documentFile.js';
+import { IngestError } from './ingestError.js';
+import { UPLOAD_MAX_BYTES, classifyUpload } from './upload.js';
 
 /**
  * `kb.ingest` — documents in, retrievable passages out.
@@ -37,18 +39,22 @@ export const INDEX_STATE = Object.freeze({
   INDEXED: 'indexed',
   REVIEW: 'menunggu-tinjauan',
   EXCLUDED: 'dikecualikan',
+  /**
+   * The file is held; its text has not been read (AC-10.12).
+   *
+   * Its own state, because none of the five above is true of it. `diproses`
+   * claims work is under way — there is no extractor running. `antre` claims a
+   * queue it is in. `dikecualikan` claims someone decided to exclude it. Only
+   * this one says the thing that is actually the case, and a document at zero
+   * chunks under any of the others would be the console misreporting its corpus.
+   */
+  AWAITING_EXTRACTION: 'menunggu-ekstraksi',
 });
 
 /** Only these states are searchable. Everything else is invisible to retrieval. */
 export const RETRIEVABLE_STATES = Object.freeze([INDEX_STATE.INDEXED]);
 
-export class IngestError extends Error {
-  constructor(code, message) {
-    super(message);
-    this.name = 'IngestError';
-    this.code = code;
-  }
-}
+export { IngestError };
 
 /**
  * Splits text into overlapping chunks on sentence boundaries where it can, so
@@ -196,7 +202,9 @@ export function createSeededKnowledgeStore({ documents = DOCUMENTS, passages = P
         filename: original.filename,
         mimeType: original.mimeType,
         sizeBytes: original.sizeBytes,
-        text: original.text,
+        // One or the other, never both: a document held as bytes has no text
+        // yet, and one held as text has no separate copy in bytes.
+        ...(original.bytes ? { bytes: original.bytes } : { text: original.text }),
       };
     }
 
@@ -240,34 +248,71 @@ export function createSeededKnowledgeStore({ documents = DOCUMENTS, passages = P
    * called `dokumen.txt` is a worse artefact than one called
    * `sop-layanan-kasir-v5.txt` and neither is a claim about provenance.
    */
-  function keepOriginal({ tenantId, docId, title, text, sourceFile }) {
+  function keepOriginal({ tenantId, docId, title, text, bytes, sourceFile }) {
     const filename = sourceFile?.filename?.trim() || `${fileSlug(title)}.txt`;
+    const held = bytes
+      ? { sizeBytes: bytes.byteLength, bytes }
+      : { sizeBytes: byteLength(text), text };
+
     originals.set(fileKey(tenantId, docId), {
       filename,
       mimeType: sourceFile?.mimeType?.trim() || TEXT_MIME,
-      sizeBytes: byteLength(text),
-      text,
+      ...held,
     });
+  }
+
+  /**
+   * Bytes in, text out, or nothing (AC-10.12).
+   *
+   * A `.txt` is decoded and indexed in the same step it is stored in. A PDF is
+   * not decoded at all: `TextDecoder` over a PDF produces a page of binary
+   * punctuation that chunks cleanly, embeds successfully, retrieves plausibly
+   * and cites gibberish at a customer. Refusing to read it is the only honest
+   * option until an extractor exists (T020).
+   */
+  function decodeUpload({ bytes, sourceFile, maxBytes }) {
+    const kind = classifyUpload({
+      filename: sourceFile?.filename,
+      sizeBytes: bytes.byteLength,
+      maxBytes,
+    });
+
+    return {
+      kind,
+      text: kind.readable ? new TextDecoder().decode(bytes) : null,
+    };
   }
 
   async function ingest({
     tenantId,
     docId,
     title,
-    type = 'PDF',
+    type = null,
     text,
+    // The file itself, when one was uploaded rather than typed. `Uint8Array`,
+    // because that is what both a browser's `FileReader` and a Node stream can
+    // produce and neither has to know about the other's buffer type.
+    bytes = null,
     pages = null,
     restricted = false,
-    // The file the text came out of, when there was one. Metadata only: the
-    // bytes are `text`, and a second copy of them would be a second thing to
-    // keep in step.
+    // The file the content came out of, when there was one. Its name and type
+    // are metadata; the content is `bytes` or `text`, never a third copy.
     sourceFile = null,
+    maxBytes = UPLOAD_MAX_BYTES,
   } = {}) {
     const startedAt = Date.now();
     assertTenant(tenantId);
 
     if (!title) throw new IngestError('TITLE_REQUIRED', 'Dokumen wajib punya judul');
-    if (!String(text ?? '').trim()) {
+
+    const upload = bytes ? decodeUpload({ bytes, sourceFile, maxBytes }) : null;
+    const body = upload ? upload.text : text;
+    const readable = upload ? upload.kind.readable : true;
+
+    // A file of zero bytes is more likely a failed read than a decision, and a
+    // document with no text to chunk cannot be indexed. A stored-but-unread
+    // upload is exempt from the second rule: it has no text by definition.
+    if (bytes?.byteLength === 0 || (readable && !String(body ?? '').trim())) {
       throw new IngestError('EMPTY_DOCUMENT', 'Dokumen kosong tidak bisa diindeks');
     }
 
@@ -276,18 +321,26 @@ export function createSeededKnowledgeStore({ documents = DOCUMENTS, passages = P
       throw new IngestError('ALREADY_EXISTS', `Dokumen ${id} sudah ada untuk tenant ini`);
     }
 
-    const pieces = chunkText(text);
-    const pageCount = pages ?? Math.max(1, Math.ceil(pieces.length / 2));
+    const pieces = readable ? chunkText(body) : [];
+    // A stored-but-unread document has no page count: nothing has counted its
+    // pages. Reporting the chunk arithmetic would invent one (`—` in the table).
+    const pageCount = readable ? (pages ?? Math.max(1, Math.ceil(pieces.length / 2))) : pages;
 
     const document = {
       docId: id,
       tenantId,
       title,
-      type,
+      type: type ?? upload?.kind.type ?? 'TXT',
       pages: pageCount,
-      // Restricted documents are stored but never indexed for general
-      // retrieval, so an admin-only contract cannot be quoted to a customer.
-      indexState: restricted ? INDEX_STATE.REVIEW : INDEX_STATE.INDEXED,
+      // Three different reasons a document may not be searchable, and the state
+      // names which one applies. Unreadable comes first: a PDF marked
+      // restricted is not awaiting review, it is awaiting an extractor, and the
+      // restriction is enforced by the service either way (AC-10.9).
+      indexState: !readable
+        ? INDEX_STATE.AWAITING_EXTRACTION
+        : restricted
+          ? INDEX_STATE.REVIEW
+          : INDEX_STATE.INDEXED,
       updatedAt: new Date().toISOString().slice(0, 10),
       restricted,
       // The same mark an added review carries (AC-10.6). A document typed into
@@ -295,7 +348,21 @@ export function createSeededKnowledgeStore({ documents = DOCUMENTS, passages = P
       addedInSession: true,
     };
     docs.push(document);
-    keepOriginal({ tenantId, docId: id, title, text, sourceFile });
+    keepOriginal({
+      tenantId,
+      docId: id,
+      title,
+      text: body,
+      // Held as bytes only when they cannot be text: a `.md` kept as bytes
+      // would download identically but could not be diffed or read in a test.
+      bytes: readable ? null : bytes,
+      // For an upload the type comes from the extension, not from the browser's
+      // `type` field: that field is a claim the client made about itself, and
+      // it is empty for `.md` often enough to matter.
+      sourceFile: upload
+        ? { filename: upload.kind.filename, mimeType: upload.kind.mimeType }
+        : sourceFile,
+    });
 
     pieces.forEach((piece, index) => {
       chunks.push({
@@ -315,6 +382,14 @@ export function createSeededKnowledgeStore({ documents = DOCUMENTS, passages = P
         pages: pageCount,
         chunks: pieces.length,
         indexState: document.indexState,
+        // The caller writes the receipt, and "stored" and "indexed" need
+        // different sentences. Deriving it from `chunks === 0` would be
+        // guessing; this is the store saying which it did (AC-10.12).
+        stored: true,
+        indexed: readable,
+        type: document.type,
+        filename: originalFor(tenantId, id)?.filename ?? null,
+        sizeBytes: originalFor(tenantId, id)?.sizeBytes ?? null,
         config: {
           chunkTokens: CHUNK_TOKENS,
           overlapTokens: CHUNK_OVERLAP_TOKENS,

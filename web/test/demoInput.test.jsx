@@ -114,20 +114,45 @@ describe('Screen 11 · uploading a SOP actually indexes it (T067)', () => {
     expect(within(row).getByText('Menunggu ditinjau')).toBeInTheDocument();
   });
 
-  it('refuses a file it cannot read rather than indexing mojibake', { timeout: 20000 }, async () => {
+  /**
+   * The PDF used to be refused outright. It is now stored and left unread
+   * (AC-10.12) — which moves the risk rather than removing it: the failure to
+   * defend against is no longer "mojibake gets indexed" but "a document nobody
+   * has read looks like one that was".
+   */
+  it('stores a PDF without pretending to have read it', { timeout: 20000 }, async () => {
     await renderKb();
 
     // Dropped rather than picked: `user.upload` filters by the input's
-    // `accept` attribute and would never deliver the file, so it would assert
-    // the browser's guard instead of ours. A drag-and-drop bypasses `accept`
-    // entirely, which is exactly the case worth defending.
-    const file = new File(['%PDF-1.7 binary'], 'sop.pdf', { type: 'application/pdf' });
+    // `accept` attribute, so a drop is the path that has to hold up.
+    const file = new File(['%PDF-1.7 binary'], 'kontrak-waralaba-2026.pdf', { type: 'application/pdf' });
     fireEvent.drop(screen.getByText(/Tarik berkas/).closest('label'), {
       dataTransfer: { files: [file] },
     });
 
-    const alert = await screen.findByRole('alert', {}, { timeout: 6000 });
-    expect(alert).toHaveTextContent(/cuma bisa membaca berkas teks/i);
+    await userEvent.click(await screen.findByRole('button', { name: 'Proses dokumen' }));
+
+    const receipt = await screen.findByText(/Isinya belum dibaca/, {}, { timeout: 6000 });
+    expect(receipt).toHaveTextContent(/tersimpan sebagai berkas PDF/);
+
+    // The title defaults to the filename without its extension.
+    const row = await screen.findByRole('row', { name: /kontrak waralaba 2026/i });
+    expect(within(row).getByText('Belum dibaca')).toBeInTheDocument();
+  });
+
+  it('never lets an unread PDF into an answer', { timeout: 20000 }, async () => {
+    const workspace = createDemoWorkspace({ tenantId: TENANT });
+    const knowledge = createSeededKnowledgeSource({ tenantId: TENANT, store: workspace.knowledgeStore });
+
+    await knowledge.uploadDocument(TENANT, {
+      title: 'SOP Poin Loyalitas v1',
+      file: new File([LOYALTY_SOP], 'poin-loyalitas.pdf', { type: 'application/pdf' }),
+    });
+
+    // The words are in the file the console holds. They are in no index, and an
+    // agent that answered from them would be citing a document nobody read.
+    const answer = await knowledge.ask(TENANT, LOYALTY_QUESTION);
+    expect(answer.answered).toBe(false);
   });
 
   it('does not let a viewer add a document (AC-6.3)', async () => {

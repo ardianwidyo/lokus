@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@fastify/cors": "^11.3.0",
+    "@fastify/multipart": "^10.1.0",
     "@lokus/core": "*",
     "fastify": "^5.2.0",
     "jose": "^5.9.6"

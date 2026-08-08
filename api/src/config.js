@@ -4,6 +4,8 @@
  * here has a hard-coded credential default.
  */
 
+import { UPLOAD_MAX_BYTES } from '@lokus/core';
+
 const DEFAULT_TENANT_CLAIM = 'tenantId';
 const DEFAULT_ROLES_CLAIM = 'roles';
 
@@ -56,6 +58,11 @@ export function loadConfig(env = process.env) {
     },
     storage: {
       documentsBucket: env.DOCS_BUCKET ?? null,
+      // The ceiling an upload is cut off at, enforced while the bytes stream
+      // rather than after they are all in memory (AC-10.12). Configurable
+      // because a tenant with 60-page scanned contracts is a support ticket,
+      // not a redeploy — but it has a default, so it is never absent.
+      uploadMaxBytes: Number(env.LOKUS_UPLOAD_MAX_BYTES ?? UPLOAD_MAX_BYTES),
     },
   };
 }

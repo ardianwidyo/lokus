@@ -122,6 +122,7 @@ export { createLocationService } from './services/locationService.js';
 export { CANDIDATE_FACTOR_KEYS, CANDIDATE_FACTOR_LABELS, CANDIDATE_POOL, CANDIDATE_WEIGHTS, CLEAR_DISTANCE_KM, candidateFactorLabels, cannibalisationFactor, scoutSites } from './location/siteScout.js';
 export { COMPETITOR_SHARE_WEIGHT, CompareError, VISITS_BAND, VISITS_PER_TRAFFIC_POINT, compareSites, estimateDailyVisits } from './location/compareSites.js';
 export { CHUNK_OVERLAP_TOKENS, CHUNK_TOKENS, EMBEDDING_DIMENSIONS, EMBEDDING_MODEL, INDEX_STATE, IngestError, RETRIEVABLE_STATES, chunkText, createSeededKnowledgeStore, createVertexKnowledgeStore, estimateTokens } from './knowledge/ingest.js';
+export { ACCEPTED_EXTENSIONS, ACCEPT_ATTRIBUTE, UPLOAD_MAX_BYTES, UPLOAD_TYPES, classifyUpload, extensionOf } from './knowledge/upload.js';
 export { FILE_ORIGIN, FILE_UNAVAILABLE, TEXT_MIME, byteLength, describeFile, fileSlug, indexedTextFilename, renderIndexedText } from './knowledge/documentFile.js';
 export { KnowledgeGapLog, REFUSAL_TEXT, ragCite, refusalText } from './knowledge/cite.js';
 export { CLAUSE_PROPOSAL_THRESHOLD, classifyGap, gapReport } from './knowledge/gapReport.js';

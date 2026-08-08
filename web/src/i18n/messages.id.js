@@ -619,6 +619,9 @@ export const id = {
     indexAwaitingReview: 'Menunggu ditinjau',
     indexExcluded: 'Tidak dipakai',
     indexQueued: 'Antre',
+    // Berkasnya ada, isinya belum dibaca. Bukan "sedang diproses" (tidak ada
+    // yang sedang berjalan), bukan "tidak dipakai" (tidak ada yang memutuskan).
+    indexAwaitingExtraction: 'Belum dibaca',
 
     metricDocsKicker: 'Dokumen yang terbaca',
     metricDocsNote: '{chunks} potongan · dari {documents} dokumen',
@@ -684,6 +687,8 @@ export const id = {
       'Dokumen ini terdaftar tapi belum menghasilkan satu potongan pun, jadi tidak ada yang bisa dikutip darinya.',
     docContentNotRetrievable:
       'Potongan di bawah tersimpan tapi belum masuk pencarian. Agen tidak akan mengutipnya sampai statusnya berubah.',
+    docContentNotRead:
+      'Berkas dokumen ini tersimpan utuh dan bisa diunduh, tapi isinya belum pernah dibaca — jadi belum ada potongan, dan agen belum bisa mengutipnya.',
     chunkMeta: 'hal. {page} · {tokens} token',
     docRestrictedTitle: 'Isi dokumen ini dibatasi',
     docRestrictedDescription:
@@ -711,7 +716,7 @@ export const id = {
     clauseNoteEmphasis: 'draft yang harus ditinjau orang',
 
     uploadKicker: 'Unggah dokumen',
-    dropzone: 'Tarik berkas .txt atau .md ke sini, atau tempel isinya di bawah',
+    dropzone: 'Tarik berkas PDF, DOCX, XLSX, CSV, .txt, atau .md ke sini — atau tempel isinya di bawah',
     dropzoneNote: 'dipotong tiap {chunkTokens} token, tumpang tindih {overlapTokens}',
     uploadDropActive: 'Lepaskan untuk membaca berkasnya',
     uploadTitleLabel: 'Judul dokumen',
@@ -723,10 +728,17 @@ export const id = {
     uploadWorking: 'Memproses…',
     uploadReceipt:
       '"{title}" sudah terbaca — {chunks} potongan, {pages} halaman. Agen bisa mengutipnya sekarang.',
+    uploadReceiptStored:
+      '"{title}" tersimpan sebagai berkas {type} dan bisa diunduh lagi kapan saja. Isinya belum dibaca, jadi belum ada potongan dan agen belum bisa mengutipnya.',
     uploadReceiptRestricted:
       '"{title}" tersimpan dalam {chunks} potongan tapi belum masuk pencarian. Agen tidak akan mengutipnya sampai ditinjau.',
-    uploadUnsupported:
-      'Konsol ini cuma bisa membaca berkas teks (.txt atau .md). Untuk PDF, salin isinya ke kotak di bawah.',
+    uploadUnsupported: 'Jenis berkas ini belum bisa disimpan LOKUS. Yang bisa: {types}.',
+    uploadTooLarge:
+      'Berkas ini lebih dari {limit} MB, jadi ditolak sebelum diunggah. Pecah dokumennya atau kecilkan dulu.',
+    pickedReadable: 'Berkas {type} — isinya terbaca, jadi langsung dipotong dan bisa dikutip agen.',
+    pickedStored:
+      'Berkas {type} — disimpan utuh dan bisa diunduh lagi, tapi isinya belum dibaca. Agen belum bisa mengutipnya sampai ada pembaca dokumen.',
+    pickedRemove: 'Ganti berkas',
     uploadFailed: 'Dokumen gagal diproses.',
     uploadReadOnly: 'Peran Anda hanya bisa melihat. Yang menambah dokumen adalah manajer atau admin.',
     reset: 'Pulihkan data contoh',

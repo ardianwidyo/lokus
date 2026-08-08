@@ -1,9 +1,11 @@
+import { UPLOAD_MAX_BYTES } from '@lokus/core';
+
 import { ROLES } from '../auth/roles.js';
 import { attachmentDisposition } from '../lib/contentDisposition.js';
-import { notFound } from '../lib/errors.js';
+import { badRequest, notFound } from '../lib/errors.js';
 
 /** Screens 11 and 12. */
-export function knowledgeRoutes(fastify, { knowledge }) {
+export function knowledgeRoutes(fastify, { knowledge, uploadMaxBytes = UPLOAD_MAX_BYTES } = {}) {
   const read = { preHandler: [fastify.authenticate, fastify.withTenant] };
   const write = {
     preHandler: [fastify.authenticate, fastify.withTenant, fastify.requireRole(ROLES.MANAGER)],
@@ -22,6 +24,59 @@ export function knowledgeRoutes(fastify, { knowledge }) {
   fastify.post('/v1/knowledge/documents', write, async (request) =>
     knowledge.ingest(request.tenant.id, request.body ?? {}),
   );
+
+  /**
+   * A file, rather than text someone retyped (AC-10.12).
+   *
+   * The bytes are collected here and handed to the same `kb.ingest` the JSON
+   * route uses, so which side of the wire a document arrived from changes
+   * nothing about how it is chunked, restricted or stored. What the store does
+   * with them depends on the type: a `.txt` is indexed, a PDF is kept and
+   * marked as awaiting extraction.
+   *
+   * The size ceiling is enforced by the multipart plugin as the stream runs,
+   * not by checking a length afterwards — a check afterwards is a check made
+   * with the whole file already in this process's memory.
+   */
+  fastify.post('/v1/knowledge/documents/upload', write, async (request) => {
+    const fields = { title: null, restricted: false };
+    let upload = null;
+
+    for await (const part of request.parts()) {
+      if (part.type === 'field') {
+        if (part.fieldname === 'title') fields.title = String(part.value ?? '').trim();
+        if (part.fieldname === 'restricted') fields.restricted = String(part.value) === 'true';
+        continue;
+      }
+
+      // One file per request. A second would have to be either ignored or
+      // silently merged into the first, and both are worse than refusing.
+      if (upload) throw badRequest('TOO_MANY_FILES', 'Kirim satu berkas per unggahan');
+
+      const bytes = await part.toBuffer();
+      // `truncated` is how busboy reports that the limit cut the stream. The
+      // buffer here is a prefix of the file, and storing a prefix would produce
+      // a corrupt document that downloads and opens as damaged.
+      if (part.file.truncated) {
+        throw badRequest(
+          'FILE_TOO_LARGE',
+          `Berkas melebihi batas ${Math.round(uploadMaxBytes / (1024 * 1024))} MB`,
+        );
+      }
+
+      upload = { filename: part.filename, mimeType: part.mimetype, bytes };
+    }
+
+    if (!upload) throw badRequest('FILE_REQUIRED', 'Tidak ada berkas dalam unggahan ini');
+
+    return knowledge.ingest(request.tenant.id, {
+      title: fields.title || upload.filename,
+      restricted: fields.restricted,
+      bytes: new Uint8Array(upload.bytes),
+      sourceFile: { filename: upload.filename, mimeType: upload.mimeType },
+      maxBytes: uploadMaxBytes,
+    });
+  });
 
   // The chunks indexed from one document (AC-10.8). The role comes from the
   // verified token, never from the query — a restricted document is refused by

@@ -1,12 +1,12 @@
 import { useRef, useState } from 'react';
 
+import { ACCEPT_ATTRIBUTE, UPLOAD_MAX_BYTES, classifyUpload } from '@lokus/core';
+
 import { canWrite } from '../../app/roles.js';
 import { useSession } from '../../app/SessionContext.jsx';
 import { Blueprint } from '../../components/Blueprint.jsx';
 import { useLocale } from '../../i18n/index.js';
-
-/** What a browser can read without a server to extract it. */
-const READABLE = /\.(txt|md|markdown)$/i;
+import { fileText } from '../../lib/fileBytes.js';
 
 /**
  * The upload card on screen 11, which now indexes for real.
@@ -15,15 +15,16 @@ const READABLE = /\.(txt|md|markdown)$/i;
  * upload with nothing behind it. `knowledgeSource.ingest` had existed since the
  * knowledge service was written and had no caller.
  *
- * Two ways in, because a demo needs both: drop a file when there is one to
- * hand, paste when a judge dictates a clause from the floor. Either way the
- * text lands in the same textarea before anything is indexed, so the reader
- * sees what the agent is about to be given rather than trusting that a file
- * arrived intact.
+ * Three ways in, because a demo needs all of them: drop a PDF the tenant
+ * actually owns, drop a `.txt` and watch it become searchable, or paste when a
+ * judge dictates a clause from the floor.
  *
- * Only plain text. A PDF needs a server-side extractor (`kb.ingest` gets one
- * from Cloud Storage in production), and offering a format that silently
- * produces a document of mojibake would be worse than refusing it.
+ * What separates them is not whether they are accepted but what happens next,
+ * and the card says which before anything is submitted. A text file lands in
+ * the textarea, so the reader sees what the agent is about to be given rather
+ * than trusting that a file arrived intact. A PDF does not: it is stored whole
+ * and marked as awaiting extraction, because `TextDecoder` over a PDF produces
+ * mojibake that chunks cleanly and cites gibberish at a customer (AC-10.12).
  */
 export function DocumentUpload({ stats, onIngested }) {
   const { knowledgeSource, role, tenant, canResetSeededData, resetSeededData, dataChanged } =
@@ -32,10 +33,13 @@ export function DocumentUpload({ stats, onIngested }) {
 
   const [title, setTitle] = useState('');
   const [text, setText] = useState('');
-  // The dropped file's own name and type, kept so the document can be handed
-  // back as the file it arrived as rather than as a generated `.txt`
-  // (AC-10.11). Null for pasted text, which has no file to be named after.
-  const [sourceFile, setSourceFile] = useState(null);
+  // The file itself, kept so the document can be handed back as the file it
+  // arrived as rather than as a generated `.txt` (AC-10.11). Null for pasted
+  // text, which has no file to be named after.
+  const [file, setFile] = useState(null);
+  // What that file is: readable and about to be indexed, or storable and about
+  // to sit at zero chunks. The card says which before the reader commits.
+  const [kind, setKind] = useState(null);
   const [restricted, setRestricted] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -46,27 +50,43 @@ export function DocumentUpload({ stats, onIngested }) {
   const mayAct = canWrite(role);
   const tenantId = tenant?.tenantId ?? 'nusa-retail';
 
-  async function readFile(file) {
-    if (!file) return;
+  /**
+   * The same rules the API applies, applied here so a 25 MB PDF is refused
+   * before it is read into a tab rather than after a minute of upload
+   * (`classifyUpload` throws the code the message is chosen by).
+   */
+  async function readFile(picked) {
+    if (!picked) return;
     setFailure(null);
 
-    if (!READABLE.test(file.name)) {
-      setFailure(t('kb.uploadUnsupported'));
+    let classified;
+    try {
+      classified = classifyUpload({ filename: picked.name, sizeBytes: picked.size });
+    } catch (error) {
+      setFailure(
+        error?.code === 'FILE_TOO_LARGE'
+          ? t('kb.uploadTooLarge', { limit: Math.round(UPLOAD_MAX_BYTES / (1024 * 1024)) })
+          : t('kb.uploadUnsupported', { types: ACCEPT_ATTRIBUTE.replace(/,/g, ' ') }),
+      );
       return;
     }
 
-    const contents = await file.text();
-    setText(contents);
-    setSourceFile({
-      filename: file.name,
-      // Browsers leave `type` empty for `.md` often enough that a fallback is
-      // not an edge case. The store defaults it too; sending an empty string
-      // would defeat that default.
-      mimeType: file.type || 'text/plain; charset=utf-8',
-    });
+    setFile(picked);
+    setKind(classified);
+    // Only a text file is shown before it is indexed. Rendering a PDF's bytes
+    // into the textarea would fill it with the mojibake this refuses to index.
+    setText(classified.readable ? await fileText(picked) : '');
     // Only as a default: a file named `sop-antrean-v4.txt` is a worse document
     // title than whatever the reader would have typed, so it never overwrites.
-    if (!title.trim()) setTitle(file.name.replace(READABLE, '').replace(/[-_]+/g, ' '));
+    if (!title.trim()) {
+      setTitle(picked.name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' '));
+    }
+  }
+
+  function clearFile() {
+    setFile(null);
+    setKind(null);
+    if (fileRef.current) fileRef.current.value = '';
   }
 
   async function submit(event) {
@@ -78,28 +98,27 @@ export function DocumentUpload({ stats, onIngested }) {
     setReceipt(null);
 
     try {
-      const result = await knowledgeSource.ingest(tenantId, {
-        title: title.trim(),
-        text,
-        type: 'TXT',
-        restricted,
-        sourceFile,
-      });
+      // A file goes up as a file; only text with no file behind it goes up as
+      // text. That is what keeps the download an original rather than a
+      // reconstruction (AC-10.11).
+      const result = file
+        ? await knowledgeSource.uploadDocument(tenantId, {
+            title: title.trim(),
+            restricted,
+            file,
+          })
+        : await knowledgeSource.ingest(tenantId, {
+            title: title.trim(),
+            text,
+            type: 'TXT',
+            restricted,
+          });
 
-      setReceipt(
-        restricted
-          ? t('kb.uploadReceiptRestricted', { title: title.trim(), chunks: result.chunks })
-          : t('kb.uploadReceipt', {
-              title: title.trim(),
-              chunks: result.chunks,
-              pages: result.pages,
-            }),
-      );
+      setReceipt(receiptFor(result));
       setTitle('');
       setText('');
       setRestricted(false);
-      setSourceFile(null);
-      if (fileRef.current) fileRef.current.value = '';
+      clearFile();
 
       // The table on this screen, and every screen that retrieves from the
       // corpus. Without the second call the document is indexed and the chat
@@ -111,6 +130,24 @@ export function DocumentUpload({ stats, onIngested }) {
     } finally {
       setBusy(false);
     }
+  }
+
+  /**
+   * Three outcomes, three sentences. The store reports which one happened
+   * rather than the console inferring it from a chunk count of zero — zero
+   * chunks is also what a restricted text document has, and those are not the
+   * same event (AC-10.12).
+   */
+  function receiptFor(result) {
+    const name = title.trim();
+
+    if (result.indexed === false) {
+      return t('kb.uploadReceiptStored', { title: name, type: result.type });
+    }
+    if (restricted) {
+      return t('kb.uploadReceiptRestricted', { title: name, chunks: result.chunks });
+    }
+    return t('kb.uploadReceipt', { title: name, chunks: result.chunks, pages: result.pages });
   }
 
   return (
@@ -157,30 +194,52 @@ export function DocumentUpload({ stats, onIngested }) {
             ref={fileRef}
             type="file"
             className="sr-only"
-            accept=".txt,.md,.markdown,text/plain,text/markdown"
+            accept={ACCEPT_ATTRIBUTE}
             disabled={!mayAct}
             onChange={(event) => readFile(event.target.files?.[0])}
           />
         </label>
 
-        <div className="field">
-          <label htmlFor="kb-text">{t('kb.uploadTextLabel')}</label>
-          <textarea
-            id="kb-text"
-            className="input"
-            rows={6}
-            value={text}
-            disabled={!mayAct}
-            placeholder={t('kb.uploadTextPlaceholder')}
-            onChange={(event) => {
-              setText(event.target.value);
-              // Edited after a drop, the text is no longer that file's
-              // contents. Keeping the name would make the download claim a
-              // provenance it lost the moment this box was typed in.
-              setSourceFile(null);
-            }}
-          />
-        </div>
+        {/* What is about to happen to this file, before it happens. A reader
+            who drops a PDF expecting it to be searchable should learn that
+            here, not from a chunk count of 0 in the table afterwards. */}
+        {file ? (
+          <div className="picked-file">
+            <span className="picked-file-name">{file.name}</span>
+            <span className="state-note">
+              {kind?.readable
+                ? t('kb.pickedReadable', { type: kind.type })
+                : t('kb.pickedStored', { type: kind?.type ?? '' })}
+            </span>
+            <button type="button" className="btn btn-ghost btn-file" onClick={clearFile}>
+              {t('kb.pickedRemove')}
+            </button>
+          </div>
+        ) : null}
+
+        {/* Hidden for a file whose text nobody has read: an empty textarea
+            beside a chosen PDF reads as "paste the text as well", and typing
+            in it would produce a document that is half file and half prose. */}
+        {file && !kind?.readable ? null : (
+          <div className="field">
+            <label htmlFor="kb-text">{t('kb.uploadTextLabel')}</label>
+            <textarea
+              id="kb-text"
+              className="input"
+              rows={6}
+              value={text}
+              disabled={!mayAct}
+              placeholder={t('kb.uploadTextPlaceholder')}
+              onChange={(event) => {
+                setText(event.target.value);
+                // Edited after a drop, the text is no longer that file's
+                // contents. Keeping the file would make the download claim a
+                // provenance it lost the moment this box was typed in.
+                clearFile();
+              }}
+            />
+          </div>
+        )}
 
         <label className="radio">
           <input
@@ -198,7 +257,9 @@ export function DocumentUpload({ stats, onIngested }) {
           <button
             type="submit"
             className="btn btn-primary"
-            disabled={!mayAct || busy || !title.trim() || !text.trim()}
+            // A chosen file is content in its own right; requiring text as well
+            // would make a PDF unsubmittable.
+            disabled={!mayAct || busy || !title.trim() || (!file && !text.trim())}
           >
             {busy ? t('kb.uploadWorking') : t('kb.uploadSubmit')}
           </button>

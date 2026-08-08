@@ -7,6 +7,7 @@ const INDEX_LABEL_KEYS = {
   'menunggu-tinjauan': 'kb.indexAwaitingReview',
   dikecualikan: 'kb.indexExcluded',
   antre: 'kb.indexQueued',
+  'menunggu-ekstraksi': 'kb.indexAwaitingExtraction',
 };
 
 /**

@@ -80,11 +80,39 @@ export function createApiClient({ baseUrl, getToken, getTenantId, getLocale = nu
     };
   }
 
+  /**
+   * A multipart upload (AC-10.12).
+   *
+   * `FormData` sets its own `content-type` with the boundary the body was
+   * actually written with; supplying one here would produce a boundary that
+   * matches nothing and a body the server cannot parse. So this bypasses
+   * `send`'s JSON header rather than passing a body through it.
+   */
+  async function requestForm(path, form, { tenantId = null } = {}) {
+    const tenant = tenantId ?? getTenantId?.() ?? null;
+    const token = await getToken?.();
+    const locale = getLocale?.() ?? null;
+
+    const response = await fetchImpl(`${baseUrl}${path}`, {
+      method: 'POST',
+      headers: {
+        ...(token ? { authorization: `Bearer ${token}` } : {}),
+        ...(tenant ? { 'x-lokus-tenant': tenant } : {}),
+        ...(locale ? { 'accept-language': locale } : {}),
+      },
+      body: form,
+    });
+
+    if (response.ok) return response.status === 204 ? null : response.json();
+    return raise(response);
+  }
+
   return {
     isSeeded: false,
     get: (path, options) => request(path, options),
     post: (path, body, options) => request(path, { ...options, method: 'POST', body }),
     getFile: (path, options) => requestFile(path, options),
+    postForm: (path, form, options) => requestForm(path, form, options),
   };
 }
 

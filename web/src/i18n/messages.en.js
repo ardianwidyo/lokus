@@ -613,6 +613,9 @@ export const en = {
     indexAwaitingReview: 'Waiting to be reviewed',
     indexExcluded: 'Not in use',
     indexQueued: 'Queued',
+    // The file is held; its text has not been read. Not "processing" — nothing
+    // is running — and not "excluded", which would claim somebody decided.
+    indexAwaitingExtraction: 'Not read yet',
 
     metricDocsKicker: 'Documents read',
     metricDocsNote: '{chunks} chunks · from {documents} documents',
@@ -678,6 +681,8 @@ export const en = {
       'This document is listed but produced no chunks, so there is nothing in it to quote.',
     docContentNotRetrievable:
       'The chunks below are stored but are not in the search yet. No agent will quote them until the status changes.',
+    docContentNotRead:
+      'This document’s file is stored whole and can be downloaded, but its text has never been read — so it has no chunks and no agent can quote it.',
     chunkMeta: 'p. {page} · {tokens} tokens',
     docRestrictedTitle: 'This document’s contents are restricted',
     docRestrictedDescription:
@@ -703,7 +708,7 @@ export const en = {
     clauseNoteEmphasis: 'a draft for a person to review',
 
     uploadKicker: 'Upload a document',
-    dropzone: 'Drop a .txt or .md file here, or paste its text below',
+    dropzone: 'Drop a PDF, DOCX, XLSX, CSV, .txt or .md file here — or paste its text below',
     dropzoneNote: 'cut every {chunkTokens} tokens, {overlapTokens} overlap',
     uploadDropActive: 'Release to read the file',
     uploadTitleLabel: 'Document title',
@@ -715,10 +720,17 @@ export const en = {
     uploadWorking: 'Processing…',
     uploadReceipt:
       '“{title}” has been read — {chunks} chunks, {pages} pages. The agents can quote it now.',
+    uploadReceiptStored:
+      '“{title}” is stored as a {type} file and can be downloaded again at any time. Its text has not been read, so it has no chunks and no agent can quote it.',
     uploadReceiptRestricted:
       '“{title}” stored as {chunks} chunks but not in the search yet. No agent will quote it until it is reviewed.',
-    uploadUnsupported:
-      'This console can only read text files (.txt or .md). For a PDF, copy its text into the box below.',
+    uploadUnsupported: 'LOKUS cannot store this kind of file yet. It can store: {types}.',
+    uploadTooLarge:
+      'This file is over {limit} MB, so it was refused before being uploaded. Split it or shrink it first.',
+    pickedReadable: 'A {type} file — its text is readable, so it is chunked and quotable at once.',
+    pickedStored:
+      'A {type} file — stored whole and downloadable again, but its text has not been read. No agent can quote it until there is an extractor.',
+    pickedRemove: 'Change file',
     uploadFailed: 'The document could not be processed.',
     uploadReadOnly: 'Your role can only look. Adding a document is done by a manager or an admin.',
     reset: 'Restore the sample data',

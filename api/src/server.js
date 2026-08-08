@@ -1,5 +1,8 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import multipart from '@fastify/multipart';
+
+import { UPLOAD_MAX_BYTES } from '@lokus/core';
 
 import { createDevVerifier, isDevAuthEnabled } from './auth/devPrincipal.js';
 import { createTokenVerifier } from './auth/verifyIdToken.js';
@@ -77,6 +80,15 @@ export function buildServer({
     maxAge: 600,
   });
 
+  // Document uploads (AC-10.12). The ceilings are the point of registering it
+  // here rather than per route: `fileSize` cuts the stream at the limit instead
+  // of after the buffer is full, and the counts stop a request from arriving
+  // with a thousand parts to allocate for.
+  const uploadMaxBytes = config?.storage?.uploadMaxBytes ?? UPLOAD_MAX_BYTES;
+  fastify.register(multipart, {
+    limits: { fileSize: uploadMaxBytes, files: 1, fields: 8, parts: 12 },
+  });
+
   // Before auth: a request rejected for its token should still have been logged
   // with the locale it asked for.
   registerLocale(fastify);
@@ -116,7 +128,7 @@ export function buildServer({
   agentRoutes(fastify, { supervisor: domain.supervisor, budget: domain.budget });
   adminRoutes(fastify, { admin: domain.admin, reasoning: domain.gemini });
   locationRoutes(fastify, { location: domain.location });
-  knowledgeRoutes(fastify, { knowledge: domain.knowledge });
+  knowledgeRoutes(fastify, { knowledge: domain.knowledge, uploadMaxBytes });
   outletRoutes(fastify, { outlets: domain.outlets });
 
   return fastify;

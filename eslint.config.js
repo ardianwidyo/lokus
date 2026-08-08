@@ -67,8 +67,10 @@ export default [
         AbortController: 'readonly',
         fetch: 'readonly',
         // A download's `content-length` is a byte count, and a document held
-        // as text can only be measured in bytes with an encoder.
+        // as text can only be measured in bytes with an encoder. The decoder is
+        // the other half: an uploaded text file arrives as bytes.
         TextEncoder: 'readonly',
+        TextDecoder: 'readonly',
       },
     },
   },

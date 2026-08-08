@@ -474,6 +474,97 @@ describe('domain routes over HTTP (T058)', () => {
       expect(response.json().error.code).toBe('FILE_NOT_HELD');
     });
 
+    /**
+     * Multipart, built by hand rather than by a helper: the bytes on the wire
+     * are what the route has to survive, and a helper that formats them
+     * differently from a browser would test the helper.
+     */
+    const multipart = ({ title, restricted = false, filename, bytes, mimeType }) => {
+      const boundary = '----lokustest';
+      const head = Buffer.from(
+        `--${boundary}\r\nContent-Disposition: form-data; name="title"\r\n\r\n${title}\r\n` +
+          `--${boundary}\r\nContent-Disposition: form-data; name="restricted"\r\n\r\n${restricted}\r\n` +
+          `--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="${filename}"\r\n` +
+          `Content-Type: ${mimeType}\r\n\r\n`,
+      );
+      const tail = Buffer.from(`\r\n--${boundary}--\r\n`);
+
+      return {
+        payload: Buffer.concat([head, Buffer.from(bytes), tail]),
+        headers: { 'content-type': `multipart/form-data; boundary=${boundary}` },
+      };
+    };
+
+    const upload = async (jwt, file) => {
+      const { payload, headers } = multipart(file);
+      return fastify.inject({
+        method: 'POST',
+        url: '/v1/knowledge/documents/upload',
+        headers: { ...headers, authorization: `Bearer ${jwt}`, 'x-lokus-tenant': TENANT },
+        payload,
+      });
+    };
+
+    it('stores an uploaded PDF whole and marks it unread (AC-10.12)', async () => {
+      const manager = await asManager();
+      const bytes = Buffer.from([0x25, 0x50, 0x44, 0x46, 0x2d, 0x31, 0x2e, 0x37, 0x00, 0xff]);
+
+      const stored = await upload(manager, {
+        title: 'Perjanjian Waralaba 2026',
+        filename: 'perjanjian-2026.pdf',
+        mimeType: 'application/pdf',
+        bytes,
+      });
+
+      expect(stored.statusCode).toBe(200);
+      expect(stored.json()).toMatchObject({ indexed: false, chunks: 0, indexState: 'menunggu-ekstraksi' });
+
+      // And it comes back as the same bytes, which is the whole point of
+      // storing something nothing can read yet.
+      const back = await call('GET', '/v1/knowledge/documents/perjanjian-waralaba-2026/file', manager);
+      expect(back.headers['content-type']).toBe('application/pdf');
+      expect(back.rawPayload.equals(bytes)).toBe(true);
+    });
+
+    it('indexes an uploaded text file in the same request', async () => {
+      const manager = await asManager();
+      const text = 'Antrean lebih dari sepuluh menit wajib dilaporkan ke area manager. '.repeat(6);
+
+      const response = await upload(manager, {
+        title: 'SOP Antrean v2',
+        filename: 'sop-antrean-v2.txt',
+        mimeType: 'text/plain',
+        bytes: Buffer.from(text, 'utf8'),
+      });
+
+      expect(response.json()).toMatchObject({ indexed: true, indexState: 'indexed' });
+      expect(response.json().chunks).toBeGreaterThan(0);
+    });
+
+    it('refuses a type it cannot store, by code', async () => {
+      const response = await upload(await asManager(), {
+        title: 'Sesuatu',
+        filename: 'payload.exe',
+        mimeType: 'application/octet-stream',
+        bytes: Buffer.from([0x4d, 0x5a]),
+      });
+
+      expect(response.statusCode).toBe(422);
+      expect(response.json().error.code).toBe('UNSUPPORTED_TYPE');
+    });
+
+    it('refuses an upload from a viewer, as the JSON route does', async () => {
+      const response = await upload(await asViewer(), {
+        title: 'SOP Antrean v2',
+        filename: 'sop.txt',
+        mimeType: 'text/plain',
+        bytes: Buffer.from('Aturan antrean kasir yang cukup panjang untuk diindeks.'),
+      });
+
+      expect(response.statusCode).toBe(403);
+      expect(response.json().error.code).toBe('ROLE_FORBIDDEN');
+    });
+
     it('404s another tenant asking for a file, without confirming the id exists', async () => {
       const jwt = await token({ [OTHER]: ROLES.ADMIN });
 
