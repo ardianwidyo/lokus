@@ -232,6 +232,24 @@ show what it holds, not only what it can do with it.
   own count, so a demo can show what it handed the system without hunting
   through the workflow buckets for it.
 
+Reading the chunks is not the same as holding the document. An area manager who
+has just seen a clause quoted back at them wants the file itself — to forward it,
+to check a page the chunker never reached, to hand it to a franchisee. The
+console listed six documents and offered no way to get one.
+
+- **AC-10.11** Every document row on screen 11 can hand its file back. What comes
+  down is what LOKUS actually holds, never a reconstruction passed off as the
+  original: a document ingested with its file returns those exact bytes under
+  their own filename; a document LOKUS holds only as indexed text returns that
+  text, named and headed as indexed text rather than as the original; a document
+  LOKUS holds nothing for offers no download at all and says why. The console
+  states which of the three it just handed over. The restriction rule is the one
+  AC-10.9 already defines, decided by the same service, so a restricted document
+  refuses the download exactly as it refuses the chunks. In production the file
+  is the object in Cloud Storage, handed over through a short-lived signed URL
+  rather than proxied, and the route that serves it carries the tenant and role
+  checks every other route carries.
+
 ## Success metrics
 
 | Metric | Baseline | Target |

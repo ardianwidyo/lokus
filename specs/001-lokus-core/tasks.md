@@ -187,3 +187,13 @@ One commit per task, prefixed with the task id.
   fourth filter listing the reviews added this session. Chunks gain a tenant id
   on the way, because a panel that prints chunk text cannot select them by
   document id alone. [AC-10.8, AC-10.9, AC-10.10]
+- **T070** The document leaves the console. Each row on screen 11 hands its file
+  back over one contract — `documentFile` in the knowledge service, `GET
+  /v1/knowledge/documents/:docId/file` over HTTP — which returns the bytes it
+  holds and names what they are: the original file for a document ingested with
+  one, the indexed text (headed as such) for a document held only as chunks, and
+  a refusal for a document held as neither. The upload card keeps the file it was
+  given so a document dropped in the demo comes back byte for byte. The
+  production path is the same route returning a signed Cloud Storage URL to
+  redirect to, so nothing above the store changes when the bucket exists.
+  [AC-10.11, AC-10.9]

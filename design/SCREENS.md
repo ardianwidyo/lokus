@@ -415,6 +415,26 @@ pasal di tengah, panel ini memperlihatkannya terpotong. Di situlah gunanya.
 Dokumen yang ditambahkan sesi ini membawa tag outline **demo** di barisnya,
 sama seperti review tambahan di layar 05.
 
+Kolom terakhir, **Berkas**, adalah tempat dokumennya bisa dibawa pulang. Isinya
+menyebut apa yang benar-benar disimpan LOKUS, bukan satu tombol seragam:
+[Unduh asli] untuk dokumen yang berkasnya ikut diserahkan (semua dokumen yang
+diunggah dari kartu di kanan), [Unduh teks] untuk dokumen yang hanya tersimpan
+sebagai potongan terindeks, dan tag outline **tidak disimpan** — bukan tombol
+mati — untuk dokumen yang berkasnya tidak ada dan potongannya pun belum ada.
+Berkas "teks terindeks" turun sebagai `.txt` dengan kepala yang menyebutkan
+dokumen, tenant, status indeks, dan satu kalimat bahwa ini teks yang terbaca
+agen, bukan berkas asli; tiap potongan diberi penanda `--- potongan 3 · hal. 18
+· 62 token ---`. Setelah unduhan jalan, satu baris tanda terima di bawah tabel
+menyebut nama berkas dan mana dari ketiganya yang barusan diberikan.
+
+Panel **Isi dokumen** membawa tombol yang sama di barisnya, jadi dokumen yang
+sedang dibaca tidak perlu dicari lagi di tabel.
+
+Dokumen yang dibatasi menolak unduhannya dengan aturan yang sama seperti
+isinya: peran selain Admin mendapat kalimat yang menyebut nama dokumennya, dan
+yang memutuskan tetap satu layanan yang sama supaya browser dan API menolak
+dengan cara yang persis sama.
+
 Dokumen yang dibatasi ("Batasi akses khusus Admin") tetap terdaftar dan tetap
 bisa ditekan, tapi isinya hanya muncul untuk peran Admin. Peran lain mendapat
 state **perlu izin** yang menyebut nama dokumennya — bukan state error, karena
