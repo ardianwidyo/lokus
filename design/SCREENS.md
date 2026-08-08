@@ -452,12 +452,33 @@ isi dokumen, checkbox "Batasi akses khusus Admin", tombol [Proses dokumen].
 Setelah berhasil, tanda terima menyebut jumlah potongan dan status indeks, dan
 baris dokumen muncul di tabel kiri tanpa muat ulang.
 
-Dropzone-nya menyebut .txt dan .md, bukan PDF/DOCX/XLSX seperti draft awal.
+Dropzone-nya menerima PDF, DOCX, XLSX, CSV, .txt, dan .md — sampai 25 MB. Yang
+membedakan bukan diterima atau ditolak, tapi apa yang terjadi sesudahnya, dan
+kartu ini mengatakannya **sebelum** tombol ditekan. Begitu sebuah berkas
+dipilih, muncul kotak hairline berisi nama berkasnya dan satu kalimat: untuk
+.txt/.md *"isinya terbaca, jadi langsung dipotong dan bisa dikutip agen"*;
+untuk PDF/DOCX/XLSX/CSV *"disimpan utuh dan bisa diunduh lagi, tapi isinya
+belum dibaca — agen belum bisa mengutipnya sampai ada pembaca dokumen"*, plus
+tombol [Ganti berkas]. Textarea "Isi dokumen" ikut hilang untuk berkas yang
+belum terbaca: kotak kosong di sebelah PDF yang baru dipilih terbaca sebagai
+"tempel juga teksnya", dan dokumen setengah berkas setengah ketikan bukan
+dokumen siapa-siapa.
+
+Dokumen yang tersimpan tapi belum terbaca memakai status **Belum dibaca**
+(`menunggu-ekstraksi`) — status tersendiri, bukan "Sedang diproses" (tidak ada
+yang sedang berjalan) dan bukan "Tidak dipakai" (tidak ada yang memutuskan).
+Halamannya `—`, potongannya `0`, dan ia tidak ikut dihitung di kartu KPI
+"Dokumen yang terbaca", tidak masuk cakupan jawaban, dan tidak pernah muncul
+sebagai sumber. Berkasnya tetap bisa diunduh: kolom Berkas menampilkan
+[Unduh asli].
+
 Ekstraksi PDF dan DOCX terjadi di sisi server saat ingest berjalan di Cloud
-Storage; konsol yang berjalan sendiri di browser tidak punya keduanya, dan
-menjanjikan format yang tidak bisa dibaca adalah cara tercepat membuat unggahan
-gagal di depan juri. Batas 50 MB juga hilang: yang membatasi di sini memori tab,
-bukan kuota bucket.
+Storage, dan itu belum ada. Yang sudah ada adalah penyimpanannya — perjanjian
+waralaba yang belum bisa dicari tetap perjanjian waralaba yang perlu diunduh
+seseorang. Batas 50 MB dari draft awal turun jadi 25 MB: di jalur API, batas
+itu dipotong saat aliran berkasnya berjalan, bukan setelah seluruhnya masuk
+memori; di konsol yang berjalan sendiri di browser, yang membatasi memang
+memori tab.
 
 Di bawahnya, tombol [Pulihkan data contoh] — menghapus setiap dokumen dan review
 yang ditambahkan sesi ini, supaya demo bisa dijalankan ulang untuk juri
