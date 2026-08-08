@@ -35,6 +35,35 @@ export function reputationRoutes(fastify, { reputation }) {
     return detail;
   });
 
+  /**
+   * A review typed into the console during a demo (US-10, AC-10.4).
+   *
+   * `/demo` is in the path rather than a flag in the body, because what this
+   * creates is not a Google review and the route should not be mistakable for
+   * one. The row it produces carries a demo tag everywhere it appears, so a
+   * console running against this API still cannot present typed text as
+   * something Google returned (AC-10.6).
+   *
+   * The tenant comes from the token, never from the body — the same rule every
+   * other route here follows.
+   */
+  fastify.post('/v1/reviews/demo', write, async (request) => {
+    const body = request.body ?? {};
+
+    const review = await reputation.addReview(request.tenant.id, {
+      outletId: body.outletId,
+      rating: body.rating,
+      author: body.author,
+      text: body.text,
+    });
+
+    request.log.info(
+      { event: 'review.demo_added', reviewId: review.id, outletId: review.outletId },
+      'demo review added',
+    );
+    return { review };
+  });
+
   fastify.post('/v1/reviews/:reviewId/reply', write, async (request) => {
     const { principal, tenant } = request;
 

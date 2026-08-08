@@ -53,6 +53,10 @@ export function createHttpSources({ baseUrl, getTenant, getLocale = null, user =
       // ignored, so the client does not pretend to choose it.
       api.post(`/v1/reviews/${encodeURIComponent(reviewId)}/reply`),
     themeMatrix: () => api.get('/v1/themes'),
+    // The demo composer, over HTTP. The tenant is not sent: the server reads it
+    // from the token, and a tenant in the body would be a claim the client made
+    // about itself.
+    addReview: (input) => api.post('/v1/reviews/demo', input).then((body) => body.review),
   };
 
   const agent = {

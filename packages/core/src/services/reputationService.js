@@ -165,7 +165,29 @@ export function createReputationService({ gbp, approvalStore = null, gemini = nu
     return { listings: rows, coverage: replyCoverage(reviews, rows) };
   }
 
-  return { inbox, reviewDetail, approveAndSend, themeMatrix, listings, store };
+  /**
+   * A review typed into the console during a demo, not read from Google.
+   *
+   * The adapter does the refusing — tenant, outlet, rating, empty text, and the
+   * listing level that decides whether an outlet can carry reviews at all — and
+   * this re-raises rather than translating, so adding to an outlet LOKUS may
+   * not reply to gets the same explanation the rest of the console gives for it
+   * (AC-10.5).
+   *
+   * Both caches are dropped afterwards. The read cache would otherwise hide the
+   * new row until the process restarted, and the draft cache is keyed per
+   * review so it only needs clearing if an id is ever reused — which it is not,
+   * but a stale draft is a worse bug than a redundant clear.
+   */
+  async function addReview(tenantId, input) {
+    assertTenant(tenantId);
+    const { data } = await gbp.addReview({ tenantId, ...input });
+    readByTenant.delete(tenantId);
+    draftCache.clear();
+    return data.review;
+  }
+
+  return { inbox, reviewDetail, approveAndSend, themeMatrix, listings, addReview, store };
 }
 
 function toRow(review, listings = []) {

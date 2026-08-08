@@ -21,12 +21,16 @@ const RATINGS = [1, 2, 3, 4, 5];
  * came from — a console that quietly presented typed text as a Google review
  * would be lying about the one thing the whole product rests on (AC-10.6).
  *
- * Seeded mode only. Against a real API the reviews belong to the tenant's
- * Google listing, and a console that could insert rows into them would be
- * writing history the tenant never had. `docs/demo-runbook.md` has said this
- * since it was written; the gate below is what finally enforces it — until the
- * console could actually reach an API, nothing exercised the other branch, and
- * the button failed with `reputation.addReview is not a function`.
+ * Shown when the source can actually add a review, which both the seeded
+ * workspace and the API now can. The gate is the capability rather than the
+ * mode: it was `isSeeded` for an afternoon, which hid the composer from the
+ * one mode where the model is real — and the whole point of typing a complaint
+ * in the room is watching the clusterer read it and the drafter answer it.
+ *
+ * A gate on the capability also cannot drift. Whatever a future source is, if
+ * it cannot add a review the button is not offered, and the failure the API
+ * mode first produced — `reputation.addReview is not a function` — has no way
+ * back.
  */
 export function ReviewComposer({ onAdded }) {
   const { reputation, tenant, canResetSeededData, resetSeededData, dataChanged } = useSession();
@@ -46,7 +50,7 @@ export function ReviewComposer({ onAdded }) {
 
   // After the hooks, never before them: an early return above `useMemo` would
   // change the hook order between the two modes.
-  if (!reputation?.isSeeded) return null;
+  if (typeof reputation?.addReview !== 'function') return null;
 
   async function submit(event) {
     event.preventDefault();

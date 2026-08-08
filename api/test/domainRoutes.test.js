@@ -66,6 +66,55 @@ describe('domain routes over HTTP (T058)', () => {
       expect(body.counts['perlu-tindakan']).toBeGreaterThan(0);
     });
 
+    describe('the demo composer (AC-10.4)', () => {
+      const DEMO = { outletId: 'BKS-02', rating: 1, author: 'Ardian', text: 'Kasir satu, antre 25 menit.' };
+
+      it('adds a review and marks where it came from, never as one Google returned', async () => {
+        // AC-10.6: a console that presented typed text as a Google review would
+        // be lying about the one thing the product rests on.
+        const response = await call('POST', '/v1/reviews/demo', await asManager(), { payload: DEMO });
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json().review.source).toBe('demo');
+      });
+
+      it('lets the clusterer read what was typed, and the drafter answer it', async () => {
+        // The claim a seeded dataset cannot make on its own: every seeded row
+        // was written to be grouped the way it groups.
+        const added = (await call('POST', '/v1/reviews/demo', await asManager(), { payload: DEMO })).json();
+        const url = `/v1/reviews/${added.review.id}`;
+        const detail = (await call('GET', url, await asManager())).json();
+
+        expect(detail.draft.theme).toBe('antrean-kasir');
+        expect(detail.draft.text.length).toBeGreaterThan(20);
+      });
+
+      it('refuses a viewer, because adding a row is a write', async () => {
+        const response = await call('POST', '/v1/reviews/demo', await asViewer(), { payload: DEMO });
+        expect(response.statusCode).toBe(403);
+      });
+
+      it('answers the same for another tenant branch as for one that does not exist', async () => {
+        // One refusal for both, so the route cannot be used to enumerate
+        // branches (AC-6.1).
+        const foreign = await call('POST', '/v1/reviews/demo', await asManager(), {
+          payload: { ...DEMO, outletId: 'SBY-01' },
+        });
+        const missing = await call('POST', '/v1/reviews/demo', await asManager(), {
+          payload: { ...DEMO, outletId: 'tidak-ada' },
+        });
+
+        expect(foreign.json().error.code).toBe(missing.json().error.code);
+      });
+
+      it('refuses a review with no text, which cannot be analysed', async () => {
+        const response = await call('POST', '/v1/reviews/demo', await asManager(), {
+          payload: { ...DEMO, text: '   ' },
+        });
+        expect(response.statusCode).toBeGreaterThanOrEqual(400);
+      });
+    });
+
     it('rejects an unknown bucket rather than silently returning everything', async () => {
       const response = await call('GET', '/v1/reviews?bucket=semua', await asViewer());
 
