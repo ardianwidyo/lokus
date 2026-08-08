@@ -185,7 +185,7 @@ export function createGooglePlacesAdapter({ apiKey } = {}) {
   if (!apiKey) {
     throw new PlacesError(
       'PLACES_NOT_CONFIGURED',
-      'Places API belum dikonfigurasi. Gunakan adapter seeded secara eksplisit.',
+      'Places API belum diatur. Pakai adapter data contoh secara eksplisit.',
     );
   }
 

@@ -260,7 +260,7 @@ describe('reading a document back (T069)', () => {
 describe('the real knowledge store', () => {
   it('refuses without a bucket and an index rather than pretending to index', () => {
     expect(() => createVertexKnowledgeStore({})).toThrow(IngestError);
-    expect(() => createVertexKnowledgeStore({})).toThrow(/belum dikonfigurasi/);
+    expect(() => createVertexKnowledgeStore({})).toThrow(/belum diatur/);
   });
 
   it('is explicit that it awaits pilot provisioning', () => {

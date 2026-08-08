@@ -61,7 +61,7 @@ describe('systemic flag (AC-2.2)', () => {
     const [local] = flagSystemicThemes([themeWithOutlets(['BKS-02'])]);
 
     expect(systemic.systemicReason).toMatch(/Muncul di 4 wilayah/);
-    expect(local.systemicReason).toMatch(/ambang sistemik 4/);
+    expect(local.systemicReason).toMatch(/dianggap menyeluruh kalau sudah 4/);
   });
 
   it('ignores outlet ids it does not know rather than counting them as a region', () => {
@@ -80,7 +80,7 @@ describe('systemicFinding on the seeded network', () => {
 
     expect(finding.theme).toBe('antrean-kasir');
     expect(finding.regionCount).toBeGreaterThanOrEqual(4);
-    expect(finding.headline).toBe('Antrean kasir adalah masalah sistemik, bukan lokal');
+    expect(finding.headline).toBe('Antrean kasir adalah masalah semua cabang, bukan satu cabang');
   });
 
   it('names the worst branch and the one that is coping', async () => {

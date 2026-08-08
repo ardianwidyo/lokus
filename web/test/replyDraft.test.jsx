@@ -63,10 +63,10 @@ describe('Screen 06 · Draft balasan AI', () => {
     await renderDraft();
 
     for (const label of [
-      'Tanpa klaim tak bersumber',
-      'Tanpa data pribadi',
+      'Tidak ada klaim tanpa sumber',
+      'Tidak ada data pribadi',
       'Nada sesuai panduan',
-      'Tanpa janji kompensasi',
+      'Tidak ada janji ganti rugi',
     ]) {
       expect(screen.getByText(label)).toBeInTheDocument();
     }
@@ -76,7 +76,7 @@ describe('Screen 06 · Draft balasan AI', () => {
   it('states that nothing is sent without human approval', async () => {
     await renderDraft();
 
-    expect(screen.getByText(/Persetujuan manusia wajib untuk semua review bintang 1–2/)).toBeInTheDocument();
+    expect(screen.getByText(/Review bintang 1–2 wajib disetujui orang dulu/)).toBeInTheDocument();
   });
 
   it('sends the reply and reports that the approver was recorded (AC-3.1)', async () => {
@@ -84,7 +84,7 @@ describe('Screen 06 · Draft balasan AI', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Setujui & kirim' }));
 
-    expect(await screen.findByText(/Penyetuju dan waktunya tercatat/)).toBeInTheDocument();
+    expect(await screen.findByText(/Siapa yang menyetujui dan jam berapa sudah tercatat/)).toBeInTheDocument();
   });
 
   it('disables every action for a viewer (AC-6.3)', async () => {
@@ -107,7 +107,7 @@ describe('Screen 06 · Draft balasan AI', () => {
     await renderDraft({ source });
 
     expect(screen.getByText('Tidak ada di dokumen.')).toBeInTheDocument();
-    expect(screen.getByText(/tidak bersandar pada dokumen mana pun/)).toBeInTheDocument();
+    expect(screen.getByText(/tidak mengambil dari dokumen mana pun/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Setujui & kirim' })).toBeDisabled();
   });
 
@@ -145,7 +145,7 @@ describe('Screen 06 · Draft balasan AI', () => {
     window.history.pushState({}, '', '/draft');
     render(<App sessionSource={createSeededSessionSource()} reputationSource={source} />);
 
-    const title = await screen.findByText('Draft tak bisa dimuat');
+    const title = await screen.findByText('Draft gagal ditampilkan');
     expect(title.closest('.panel')).toHaveAttribute('data-status', 'error');
   });
 });

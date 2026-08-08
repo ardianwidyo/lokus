@@ -67,7 +67,7 @@ describe('agent prose uses the same convention as the screens', () => {
     });
 
     expect(data.answered).toBe(false);
-    expect(data.reason).toMatch(/ambang keyakinan 0,70/);
+    expect(data.reason).toMatch(/batas kecocokan 0,70/);
     expect(data.reason).not.toMatch(englishDecimal);
   });
 });

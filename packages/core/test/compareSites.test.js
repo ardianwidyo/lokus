@@ -60,7 +60,7 @@ describe('compareSites (AC-5.3)', () => {
     const { data } = await compare();
 
     for (const row of data.rows) {
-      expect(['terukur', 'survei', 'model']).toContain(row.origin);
+      expect(['terukur', 'survei', 'perkiraan']).toContain(row.origin);
     }
     // All three provenances appear: presenting a model as a measurement is
     // exactly the untraceable number the constitution forbids.
@@ -110,7 +110,7 @@ describe('compareSites (AC-5.3)', () => {
     const { data } = await compare({ ids: ['bekasi-utara', 'cibubur-junction'] });
 
     expect(data.a.conclusion).toMatch(/Terlalu dekat/);
-    expect(data.a.conclusion).toMatch(/melebih-lebihkan pertumbuhan/);
+    expect(data.a.conclusion).toMatch(/terlihat lebih bagus dari kenyataannya/);
   });
 
   it('names a high-traffic crowded site as a price play, not a convenience one', async () => {

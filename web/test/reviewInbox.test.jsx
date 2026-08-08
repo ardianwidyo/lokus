@@ -67,7 +67,7 @@ describe('Screen 05 · Kotak masuk review (AC-3.1)', () => {
   it('shows the guardrail result before the send action (AC-3.4)', async () => {
     await renderInbox();
 
-    expect(await screen.findByText('Guardrail lolos 4/4')).toBeInTheDocument();
+    expect(await screen.findByText('Cek pengaman lolos 4/4')).toBeInTheDocument();
   });
 
   it('moves the selection with the arrow keys', async () => {
@@ -111,13 +111,13 @@ describe('Screen 05 · Kotak masuk review (AC-3.1)', () => {
 
     await userEvent.click(screen.getByRole('button', { name: /Setujui & kirim/ }));
 
-    expect(await screen.findByText(/persetujuan tercatat/)).toBeInTheDocument();
+    expect(await screen.findByText(/persetujuan Anda tercatat/)).toBeInTheDocument();
   });
 
   it('hides every action from a viewer and says why (AC-6.3)', async () => {
     await renderInbox({ role: 'viewer' });
 
-    expect(await screen.findByText(/Peran Anda hanya bisa membaca/)).toBeInTheDocument();
+    expect(await screen.findByText(/Peran Anda hanya bisa melihat/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Setujui & kirim/ })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Ubah teks' })).toBeDisabled();
   });
@@ -156,7 +156,7 @@ describe('Screen 05 · Kotak masuk review (AC-3.1)', () => {
     window.history.pushState({}, '', '/review');
     render(<App sessionSource={createSeededSessionSource()} reputationSource={source} />);
 
-    const alert = await screen.findByText('Kotak masuk tak bisa dimuat');
+    const alert = await screen.findByText('Kotak masuk gagal ditampilkan');
     const panel = alert.closest('.panel');
 
     expect(panel).toHaveAttribute('data-status', 'error');

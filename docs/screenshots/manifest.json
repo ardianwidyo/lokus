@@ -154,6 +154,7 @@
     "file": "14-admin.png",
     "panels": [
       "ready",
+      "empty",
       "ready",
       "ready",
       "ready",

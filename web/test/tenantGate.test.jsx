@@ -28,7 +28,7 @@ describe('T063 · arriving without a tenant', () => {
     openAt('/jawaban');
 
     await waitFor(() => expect(window.location.pathname).toBe('/masuk'), { timeout: 4000 });
-    expect(screen.queryByText(/tidak menyebutkan tenant/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/tidak menyebut perusahaan/i)).not.toBeInTheDocument();
   });
 
   it('remembers where the reader was heading, in the URL', async () => {

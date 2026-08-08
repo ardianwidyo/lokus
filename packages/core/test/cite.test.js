@@ -69,7 +69,7 @@ describe('rag.cite (AC-4.2)', () => {
     const { data } = await cite();
 
     expect(data.confidence).toBeGreaterThan(0);
-    expect(['keyakinan tinggi', 'keyakinan sedang']).toContain(data.confidenceLabel);
+    expect(['kecocokan tinggi', 'kecocokan sedang']).toContain(data.confidenceLabel);
   });
 });
 
@@ -87,8 +87,8 @@ describe('the refusal path (AC-4.1)', () => {
   it('says how close it got, rather than only that it failed', async () => {
     const { data } = await cite({ question: 'Bagaimana resep rendang padang?' });
 
-    expect(data.reason).toMatch(/ambang keyakinan 0,70/);
-    expect(data.reason).toMatch(/Kutipan terdekat hanya/);
+    expect(data.reason).toMatch(/batas kecocokan 0,70/);
+    expect(data.reason).toMatch(/Yang paling mendekati cuma/);
   });
 
   it('logs a knowledge gap when it refuses', async () => {

@@ -74,8 +74,8 @@ VITE_LOKUS_API_URL=http://localhost:8080 npm run dev
 ```
 
 Buka `http://localhost:5173/masuk`, pilih **Nusa Retail**, lalu buka layar
-**12 · Jawaban bersitasi** dari rail kiri. Di bawah judul panel akan tertulis
-**"ditulis gemini-3.5-flash, lolos cek sitasi"**. Hapus `LOKUS_REASONING=vertex`,
+**12 · Jawaban bersumber** dari rail kiri. Di bawah judul panel akan tertulis
+**"ditulis gemini-3.5-flash, sumbernya sudah dicek"**. Hapus `LOKUS_REASONING=vertex`,
 jalankan ulang, dan kalimat itu berubah jadi **"dikutip apa adanya dari SOP"**
 — beserta teks jawabannya. Itu cara termurah membuktikan modelnya benar-benar
 dipanggil, tanpa mempercayai klaim di halaman ini.
@@ -115,10 +115,10 @@ Yang pertama adalah yang paling sulit dipalsukan, jadi mulailah dari sana.
 
 1. **Beri agennya dokumen yang belum pernah ia lihat.** `/pengetahuan` → kartu
    **Unggah dokumen** → tempel satu pasal SOP yang Anda karang sendiri →
-   **Indeks dokumen**. Lalu buka `/chat` dan tanyakan isinya. Agen mengutipnya
+   **Proses dokumen**. Lalu buka `/chat` dan tanyakan isinya. Agen mengutipnya
    dengan judul dan halaman. Tidak ada model yang bisa menghafal teks yang
    ditulis semenit lalu — ini retrieval yang benar-benar berjalan. Centang
-   **Batasi akses** sebelum mengindeks, dan dokumen yang sama menjadi tidak bisa
+   **Batasi akses khusus Admin** sebelum mengindeks, dan dokumen yang sama menjadi tidak bisa
    dikutip sama sekali.
 2. **Tanya sesuatu yang tidak ada di SOP.** `/chat` → *"Bagaimana resep rendang
    padang?"* Agen menolak dan mencatat celah pengetahuan. Tidak ada yang
@@ -147,7 +147,7 @@ bukti bahwa konsolnya bersih. Regenerasi: `node scripts/screenshots.mjs`.
 | | | |
 |---|---|---|
 | **02 · Briefing Pagi**<br>[![Briefing Pagi](docs/screenshots/02-briefing.png)](docs/screenshots/02-briefing.png)<br>Maksimal tiga keputusan, masing-masing dengan buktinya. | **10 · Chat agen**<br>[![Chat agen](docs/screenshots/10-chat.png)](docs/screenshots/10-chat.png)<br>Satu pertanyaan, tiga agen, 8 langkah tool yang tampil. | **04 · Detail cabang**<br>[![Detail cabang](docs/screenshots/04-cabang.png)](docs/screenshots/04-cabang.png)<br>Garis pembukaan pesaing dari Places, bukan dari deret rating. |
-| **03 · Peta jaringan**<br>[![Peta jaringan](docs/screenshots/03-peta.png)](docs/screenshots/03-peta.png)<br>Penanda berbeda bentuk, bukan berbeda warna. | **12 · Jawaban bersitasi**<br>[![Jawaban bersitasi](docs/screenshots/12-jawaban.png)](docs/screenshots/12-jawaban.png)<br>Tiap klaim menempel ke halaman SOP-nya. | **14 · Admin & biaya**<br>[![Admin dan biaya](docs/screenshots/14-admin.png)](docs/screenshots/14-admin.png)<br>Ambang eval, guardrail, dan batas biaya. |
+| **03 · Peta jaringan**<br>[![Peta jaringan](docs/screenshots/03-peta.png)](docs/screenshots/03-peta.png)<br>Penanda berbeda bentuk, bukan berbeda warna. | **12 · Jawaban bersumber**<br>[![Jawaban bersumber](docs/screenshots/12-jawaban.png)](docs/screenshots/12-jawaban.png)<br>Tiap klaim menempel ke halaman SOP-nya. | **14 · Admin & biaya**<br>[![Admin dan biaya](docs/screenshots/14-admin.png)](docs/screenshots/14-admin.png)<br>Ambang eval, guardrail, dan batas biaya. |
 
 Delapan sisanya ada di [`docs/screenshots/`](docs/screenshots/):
 [01 masuk](docs/screenshots/01-masuk.png) ·

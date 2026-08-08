@@ -30,9 +30,9 @@ describe('Screen 14 · Admin (AC-6.2)', () => {
     // is the one claim on this screen a judge could disprove from the URL bar.
     await renderAdmin();
 
-    expect(screen.getAllByText('Jalur deterministik').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Aturan tetap, tanpa AI').length).toBeGreaterThan(0);
     expect(screen.getByText('Node lokal')).toBeInTheDocument();
-    expect(screen.getByText('Skoring kata kunci · packages/core')).toBeInTheDocument();
+    expect(screen.getByText('Pencocokan kata kunci · packages/core')).toBeInTheDocument();
   });
 
   it('keeps the planned stack visible but marked, never claimed', async () => {
@@ -55,7 +55,7 @@ describe('Screen 14 · Admin (AC-6.2)', () => {
         ...(await createSeededAdminSource().overview()),
         models: [
           { label: 'Penalaran', value: 'gemini-3.5-flash · Vertex AI', status: 'live' },
-          { label: 'Endpoint model', value: 'global · aiplatform.googleapis.com', status: 'live' },
+          { label: 'Alamat model', value: 'global · aiplatform.googleapis.com', status: 'live' },
         ],
       }),
     };
@@ -64,16 +64,16 @@ describe('Screen 14 · Admin (AC-6.2)', () => {
 
     expect(screen.getByText('gemini-3.5-flash · Vertex AI')).toBeInTheDocument();
     expect(screen.getByText('global · aiplatform.googleapis.com')).toBeInTheDocument();
-    expect(screen.queryByText('Jalur deterministik')).not.toBeInTheDocument();
+    expect(screen.queryByText('Aturan tetap, tanpa AI')).not.toBeInTheDocument();
   });
 
   it('lists the guardrails and says where each is enforced', async () => {
     await renderAdmin();
 
-    expect(screen.getByText('Balasan bintang 1–2 wajib disetujui manusia')).toBeInTheDocument();
+    expect(screen.getByText('Balasan bintang 1–2 wajib disetujui orang')).toBeInTheDocument();
     // The claim is checkable in the source, not just asserted on a slide.
-    expect(screen.getByText('ditegakkan di approvals.js')).toBeInTheDocument();
-    expect(screen.getByText('ditegakkan di retrieval.js')).toBeInTheDocument();
+    expect(screen.getByText('diatur di approvals.js')).toBeInTheDocument();
+    expect(screen.getByText('diatur di retrieval.js')).toBeInTheDocument();
   });
 
   it('shows the confidence threshold the refusal rule uses', async () => {
@@ -90,8 +90,8 @@ describe('Screen 14 · Admin (AC-6.2)', () => {
     await renderAdmin();
 
     expect(screen.getByText('Rp 1,84 jt')).toBeInTheDocument();
-    expect(screen.getByText(/34% dari batas keras Rp 5,40 jt/)).toBeInTheDocument();
-    expect(screen.getByText(/Di\s+atas 90%, agen turun ke mode Flash/)).toBeInTheDocument();
+    expect(screen.getByText(/34% dari batas maksimal Rp 5,40 jt/)).toBeInTheDocument();
+    expect(screen.getByText(/Lewat\s+90%, agen pindah ke model yang lebih murah/)).toBeInTheDocument();
   });
 
   it('renders the eval gates from a report the runner produced', async () => {
@@ -120,7 +120,7 @@ describe('Screen 14 · Admin (AC-6.2)', () => {
   it('says the eval blocks a merge, and where the report came from', async () => {
     await renderAdmin();
 
-    expect(screen.getByText(/CI memblokir merge bila satu ambang saja gagal/)).toBeInTheDocument();
+    expect(screen.getByText(/Kalau satu batas saja tidak tercapai, kode tidak boleh naik/)).toBeInTheDocument();
     expect(screen.getByText('eval/run_eval.mjs')).toBeInTheDocument();
   });
 
@@ -145,7 +145,7 @@ describe('Screen 14 · Admin (AC-6.2)', () => {
     window.history.pushState({}, '', '/admin');
     render(<App sessionSource={createSeededSessionSource()} adminSource={source} />);
 
-    expect(await screen.findByText('Hasil evaluasi tak bisa dimuat')).toBeInTheDocument();
+    expect(await screen.findByText('Hasil evaluasi gagal ditampilkan')).toBeInTheDocument();
     expect(screen.getAllByText('Layanan admin sedang dipelihara.').length).toBeGreaterThan(0);
   });
 });

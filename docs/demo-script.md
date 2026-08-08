@@ -84,7 +84,7 @@ Tunjuk drafnya, lalu panel kanan:
 > bukan dikarang lalu dicarikan pembenaran. Kalau tidak ada pasal yang lolos
 > ambang 0,70, agen tidak menulis draft sama sekali."
 
-Tunjuk empat guardrail:
+Tunjuk empat cek pengaman:
 
 > "Empat pemeriksaan, dan keempatnya ditampilkan — lolos maupun gagal. Kalau
 > hanya kegagalan yang muncul, 'tidak ada peringatan' tak bisa dibedakan dari

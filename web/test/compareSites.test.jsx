@@ -21,7 +21,7 @@ const renderCompare = async ({ role = 'manager', url = '/bandingkan', locationSo
       agentSource={agentSource ?? createSeededAgentSource()}
     />,
   );
-  await screen.findByText(/Kesimpulan agen|Belum ada kandidat|Perbandingan tak bisa dimuat/, {}, { timeout: 4000 });
+  await screen.findByText(/Kesimpulan agen|Belum ada calon lokasi|Perbandingan gagal ditampilkan/, {}, { timeout: 4000 });
   return utils;
 };
 
@@ -37,14 +37,14 @@ describe('Screen 09 · Bandingkan lokasi (AC-5.3)', () => {
     expect(within(table).getByText('Skor lokasi')).toBeInTheDocument();
     expect(within(table).getByText(/^Pesaing dalam/)).toBeInTheDocument();
     expect(within(table).getByText('Cabang sendiri terdekat')).toBeInTheDocument();
-    expect(within(table).getByText('Estimasi kunjungan/hari')).toBeInTheDocument();
+    expect(within(table).getByText('Perkiraan kunjungan/hari')).toBeInTheDocument();
   });
 
   it('marks the recommended column', async () => {
     await renderCompare();
 
-    expect(screen.getByText('Kandidat A · direkomendasikan')).toBeInTheDocument();
-    expect(screen.getByText('Kandidat B')).toBeInTheDocument();
+    expect(screen.getByText('Lokasi A · direkomendasikan')).toBeInTheDocument();
+    expect(screen.getByText('Lokasi B')).toBeInTheDocument();
   });
 
   it('says where each row\'s number came from', async () => {
@@ -53,7 +53,7 @@ describe('Screen 09 · Bandingkan lokasi (AC-5.3)', () => {
 
     expect(within(table).getAllByText(/· terukur/).length).toBeGreaterThan(0);
     expect(within(table).getAllByText(/· survei/).length).toBeGreaterThan(0);
-    expect(within(table).getAllByText(/· model/).length).toBe(1);
+    expect(within(table).getAllByText(/· perkiraan/).length).toBe(1);
   });
 
   it('marks the better figure by weight rather than a second colour', async () => {
@@ -76,7 +76,7 @@ describe('Screen 09 · Bandingkan lokasi (AC-5.3)', () => {
   it('states the visits model rather than presenting it as measured', async () => {
     await renderCompare();
 
-    expect(screen.getByText(/Angka model bukan hasil pengukuran/)).toBeInTheDocument();
+    expect(screen.getByText(/Angka perkiraan bukan hasil pengukuran/)).toBeInTheDocument();
     expect(screen.getByText(/kunjungan\/hari ≈ skor lalu lintas/)).toBeInTheDocument();
   });
 
@@ -101,13 +101,13 @@ describe('Screen 09 · Bandingkan lokasi (AC-5.3)', () => {
     await renderCompare({ role: 'viewer' });
 
     expect(screen.getByRole('button', { name: /^Ajukan survei/ })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Ganti kandidat' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Ganti calon lokasi' })).toBeEnabled();
   });
 
   it('routes back to Site Scout to change the pair', async () => {
     await renderCompare();
 
-    await userEvent.click(screen.getByRole('button', { name: 'Ganti kandidat' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Ganti calon lokasi' }));
 
     await waitFor(() => expect(window.location.pathname).toBe('/site-scout'));
   });
@@ -142,7 +142,7 @@ describe('Screen 09 · Bandingkan lokasi (AC-5.3)', () => {
 
     await renderCompare({ locationSource: source });
 
-    const title = screen.getByText('Perbandingan tak bisa dimuat');
+    const title = screen.getByText('Perbandingan gagal ditampilkan');
     expect(title.closest('.panel')).toHaveAttribute('data-status', 'error');
   });
 });

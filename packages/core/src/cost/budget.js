@@ -132,7 +132,7 @@ export function createBudgetGuard({
         usedPercent: after.usedPercent,
         budgetIdr: after.budgetIdr,
         spentIdr: after.spentIdr,
-        message: `Anggaran tenant terpakai ${after.usedPercent}%. Agen turun ke mode Flash sampai akhir bulan.`,
+        message: `Anggaran perusahaan ini terpakai ${after.usedPercent}%. Agen pindah ke model yang lebih murah (Flash) sampai akhir bulan.`,
       });
     }
 

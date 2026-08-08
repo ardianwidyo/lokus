@@ -61,7 +61,7 @@ describe('Screen 07 · Analisis tema & sentimen (AC-2.3)', () => {
     await renderThemes();
 
     expect(
-      screen.getByText('Antrean kasir adalah masalah sistemik, bukan lokal'),
+      screen.getByText('Antrean kasir adalah masalah semua cabang, bukan satu cabang'),
     ).toBeInTheDocument();
     expect(screen.getByText(/terburuk: Bekasi Timur/)).toBeInTheDocument();
   });
@@ -69,13 +69,13 @@ describe('Screen 07 · Analisis tema & sentimen (AC-2.3)', () => {
   it('says how many reviews and citations are behind the matrix', async () => {
     await renderThemes();
 
-    expect(screen.getByText(/\d+ review dianalisis · \d+ sitasi/)).toBeInTheDocument();
+    expect(screen.getByText(/\d+ review dibaca · \d+ sumber dikutip/)).toBeInTheDocument();
   });
 
   it('marks the replication candidate as a comparison, not a verified finding', async () => {
     await renderThemes();
 
-    expect(screen.getByText(/verifikasi sebelum direplikasi/)).toBeInTheDocument();
+    expect(screen.getByText(/cek dulu sebelum ditiru/)).toBeInTheDocument();
   });
 
   it('gives the table a caption for screen readers', async () => {
@@ -105,7 +105,7 @@ describe('Screen 07 · Analisis tema & sentimen (AC-2.3)', () => {
     window.history.pushState({}, '', '/tema');
     render(<App sessionSource={createSeededSessionSource()} reputationSource={source} />);
 
-    expect(await screen.findByText('Belum ada tema terdeteksi')).toBeInTheDocument();
+    expect(await screen.findByText('Belum ada tema yang terdeteksi')).toBeInTheDocument();
   });
 
   it('shows the error state with a retry', async () => {
@@ -121,7 +121,7 @@ describe('Screen 07 · Analisis tema & sentimen (AC-2.3)', () => {
     window.history.pushState({}, '', '/tema');
     render(<App sessionSource={createSeededSessionSource()} reputationSource={source} />);
 
-    const title = await screen.findByText('Analisis tema tak bisa dimuat');
+    const title = await screen.findByText('Analisis tema gagal ditampilkan');
     expect(title.closest('.panel')).toHaveAttribute('data-status', 'error');
   });
 });

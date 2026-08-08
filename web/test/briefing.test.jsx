@@ -49,7 +49,7 @@ describe('Screen 02 · Briefing Pagi (AC-1.2, AC-1.3, AC-1.4)', () => {
     await renderBriefing();
 
     expect(screen.getByText(/Agen Lokasi memindai \d+ area cabang/)).toBeInTheDocument();
-    expect(screen.getByText(/\d+ POI · \d+ pesaing baru ditemukan/)).toBeInTheDocument();
+    expect(screen.getByText(/\d+ tempat sekitar · \d+ pesaing baru ditemukan/)).toBeInTheDocument();
   });
 
   it('surfaces at most three decisions', async () => {
@@ -106,7 +106,7 @@ describe('Screen 02 · Briefing Pagi (AC-1.2, AC-1.3, AC-1.4)', () => {
     const [first] = decisions();
 
     expect(within(first).getByRole('button', { name: /Setujui & buat tiket/ })).toBeDisabled();
-    expect(within(first).getByText(/Peran Anda hanya bisa membaca/)).toBeInTheDocument();
+    expect(within(first).getByText(/Peran Anda hanya bisa melihat/)).toBeInTheDocument();
   });
 
   it('reports a ticket failure instead of claiming success', async () => {
@@ -126,7 +126,7 @@ describe('Screen 02 · Briefing Pagi (AC-1.2, AC-1.3, AC-1.4)', () => {
   it('shows the error state with a retry when the cycle cannot be read', async () => {
     const source = createSeededBriefingSource();
     source.briefing = async () => {
-      throw new Error('Siklus semalam tidak menjawab.');
+      throw new Error('Hasil kerja semalam tidak bisa diambil.');
     };
 
     window.sessionStorage.setItem(
@@ -136,7 +136,7 @@ describe('Screen 02 · Briefing Pagi (AC-1.2, AC-1.3, AC-1.4)', () => {
     window.history.pushState({}, '', '/briefing');
     render(<App sessionSource={createSeededSessionSource()} briefingSource={source} />);
 
-    const title = await screen.findByText('Briefing tak bisa dimuat');
+    const title = await screen.findByText('Briefing gagal ditampilkan');
     expect(title.closest('.panel')).toHaveAttribute('data-status', 'error');
     expect(within(title.closest('.panel')).getByRole('button', { name: 'Coba lagi' })).toBeInTheDocument();
   });

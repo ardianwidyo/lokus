@@ -21,7 +21,7 @@ describe('guardrail.check (AC-3.4)', () => {
     const result = guardrailCheck({ draftText: 'Terima kasih atas masukannya.' });
 
     expect(result.data.checks.every((check) => check.detail.length > 0)).toBe(true);
-    expect(result.data.summary).toBe('Guardrail lolos 4/4');
+    expect(result.data.summary).toBe('Cek pengaman lolos 4/4');
   });
 
   it('gives evidence with each failure so it can be acted on', () => {

@@ -34,7 +34,7 @@ describe('Screen 03 · Peta jaringan cabang (T033)', () => {
 
     // The rail says "42 cabang" from the tenant record while the map draws 8.
     // Both are true; leaving the reader to reconcile them is what is not.
-    expect(screen.getByText(/8 dari 42 cabang ada di dataset contoh/)).toBeInTheDocument();
+    expect(screen.getByText(/8 dari 42 cabang ada di data contoh/)).toBeInTheDocument();
   });
 
   it('draws every outlet and the competitors around them', async () => {
@@ -128,7 +128,7 @@ describe('Screen 03 · Peta jaringan cabang (T033)', () => {
     window.history.pushState({}, '', '/peta');
     render(<App sessionSource={createSeededSessionSource()} locationSource={source} />);
 
-    const title = await screen.findByText('Peta tak bisa dimuat');
+    const title = await screen.findByText('Peta gagal ditampilkan');
     expect(title.closest('.panel')).toHaveAttribute('data-status', 'error');
   });
 });

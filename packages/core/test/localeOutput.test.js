@@ -79,7 +79,7 @@ describe('T062 · agent-authored copy follows the locale', () => {
 
   it('explains a guardrail result in the language', () => {
     const clean = guardrailCheck({ draftText: 'Terima kasih atas masukannya.', locale: 'en' });
-    expect(clean.data.summary).toBe('Guardrails passed 4/4');
+    expect(clean.data.summary).toBe('Safety checks passed 4/4');
     expect(clean.data.checks[1].detail).toBe('No customer personal data in the reply.');
 
     const dirty = guardrailCheck({
@@ -93,8 +93,8 @@ describe('T062 · agent-authored copy follows the locale', () => {
     const places = createSeededPlacesAdapter();
 
     const scouted = await scoutSites({ tenantId: TENANT, places, locale: 'en' });
-    expect(scouted.data.recommended[0].labels.cannibalisation).toBe('Cannibalisation');
-    expect(scouted.data.request).toMatch(/Find candidate sites/);
+    expect(scouted.data.recommended[0].labels.cannibalisation).toBe('Taking our own customers');
+    expect(scouted.data.request).toMatch(/Find possible sites/);
 
     const compared = await compareSites({ tenantId: TENANT, places, locale: 'en' });
     expect(compared.data.rows[0].label).toBe('Location score');
@@ -202,8 +202,8 @@ describe('T062 · tenant content does not follow the locale (AC-8.5)', () => {
     );
 
     // What the console says *about* the answer does follow the locale.
-    expect(indonesian.data.confidenceLabel).toMatch(/keyakinan/);
-    expect(english.data.confidenceLabel).toMatch(/confidence/);
+    expect(indonesian.data.confidenceLabel).toMatch(/kecocokan/);
+    expect(english.data.confidenceLabel).toMatch(/match/);
   });
 
   it('refuses in the reader’s language while keeping the sentinel Indonesian', async () => {
@@ -215,6 +215,6 @@ describe('T062 · tenant content does not follow the locale (AC-8.5)', () => {
 
     expect(answer.data.answered).toBe(false);
     expect(answer.data.text).toBe('Not in the documents.');
-    expect(answer.data.reason).toMatch(/No passage reached the confidence threshold of 0\.70/);
+    expect(answer.data.reason).toMatch(/No passage reached the 0\.70 match mark/);
   });
 });

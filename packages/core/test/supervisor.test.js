@@ -166,7 +166,7 @@ describe('supervisor.ask', () => {
     expect(run.unavailable).toEqual([
       { agent: 'location', reason: expect.stringMatching(/belum aktif/) },
     ]);
-    expect(run.answer).toMatch(/belum memasukkan sudut pandang tersebut/);
+    expect(run.answer).toMatch(/belum memperhitungkan hal itu/);
   });
 
   it('summarises its sources into the tags shown under the answer', async () => {

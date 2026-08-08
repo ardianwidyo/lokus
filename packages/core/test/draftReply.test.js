@@ -99,7 +99,7 @@ describe('draftReply (AC-3.2)', () => {
     });
 
     expect(data.drafted).toBe(false);
-    expect(data.reason).toMatch(/tidak dikenali/);
+    expect(data.reason).toMatch(/tidak bisa dikenali/);
   });
 
   it('returns the prompt it would send, so the ask is auditable next to the answer', async () => {

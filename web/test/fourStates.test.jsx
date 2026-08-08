@@ -110,7 +110,7 @@ describe('T055 · four-state audit', () => {
     });
 
     expect(await screen.findByText('Tidak ada review baru')).toBeInTheDocument();
-    expect(screen.getByText(/Agen akan memeriksa lagi malam ini pukul 23\.00\./)).toBeInTheDocument();
+    expect(screen.getByText(/Agen mengecek lagi malam ini pukul 23\.00\./)).toBeInTheDocument();
   });
 
   it('separates needs-permission from error', async () => {
@@ -129,11 +129,11 @@ describe('T055 · four-state audit', () => {
 
     // The screen shows its own actionable copy rather than the raw exception
     // text — a permission gap is something the reader can do something about.
-    const message = await screen.findByText('Akun ini belum diberi akses tenant');
+    const message = await screen.findByText('Akun ini belum diberi akses ke perusahaan mana pun');
     const panel = message.closest('.panel');
 
     expect(panel).toHaveAttribute('data-status', PANEL_STATUS.NEEDS_PERMISSION);
-    expect(within(panel).getByText(/Hubungi admin organisasi Anda/)).toBeInTheDocument();
+    expect(within(panel).getByText(/Hubungi admin kantor Anda/)).toBeInTheDocument();
     expect(within(panel).queryByRole('alert')).toBeNull();
   });
 

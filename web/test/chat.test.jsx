@@ -45,7 +45,7 @@ describe('Screen 10 · Chat agen (AC-7.2, AC-7.4)', () => {
     renderChat();
 
     const answer = await ask('Kenapa rating cabang Bekasi Timur turun bulan ini?');
-    const trace = within(answer).getByRole('list', { name: 'Jejak eksekusi' });
+    const trace = within(answer).getByRole('list', { name: 'Langkah kerja agen' });
     const chips = within(trace).getAllByRole('listitem');
 
     expect(chips[0]).toHaveTextContent('01 supervisor.route');
@@ -57,7 +57,7 @@ describe('Screen 10 · Chat agen (AC-7.2, AC-7.4)', () => {
     renderChat();
 
     const answer = await ask('Ringkas keluhan pekan ini');
-    const chips = within(within(answer).getByRole('list', { name: 'Jejak eksekusi' })).getAllByRole(
+    const chips = within(within(answer).getByRole('list', { name: 'Langkah kerja agen' })).getAllByRole(
       'listitem',
     );
 
@@ -89,7 +89,7 @@ describe('Screen 10 · Chat agen (AC-7.2, AC-7.4)', () => {
     renderChat();
     await ask('Ringkas keluhan pekan ini');
 
-    const panel = screen.getByText('Jejak eksekusi lengkap').closest('.panel');
+    const panel = screen.getByText('Langkah kerja agen, lengkap').closest('.panel');
 
     await waitFor(() => expect(within(panel).getAllByText(/\d+ ms/).length).toBeGreaterThan(0));
     expect(within(panel).getByText('supervisor.route')).toBeInTheDocument();
@@ -119,7 +119,7 @@ describe('Screen 10 · Chat agen (AC-7.2, AC-7.4)', () => {
     const answer = await ask('Pertanyaan tanpa sumber');
 
     expect(answer.textContent).toMatch(/Tidak ada di dokumen/);
-    expect(within(answer).getByText(/agen menolak menjawab/)).toBeInTheDocument();
+    expect(within(answer).getByText(/agen memilih tidak menjawab/)).toBeInTheDocument();
   });
 
   it('merges the location agent findings into the answer', async () => {
@@ -143,7 +143,7 @@ describe('Screen 10 · Chat agen (AC-7.2, AC-7.4)', () => {
   it('shows an empty trace panel before anything is asked', () => {
     renderChat();
 
-    expect(screen.getByText('Belum ada jejak')).toBeInTheDocument();
+    expect(screen.getByText('Belum ada langkah tercatat')).toBeInTheDocument();
     expect(screen.getByText('Belum ada biaya')).toBeInTheDocument();
   });
 

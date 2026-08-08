@@ -158,7 +158,7 @@ describe('the 7-day grid cache', () => {
 describe('the real Places adapter', () => {
   it('refuses to be constructed without a key rather than inventing competitors', () => {
     expect(() => createGooglePlacesAdapter({})).toThrow(PlacesError);
-    expect(() => createGooglePlacesAdapter({})).toThrow(/belum dikonfigurasi/);
+    expect(() => createGooglePlacesAdapter({})).toThrow(/belum diatur/);
   });
 
   it('is explicit that it awaits pilot quota', () => {

@@ -244,7 +244,7 @@ export function createVertexKnowledgeStore({ bucket, searchEngineId } = {}) {
   if (!bucket || !searchEngineId) {
     throw new IngestError(
       'KB_NOT_CONFIGURED',
-      'Cloud Storage dan Vertex AI Search belum dikonfigurasi. Gunakan store seeded secara eksplisit.',
+      'Cloud Storage dan Vertex AI Search belum diatur. Pakai penyimpanan data contoh secara eksplisit.',
     );
   }
 

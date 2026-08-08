@@ -113,8 +113,8 @@ describe('T062 · the locale travels on the request (AC-8.4)', () => {
 
       // A prose value is a sentence about the system and follows the reader.
       // These services run without Vertex configured, so that is what it says.
-      expect(english.models[0].value).toBe('Deterministic path');
-      expect(indonesian.models[0].value).toBe('Jalur deterministik');
+      expect(english.models[0].value).toBe('Fixed rules, no AI');
+      expect(indonesian.models[0].value).toBe('Aturan tetap, tanpa AI');
 
       // A name is a name in every language: a judge has to be able to match it
       // against the infrastructure and the plan.
@@ -125,7 +125,7 @@ describe('T062 · the locale travels on the request (AC-8.4)', () => {
 
     it('scores the site scout in the language', async () => {
       const english = await call('/v1/scout', { locale: 'en' });
-      expect(english.json().request).toMatch(/Find candidate sites/);
+      expect(english.json().request).toMatch(/Find possible sites/);
     });
 
     it('answers in Indonesian when no language is asked for', async () => {

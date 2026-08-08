@@ -21,14 +21,14 @@ describe('bq.cannibalisation (AC-5.2)', () => {
 
     expect(data.flagged).toBe(true);
     expect(data.nearestOwn.outletId).toBe('BKS-02');
-    expect(data.verdict).toMatch(/berpindah, bukan bertambah/);
+    expect(data.verdict).toMatch(/cuma pindah, bukan pelanggan baru/);
   });
 
   it('does not flag a candidate comfortably clear of every branch', async () => {
     const { data } = await cannibalisation({ tenantId: TENANT, geo: { lat: -6.36, lng: 106.9 } });
 
     expect(data.flagged).toBe(false);
-    expect(data.verdict).toMatch(/tidak berebut pelanggan/);
+    expect(data.verdict).toMatch(/tidak rebutan pelanggan/);
   });
 
   it('is exclusive at the boundary, so exactly 1.2 km is not flagged', async () => {

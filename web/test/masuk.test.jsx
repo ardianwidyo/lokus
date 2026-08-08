@@ -52,7 +52,7 @@ describe('Screen 01 · Masuk & pilih tenant', () => {
       );
       expect(screen.getByRole('button', { name: 'Kirim tautan masuk' })).toBeInTheDocument();
       expect(
-        screen.getByText('Dilindungi SSO organisasi. LOKUS tidak menyimpan kata sandi.'),
+        screen.getByText('Masuk lewat akun kantor (SSO). LOKUS tidak menyimpan kata sandi Anda.'),
       ).toBeInTheDocument();
     });
 
@@ -63,7 +63,7 @@ describe('Screen 01 · Masuk & pilih tenant', () => {
       await userEvent.type(screen.getByLabelText('Email kerja'), 'dwi@nusaretail.co.id');
       await userEvent.click(screen.getByRole('button', { name: 'Kirim tautan masuk' }));
 
-      expect(await screen.findByText(/Tautan masuk dikirim ke dwi@nusaretail\.co\.id/)).toBeVisible();
+      expect(await screen.findByText(/Tautan masuk sudah dikirim ke dwi@nusaretail\.co\.id/)).toBeVisible();
     });
 
     it('surfaces an SSO failure instead of swallowing it', async () => {
@@ -92,7 +92,7 @@ describe('Screen 01 · Masuk & pilih tenant', () => {
     it('empty', async () => {
       renderMasuk(createSeededSessionSource({ tenants: [] }));
 
-      expect(await screen.findByText('Belum ada tenant')).toBeInTheDocument();
+      expect(await screen.findByText('Belum ada perusahaan dipilih')).toBeInTheDocument();
     });
 
     it('error, with a retry that actually retries', async () => {
@@ -103,7 +103,7 @@ describe('Screen 01 · Masuk & pilih tenant', () => {
       renderMasuk({ ...createSeededSessionSource(), loadSession });
 
       const alert = await screen.findByRole('alert');
-      expect(alert).toHaveTextContent('Daftar tenant tak bisa dimuat');
+      expect(alert).toHaveTextContent('Daftar perusahaan gagal diambil');
 
       await userEvent.click(screen.getByRole('button', { name: 'Coba lagi' }));
 
@@ -114,7 +114,7 @@ describe('Screen 01 · Masuk & pilih tenant', () => {
     it('needs permission, when the account has no tenant membership', async () => {
       renderMasuk(failingSource(new SessionError('AUTH_TENANT_CLAIM_MISSING', 'no membership')));
 
-      expect(await screen.findByText('Akun ini belum diberi akses tenant')).toBeInTheDocument();
+      expect(await screen.findByText('Akun ini belum diberi akses ke perusahaan mana pun')).toBeInTheDocument();
     });
   });
 
@@ -160,7 +160,7 @@ describe('Screen 01 · Masuk & pilih tenant', () => {
       renderMasuk(createSeededSessionSource());
 
       expect(
-        await screen.findByText(/bukti nyata kesiapan multi-tenant, bukan klaim di slide/),
+        await screen.findByText(/bukan cuma janji di slide/),
       ).toBeInTheDocument();
     });
   });
@@ -193,7 +193,7 @@ describe('Screen 01 · Masuk & pilih tenant', () => {
 
       await userEvent.click(await screen.findByRole('button', { name: /^Buka Nusa Retail/ }));
 
-      const rail = await screen.findByRole('navigation', { name: 'Navigasi layar' });
+      const rail = await screen.findByRole('navigation', { name: 'Pindah layar' });
       await waitFor(() => expect(within(rail).getByText('Nusa Retail')).toBeInTheDocument());
       expect(within(rail).getByText('42 cabang · Jabodetabek')).toBeInTheDocument();
     });

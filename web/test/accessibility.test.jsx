@@ -80,8 +80,8 @@ describe('T056 · accessibility', () => {
     signIn();
     renderScreen('/briefing');
 
-    expect(screen.getByRole('navigation', { name: 'Navigasi layar' })).toBeInTheDocument();
-    expect(screen.getByRole('navigation', { name: 'Navigasi utama' })).toBeInTheDocument();
+    expect(screen.getByRole('navigation', { name: 'Pindah layar' })).toBeInTheDocument();
+    expect(screen.getByRole('navigation', { name: 'Menu utama' })).toBeInTheDocument();
     expect(screen.getByRole('main')).toBeInTheDocument();
   });
 

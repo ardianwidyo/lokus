@@ -58,13 +58,13 @@ Kartu **Unggah dokumen** di kanan bawah.
 1. Isi **Judul dokumen**, mis. `SOP Poin Loyalitas v1`.
 2. Isi **Isi dokumen** — tempel teksnya, atau **tarik berkas `.txt`/`.md`** ke
    kotak putus-putus.
-3. Klik **Indeks dokumen**.
+3. Klik **Proses dokumen**.
 
 Yang terjadi: teksnya dipotong 800 token dengan overlap 120, diindeks, dan
 tanda terimanya menyebut **jumlah potongan yang sebenarnya**. Barisnya langsung
-muncul di tabel dokumen dengan status **Terindeks**, tanpa muat ulang.
+muncul di tabel dokumen dengan status **Sudah terbaca**, tanpa muat ulang.
 
-Centang **Batasi akses ke peran Admin** sebelum mengindeks untuk menunjukkan
+Centang **Batasi akses khusus Admin** sebelum mengindeks untuk menunjukkan
 jalur yang berbeda: dokumennya tersimpan, tercatat di tabel sebagai *Menunggu
 tinjauan*, dan **tidak akan pernah dikutip agen**. Ini bukan penolakan palsu —
 retrieval benar-benar tidak melihatnya.

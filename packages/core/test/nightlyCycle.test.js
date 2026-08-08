@@ -41,7 +41,7 @@ describe('nightly cycle (AC-1.1, AC-1.4)', () => {
 
     expect(scan.unavailable).toBe(false);
     expect(scan.title).toMatch(/memindai \d+ area cabang/);
-    expect(scan.detail).toMatch(/\d+ POI · \d+ pesaing baru/);
+    expect(scan.detail).toMatch(/\d+ tempat sekitar · \d+ pesaing baru/);
   });
 
   it('says the scan did not happen rather than reporting zero competitors', async () => {
@@ -90,14 +90,14 @@ describe('nightly cycle (AC-1.1, AC-1.4)', () => {
   it('leads with the systemic finding when one exists', async () => {
     const briefing = await run();
 
-    expect(briefing.decisions[0].title).toMatch(/sistemik/);
+    expect(briefing.decisions[0].title).toMatch(/masalah semua cabang/);
   });
 
   it('reports the knowledge coverage it measured, not a figure for the slide', async () => {
     const briefing = await run();
     const knowledge = briefing.timeline.find((node) => node.agent === 'knowledge');
 
-    expect(knowledge.detail).toMatch(/cakupan jawaban \d+%/);
+    expect(knowledge.detail).toMatch(/pertanyaan terjawab \d+%/);
   });
 
   it('estimates the cost of the cycle', async () => {

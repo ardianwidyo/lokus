@@ -65,7 +65,7 @@ describe('AppShell', () => {
   it('renders all 14 rail items, numbered', async () => {
     await renderApp();
 
-    const rail = screen.getByRole('navigation', { name: 'Navigasi layar' });
+    const rail = screen.getByRole('navigation', { name: 'Pindah layar' });
     const items = within(rail).getAllByRole('link');
 
     expect(items).toHaveLength(14);
@@ -77,7 +77,7 @@ describe('AppShell', () => {
     await renderApp();
 
     const current = screen
-      .getByRole('navigation', { name: 'Navigasi layar' })
+      .getByRole('navigation', { name: 'Pindah layar' })
       .querySelector('[aria-current="page"]');
 
     expect(current).toHaveTextContent('Masuk');
@@ -92,7 +92,7 @@ describe('AppShell', () => {
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Briefing Pagi');
     expect(
       screen.getByText(
-        'Hasil siklus agen tadi malam, disaring jadi keputusan yang perlu Anda ambil.',
+        'Hasil kerja agen tadi malam, diringkas jadi keputusan yang perlu Anda ambil.',
       ),
     ).toBeInTheDocument();
   });
@@ -123,7 +123,7 @@ describe('AppShell', () => {
     window.history.pushState({}, '', '/tidak-ada');
     await renderApp();
 
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Masuk & pilih tenant');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Masuk & pilih perusahaan');
   });
 
   it('hides the agent-run action on screen 01, where no tenant is selected yet', async () => {
@@ -142,7 +142,7 @@ describe('AppShell', () => {
   it('renders the four-item bottom nav for small screens', async () => {
     await renderApp();
 
-    const nav = screen.getByRole('navigation', { name: 'Navigasi utama' });
+    const nav = screen.getByRole('navigation', { name: 'Menu utama' });
 
     expect(within(nav).getAllByRole('link')).toHaveLength(4);
     expect(nav).toHaveTextContent('Briefing');
@@ -157,7 +157,7 @@ describe('AppShell', () => {
     window.sessionStorage.clear();
     await renderApp();
 
-    expect(screen.getByText('Belum ada tenant')).toBeInTheDocument();
+    expect(screen.getByText('Belum ada perusahaan dipilih')).toBeInTheDocument();
     // And it stays on screen 01 rather than redirecting to itself.
     expect(window.location.pathname).toBe('/masuk');
   });

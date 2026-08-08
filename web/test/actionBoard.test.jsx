@@ -56,7 +56,7 @@ describe('Screen 13 · Papan tindakan', () => {
     const card = screen.getByText('T-114').closest('.ticket-card');
 
     expect(within(card).getByText(/keluhan antrean turun 18%/)).toBeInTheDocument();
-    expect(within(card).getByText(/ditutup [\d,]+ hari/)).toBeInTheDocument();
+    expect(within(card).getByText(/selesai dalam [\d,]+ hari/)).toBeInTheDocument();
   });
 
   it('shows owner and due date on open tickets', async () => {
@@ -69,8 +69,8 @@ describe('Screen 13 · Papan tindakan', () => {
   it('reports average close time against the SLA', async () => {
     await renderBoard();
 
-    expect(screen.getByText(/Rata-rata waktu tutup tiket/)).toBeInTheDocument();
-    expect(screen.getByText(/SLA 5 hari/)).toBeInTheDocument();
+    expect(screen.getByText(/Rata-rata tiket selesai/)).toBeInTheDocument();
+    expect(screen.getByText(/target 5 hari/)).toBeInTheDocument();
   });
 
   it('filters to tickets the agents raised', async () => {

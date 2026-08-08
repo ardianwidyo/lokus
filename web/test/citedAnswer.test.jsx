@@ -72,14 +72,14 @@ describe('Screen 12 · Jawaban bersitasi (AC-4.1, AC-4.2, AC-4.3)', () => {
   it('says how many chunks were considered and rejected (AC-4.3)', async () => {
     await renderAnswer();
 
-    expect(screen.getByText(/Potongan yang dipertimbangkan tapi tidak dipakai/)).toBeInTheDocument();
-    expect(screen.getByText(/semuanya di bawah ambang 0,70/)).toBeInTheDocument();
+    expect(screen.getByText(/Potongan yang sempat dilihat tapi tidak dipakai/)).toBeInTheDocument();
+    expect(screen.getByText(/semuanya di bawah batas 0,70/)).toBeInTheDocument();
   });
 
   it('reports how confident it is rather than implying certainty', async () => {
     await renderAnswer();
 
-    expect(screen.getByText(/\d+ sumber · keyakinan (tinggi|sedang)/)).toBeInTheDocument();
+    expect(screen.getByText(/\d+ sumber · kecocokan (tinggi|sedang)/)).toBeInTheDocument();
   });
 
   it('refuses out loud when the corpus cannot answer (AC-4.1)', async () => {
@@ -98,7 +98,7 @@ describe('Screen 12 · Jawaban bersitasi (AC-4.1, AC-4.2, AC-4.3)', () => {
     await screen.findByText('Tidak ada di dokumen.');
 
     expect(document.querySelectorAll('.source-card')).toHaveLength(0);
-    expect(screen.getByText(/Tidak ada kutipan yang lolos ambang/)).toBeInTheDocument();
+    expect(screen.getByText(/Tidak ada kutipan yang lolos batas kecocokan/)).toBeInTheDocument();
   });
 
   it('uses the same code path to answer and to refuse, not a demo mode', async () => {
@@ -127,7 +127,7 @@ describe('Screen 12 · Jawaban bersitasi (AC-4.1, AC-4.2, AC-4.3)', () => {
   it('states the refusal threshold on screen', async () => {
     await renderAnswer();
 
-    expect(screen.getByText(/Agen menolak menjawab bila skor kemiripan sumber di bawah/)).toBeInTheDocument();
+    expect(screen.getByText(/Kalau kecocokan sumbernya di bawah/)).toBeInTheDocument();
   });
 
   it('shows the error state when the service fails', async () => {
@@ -143,7 +143,7 @@ describe('Screen 12 · Jawaban bersitasi (AC-4.1, AC-4.2, AC-4.3)', () => {
     window.history.pushState({}, '', '/jawaban');
     render(<App sessionSource={createSeededSessionSource()} knowledgeSource={source} />);
 
-    const title = await screen.findByText('Jawaban tak bisa dimuat');
+    const title = await screen.findByText('Jawaban gagal ditampilkan');
     expect(title.closest('.panel')).toHaveAttribute('data-status', 'error');
   });
 });
@@ -171,6 +171,6 @@ describe('Screen 12 · who wrote the words (T061)', () => {
 
     await renderAnswer(source);
 
-    expect(screen.getByText(/ditulis gemini-2\.0-flash, lolos cek sitasi/)).toBeInTheDocument();
+    expect(screen.getByText(/ditulis gemini-2\.0-flash, sumbernya sudah dicek/)).toBeInTheDocument();
   });
 });

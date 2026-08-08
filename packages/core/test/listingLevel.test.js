@@ -232,7 +232,7 @@ describe('a reply is withheld, not failed at the send (AC-9.4)', () => {
     // backlog of 28 that does not exist, and hide the connection problem that
     // does — so the held count stays at 26 and the five are named separately.
     expect(replies.detail).toMatch(/26 ditahan untuk persetujuan/);
-    expect(replies.detail).toMatch(/5 tidak bisa dibalas/);
+    expect(replies.detail).toMatch(/5 belum bisa dibalas/);
   });
 
   it('is an error the caller can tell apart from a broken adapter', async () => {

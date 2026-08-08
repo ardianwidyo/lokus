@@ -58,7 +58,7 @@ describe('scoutSites (T035)', () => {
 
     expect(Object.keys(best.factors)).toEqual(['traffic', 'mix', 'competitors', 'cannibalisation']);
     expect(Object.values(best.weights).reduce((a, b) => a + b, 0)).toBeCloseTo(1);
-    expect(best.labels.cannibalisation).toBe('Kanibalisasi');
+    expect(best.labels.cannibalisation).toBe('Rebutan pelanggan sendiri');
   });
 
   it('does not fold in the outlet weights, which would leave a factor with no data', async () => {
@@ -123,7 +123,7 @@ describe('scoutSites (T035)', () => {
     const { data } = await scout();
 
     expect(data.rejected.length).toBeGreaterThan(0);
-    expect(data.rejected[0].reason).toMatch(/di bawah ambang 1,2 km/);
+    expect(data.rejected[0].reason).toMatch(/di bawah batas 1,2 km/);
     expect(data.rejected[0].nearestOwnKm).toBeLessThan(1.2);
   });
 

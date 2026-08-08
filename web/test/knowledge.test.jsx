@@ -20,7 +20,7 @@ const renderKb = async ({ role = 'manager', knowledgeSource = null } = {}) => {
     />,
   );
   await screen.findByRole('table', {}, { timeout: 4000 }).catch(() => null);
-  await screen.findByText(/Dokumen terindeks/, {}, { timeout: 4000 });
+  await screen.findByText(/Dokumen yang terbaca/, {}, { timeout: 4000 });
   return utils;
 };
 
@@ -33,13 +33,13 @@ describe('Screen 11 · Pusat pengetahuan (T024)', () => {
     await renderKb();
 
     expect(screen.getByText('text-embedding-004')).toBeInTheDocument();
-    expect(screen.getByText(/768 dim · chunk 800 token · overlap 120/)).toBeInTheDocument();
+    expect(screen.getByText(/768 dimensi · dipotong tiap 800 token · tumpang tindih 120/)).toBeInTheDocument();
   });
 
   it('measures coverage by probing the corpus, not by asserting a figure', async () => {
     await renderKb();
 
-    expect(screen.getByText(/dari \d+ tema yang staf tanyakan/)).toBeInTheDocument();
+    expect(screen.getByText(/dari \d+ hal yang biasa ditanya staf/)).toBeInTheDocument();
   });
 
   it('lists every document with its index state and chunk count', async () => {
@@ -47,8 +47,8 @@ describe('Screen 11 · Pusat pengetahuan (T024)', () => {
     const table = screen.getByRole('table');
 
     expect(within(table).getByText('SOP Layanan Pelanggan v4')).toBeInTheDocument();
-    expect(within(table).getAllByText('Terindeks').length).toBeGreaterThan(0);
-    expect(within(table).getByText('Menunggu tinjauan')).toBeInTheDocument();
+    expect(within(table).getAllByText('Sudah terbaca').length).toBeGreaterThan(0);
+    expect(within(table).getByText('Menunggu ditinjau')).toBeInTheDocument();
   });
 
   it('says plainly that only indexed documents can be quoted', async () => {
@@ -56,7 +56,7 @@ describe('Screen 11 · Pusat pengetahuan (T024)', () => {
 
     // Otherwise "menunggu tinjauan" reads as searchable.
     expect(
-      screen.getByText(/Draft yang\s+menunggu tinjauan dan dokumen yang dikecualikan tidak pernah muncul/),
+      screen.getByText(/Draft yang\s+menunggu ditinjau dan dokumen yang tidak dipakai tidak pernah muncul/),
     ).toBeInTheDocument();
   });
 
@@ -76,7 +76,7 @@ describe('Screen 11 · Pusat pengetahuan (T024)', () => {
     await renderKb({ knowledgeSource: source });
 
     expect(screen.getByText(/2 pertanyaan dari 2 orang/)).toBeInTheDocument();
-    expect(screen.getByText('Usulan klausa · draft')).toBeInTheDocument();
+    expect(screen.getByText('Usulan pasal · draft')).toBeInTheDocument();
   });
 
   it('marks the proposed clause as a draft needing a human owner', async () => {
@@ -86,8 +86,8 @@ describe('Screen 11 · Pusat pengetahuan (T024)', () => {
 
     await renderKb({ knowledgeSource: source });
 
-    expect(screen.getByText(/draft untuk ditinjau manusia/)).toBeInTheDocument();
-    expect(screen.getByText(/Tidak ada yang masuk SOP tanpa persetujuan/)).toBeInTheDocument();
+    expect(screen.getByText(/draft yang harus ditinjau orang/)).toBeInTheDocument();
+    expect(screen.getByText(/Tidak ada yang masuk SOP tanpa disetujui/)).toBeInTheDocument();
   });
 
   it('sends a clause draft to the SOP owner', async () => {
@@ -116,7 +116,7 @@ describe('Screen 11 · Pusat pengetahuan (T024)', () => {
     await renderKb();
 
     expect(
-      screen.getByText(/tetap disimpan tapi tidak diindeks untuk jawaban umum/),
+      screen.getByText(/tetap disimpan, tapi tidak dipakai untuk menjawab pertanyaan umum/),
     ).toBeInTheDocument();
   });
 
@@ -133,7 +133,7 @@ describe('Screen 11 · Pusat pengetahuan (T024)', () => {
     window.history.pushState({}, '', '/pengetahuan');
     render(<App sessionSource={createSeededSessionSource()} knowledgeSource={source} />);
 
-    const title = await screen.findByText('Indeks tak bisa dimuat');
+    const title = await screen.findByText('Daftar dokumen gagal ditampilkan');
     expect(title.closest('.panel')).toHaveAttribute('data-status', 'error');
   });
 });

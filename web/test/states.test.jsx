@@ -50,7 +50,7 @@ describe('Empty', () => {
     render(
       <Empty
         title="Tidak ada review baru"
-        description="Semua review pekan ini sudah dibalas. Agen akan memeriksa lagi malam ini pukul 23.00."
+        description="Semua review pekan ini sudah dibalas. Agen mengecek lagi malam ini pukul 23.00."
         onAction={onAction}
       />,
     );
@@ -85,7 +85,7 @@ describe('ErrorState', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('Places API tak menjawab');
 
     await userEvent.click(screen.getByRole('button', { name: 'Coba lagi' }));
-    await userEvent.click(screen.getByRole('button', { name: 'Lihat log' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Lihat catatan error' }));
 
     expect(onRetry).toHaveBeenCalledOnce();
     expect(onViewLog).toHaveBeenCalledOnce();
@@ -125,7 +125,7 @@ describe('NeedsPermission', () => {
     );
 
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
-    expect(screen.getByText(/hanya bisa membaca/)).toBeInTheDocument();
+    expect(screen.getByText(/hanya bisa melihat/)).toBeInTheDocument();
   });
 });
 

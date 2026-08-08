@@ -54,7 +54,7 @@ describe('Screen 04 · Detail cabang (T034)', () => {
     await renderOutlet({ outlet: 'BKS-02' });
 
     // "−0,4 bulan ini" would hide which four weeks were compared.
-    expect(screen.getByText(/vs 4 pekan sebelumnya/)).toBeInTheDocument();
+    expect(screen.getByText(/dibanding 4 pekan sebelumnya/)).toBeInTheDocument();
   });
 
   it('ranks the branch inside its own tenant', async () => {
@@ -67,14 +67,14 @@ describe('Screen 04 · Detail cabang (T034)', () => {
     await renderOutlet({ outlet: 'BKS-02' });
 
     expect(screen.getByText(/Rating 8 pekan/)).toBeInTheDocument();
-    expect(screen.getByText(/seluruh rentang review yang ada — bukan 12/)).toBeInTheDocument();
+    expect(screen.getByText(/semua review yang ada — bukan 12/)).toBeInTheDocument();
   });
 
   it('gives the chart a text description for a screen reader', async () => {
     await renderOutlet({ outlet: 'BKS-02' });
 
     expect(
-      screen.getByRole('img', { name: /Rating rata-rata per pekan selama 8 pekan/ }),
+      screen.getByRole('img', { name: /Rata-rata rating tiap pekan selama 8 pekan/ }),
     ).toBeInTheDocument();
   });
 
@@ -89,7 +89,7 @@ describe('Screen 04 · Detail cabang (T034)', () => {
   it('says the theme percentages are of complaints, not of all reviews', async () => {
     await renderOutlet({ outlet: 'BKS-02' });
 
-    expect(screen.getByText(/bagian dari 66 keluhan cabang ini, bukan dari/)).toBeInTheDocument();
+    expect(screen.getByText(/dihitung dari 66 keluhan cabang ini, bukan dari/)).toBeInTheDocument();
   });
 
   it('marks which score factors were surveyed and which were measured', async () => {
@@ -105,9 +105,9 @@ describe('Screen 04 · Detail cabang (T034)', () => {
 
     // Parking is Bekasi's weakest factor (44) and its second complaint theme.
     expect(
-      screen.getByText(/Ketersediaan parkir adalah faktor skor terlemah \(44\)/),
+      screen.getByText(/Ketersediaan parkir adalah faktor skor paling lemah \(44\)/),
     ).toBeInTheDocument();
-    expect(screen.getByText(/tema keluhan nomor 2 \(13 keluhan\)/)).toBeInTheDocument();
+    expect(screen.getByText(/keluhan nomor 2 \(13 keluhan\)/)).toBeInTheDocument();
   });
 
   it('withholds the cross-signal sentence when the pair is a coincidence', async () => {
@@ -115,21 +115,21 @@ describe('Screen 04 · Detail cabang (T034)', () => {
     // complaint theme with two mentions — that corroborates nothing.
     await renderOutlet({ outlet: 'CKR-01' });
 
-    expect(screen.queryByText(/dua sinyal berbeda menunjuk hal yang sama/)).toBeNull();
+    expect(screen.queryByText(/dua hal berbeda menunjuk masalah yang sama/)).toBeNull();
   });
 
   it('still writes it where the theme genuinely leads', async () => {
     // Serpong: parking is the weakest factor and the top complaint theme.
     await renderOutlet({ outlet: 'SRP-03' });
 
-    expect(screen.getByText(/tema keluhan nomor 1 \(19 keluhan\)/)).toBeInTheDocument();
+    expect(screen.getByText(/keluhan nomor 1 \(19 keluhan\)/)).toBeInTheDocument();
   });
 
   it('counts the waiting work on the button rather than rounding it', async () => {
     await renderOutlet({ outlet: 'BKS-02' });
 
     expect(
-      screen.getByRole('button', { name: 'Lihat 12 review belum dibalas' }),
+      screen.getByRole('button', { name: 'Lihat 12 review yang belum dibalas' }),
     ).toBeInTheDocument();
   });
 
@@ -152,7 +152,7 @@ describe('Screen 04 · the change-point line (T034)', () => {
     await renderOutlet({ outlet: 'BKS-02' });
 
     expect(
-      screen.getByText(/Tidak ada pembukaan pesaing tercatat di radius 1000 m/),
+      screen.getByText(/Tidak ada pesaing yang tercatat buka dalam radius 1000 m/),
     ).toBeInTheDocument();
     expect(document.querySelector('.chart-event')).toBeNull();
   });
@@ -170,7 +170,7 @@ describe('Screen 04 · the change-point line (T034)', () => {
     await renderOutlet({ outlet: 'DPK-01' });
 
     expect(screen.getByText(/3,75 → 3,44/)).toBeInTheDocument();
-    expect(screen.getByText(/hubungan sebabnya belum diuji/)).toBeInTheDocument();
+    expect(screen.getByText(/Belum tentu yang satu menyebabkan yang lain/)).toBeInTheDocument();
   });
 });
 
@@ -192,7 +192,7 @@ describe('Screen 04 · states (T034)', () => {
     window.history.pushState({}, '', '/cabang');
     render(<App sessionSource={createSeededSessionSource()} outletSource={source} />);
 
-    const title = await screen.findByText('Detail cabang tak bisa dimuat');
+    const title = await screen.findByText('Detail cabang gagal ditampilkan');
     expect(title.closest('.panel')).toHaveAttribute('data-status', 'error');
   });
 
@@ -226,7 +226,7 @@ describe('Screen 04 · states (T034)', () => {
     window.history.pushState({}, '', '/cabang');
     render(<App sessionSource={createSeededSessionSource()} outletSource={source} />);
 
-    await screen.findByText('Detail cabang tak bisa dimuat');
+    await screen.findByText('Detail cabang gagal ditampilkan');
     expect(await screen.findByRole('radio', { name: 'Depok Margonda' })).toBeInTheDocument();
   });
 });

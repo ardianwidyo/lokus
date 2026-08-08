@@ -29,9 +29,9 @@ describe('screen 14 · models panel reports the running stack', () => {
     });
 
     expect(rows['Penalaran'].value).toBe('gemini-3.5-flash · Vertex AI');
-    expect(rows['Ringkasan massal'].value).toBe('gemini-3.5-flash-lite · Vertex AI');
-    expect(rows['Endpoint model'].value).toBe('global · aiplatform.googleapis.com');
-    expect(rows['Runtime API'].value).toBe('Cloud Run · asia-southeast2');
+    expect(rows['Ringkasan borongan'].value).toBe('gemini-3.5-flash-lite · Vertex AI');
+    expect(rows['Alamat model'].value).toBe('global · aiplatform.googleapis.com');
+    expect(rows['Tempat API berjalan'].value).toBe('Cloud Run · asia-southeast2');
   });
 
   it('says deterministic rather than naming a model nobody called', async () => {
@@ -39,10 +39,10 @@ describe('screen 14 · models panel reports the running stack', () => {
     // demo is: no credentials, no API, no model.
     const rows = await rowsFor(undefined);
 
-    expect(rows['Penalaran'].value).toBe('Jalur deterministik');
-    expect(rows['Ringkasan massal'].value).toBe('Jalur deterministik');
-    expect(rows['Endpoint model'].value).toBe('—');
-    expect(rows['Runtime API'].value).toBe('Node lokal');
+    expect(rows['Penalaran'].value).toBe('Aturan tetap, tanpa AI');
+    expect(rows['Ringkasan borongan'].value).toBe('Aturan tetap, tanpa AI');
+    expect(rows['Alamat model'].value).toBe('—');
+    expect(rows['Tempat API berjalan'].value).toBe('Node lokal');
   });
 
   it('never prints Cloud Run from a config value alone', async () => {
@@ -50,7 +50,7 @@ describe('screen 14 · models panel reports the running stack', () => {
     // — which the API reads — says the process is actually on Cloud Run.
     const rows = await rowsFor({ onCloudRun: false, region: 'asia-southeast2' });
 
-    expect(rows['Runtime API'].value).not.toContain('Cloud Run');
+    expect(rows['Tempat API berjalan'].value).not.toContain('Cloud Run');
   });
 
   it('marks the planned stack as planned, in both configurations', async () => {
@@ -59,11 +59,11 @@ describe('screen 14 · models panel reports the running stack', () => {
 
       // Enabling an API in the Cloud console does not make it called. These two
       // stay `planned` until code calls them.
-      expect(rows['Indeks terkelola'].status).toBe('planned');
-      expect(rows['Runtime terkelola'].status).toBe('planned');
+      expect(rows['Indeks pencarian terkelola'].status).toBe('planned');
+      expect(rows['Tempat agen terkelola'].status).toBe('planned');
       // And what does run says so without qualification.
-      expect(rows['Retrieval'].status).toBe('live');
-      expect(rows['Runtime agen'].value).toContain('packages/core');
+      expect(rows['Pencarian dokumen'].status).toBe('live');
+      expect(rows['Tempat agen berjalan'].value).toContain('packages/core');
     }
   });
 

@@ -109,7 +109,7 @@ describe('the theme switcher, mirroring i18n.test.jsx "the language switcher"', 
     window.history.pushState({}, '', '/briefing');
     render(<App sessionSource={createSeededSessionSource()} />);
 
-    const group = screen.getAllByRole('radiogroup', { name: 'Tema konsol' })[0];
+    const group = screen.getAllByRole('radiogroup', { name: 'Warna tampilan' })[0];
     const options = within(group).getAllByRole('radio');
 
     expect(options).toHaveLength(2);
@@ -123,7 +123,7 @@ describe('the theme switcher, mirroring i18n.test.jsx "the language switcher"', 
 
     expect(document.documentElement.dataset.theme).toBe('light');
 
-    const dark = screen.getAllByRole('radio', { name: 'Tema gelap' })[0];
+    const dark = screen.getAllByRole('radio', { name: 'Tampilan gelap' })[0];
     await userEvent.click(dark);
 
     expect(document.documentElement.dataset.theme).toBe('dark');
@@ -134,14 +134,14 @@ describe('the theme switcher, mirroring i18n.test.jsx "the language switcher"', 
     window.history.pushState({}, '', '/briefing');
     const first = render(<App sessionSource={createSeededSessionSource()} />);
 
-    await userEvent.click(screen.getAllByRole('radio', { name: 'Tema gelap' })[0]);
+    await userEvent.click(screen.getAllByRole('radio', { name: 'Tampilan gelap' })[0]);
     expect(document.documentElement.dataset.theme).toBe('dark');
 
     first.unmount();
 
     render(<App sessionSource={createSeededSessionSource()} />);
     expect(document.documentElement.dataset.theme).toBe('dark');
-    const group = screen.getAllByRole('radiogroup', { name: 'Tema konsol' })[0];
+    const group = screen.getAllByRole('radiogroup', { name: 'Warna tampilan' })[0];
     expect(within(group).getAllByRole('radio').find((o) => o.checked).value).toBe('dark');
   });
 
@@ -161,7 +161,7 @@ describe('the theme switcher, mirroring i18n.test.jsx "the language switcher"', 
     window.history.pushState({}, '', '/briefing');
     render(<App sessionSource={createSeededSessionSource()} />);
 
-    await userEvent.click(screen.getAllByRole('radio', { name: 'Tema gelap' })[0]);
+    await userEvent.click(screen.getAllByRole('radio', { name: 'Tampilan gelap' })[0]);
     expect(readTheme()).toBe('dark');
   });
 });

@@ -82,7 +82,7 @@ describe('Screen 05 · an unclaimed listing (AC-9.3, AC-9.4)', () => {
     await selectKarawang();
 
     const preview = document.querySelector('.inbox-preview-panel');
-    expect(await within(preview).findByText(/Listing belum diklaim akun ini/)).toBeInTheDocument();
+    expect(await within(preview).findByText(/Halaman Google cabang ini belum diklaim akun ini/)).toBeInTheDocument();
     // The send is absent, not disabled: a greyed button implies a permission a
     // manager might think they could obtain by asking someone in this tenant.
     expect(within(preview).queryByRole('button', { name: /Setujui & kirim/ })).toBeNull();
@@ -94,7 +94,7 @@ describe('Screen 05 · an unclaimed listing (AC-9.3, AC-9.4)', () => {
 
     const preview = document.querySelector('.inbox-preview-panel');
     expect(
-      within(preview).getByRole('button', { name: 'Hubungkan listing' }),
+      within(preview).getByRole('button', { name: 'Hubungkan halaman Google' }),
     ).toBeInTheDocument();
   });
 
@@ -103,11 +103,11 @@ describe('Screen 05 · an unclaimed listing (AC-9.3, AC-9.4)', () => {
     await selectKarawang();
 
     const preview = document.querySelector('.inbox-preview-panel');
-    expect(within(preview).queryByRole('button', { name: 'Hubungkan listing' })).toBeNull();
+    expect(within(preview).queryByRole('button', { name: 'Hubungkan halaman Google' })).toBeNull();
     // The permission state still explains itself — a viewer who cannot connect
     // is told to ask an admin, not shown a panel that has simply gone quiet.
     expect(
-      within(preview).getByText(/Minta admin tenant untuk menghubungkan akun/),
+      within(preview).getByText(/Minta admin perusahaan yang menghubungkan akunnya/),
     ).toBeInTheDocument();
   });
 
@@ -116,13 +116,13 @@ describe('Screen 05 · an unclaimed listing (AC-9.3, AC-9.4)', () => {
     await selectKarawang();
 
     const preview = document.querySelector('.inbox-preview-panel');
-    expect(within(preview).getByText(/batas API, bukan jumlah review cabang ini/)).toBeInTheDocument();
+    expect(within(preview).getByText(/batas dari Google, bukan jumlah review cabang ini/)).toBeInTheDocument();
   });
 
   it('says how much of the queue is waiting on a connection rather than a reply', async () => {
     await renderInbox();
 
-    expect(screen.getByText(/menunggu koneksi listing/)).toBeInTheDocument();
+    expect(screen.getByText(/menunggu halaman Google dihubungkan/)).toBeInTheDocument();
   });
 
   it('still offers the reply on a managed branch, so the gate is the level alone', async () => {
@@ -145,7 +145,7 @@ describe('Screen 04 · a branch with no listing (AC-9.1, AC-9.3)', () => {
   it('names the level beside the branch it qualifies', async () => {
     await renderOutlet('BSD-02');
 
-    expect(screen.getByText('Tanpa listing')).toBeInTheDocument();
+    expect(screen.getByText('Belum ada di Google')).toBeInTheDocument();
   });
 
   it('explains the empty rating panel instead of leaving it blank', async () => {
@@ -160,7 +160,7 @@ describe('Screen 04 · a branch with no listing (AC-9.1, AC-9.3)', () => {
   it('offers no connect button, because connecting cannot create a listing', async () => {
     await renderOutlet('BSD-02');
 
-    expect(screen.queryByRole('button', { name: 'Hubungkan listing' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Hubungkan halaman Google' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Hubungkan akun' })).toBeNull();
   });
 
@@ -173,7 +173,7 @@ describe('Screen 04 · a branch with no listing (AC-9.1, AC-9.3)', () => {
   it('marks a managed branch as managed, so the others read as exceptions', async () => {
     await renderOutlet('BKS-02');
 
-    expect(screen.getByText('Listing dikelola')).toBeInTheDocument();
+    expect(screen.getByText('Halaman Google dikelola')).toBeInTheDocument();
   });
 });
 
@@ -195,7 +195,7 @@ describe('Screen 14 · what the response metrics left out (AC-9.5)', () => {
   it('reports the two response figures over the branches it can vouch for', async () => {
     await renderAdmin();
 
-    expect(screen.getByText('Median respons pertama')).toBeInTheDocument();
+    expect(screen.getByText('Waktu balasan pertama · median')).toBeInTheDocument();
     expect(screen.getByText(/Dibalas dalam 48 jam/)).toBeInTheDocument();
     expect(screen.getAllByText(/dari 6 cabang yang riwayatnya utuh/).length).toBeGreaterThan(0);
   });

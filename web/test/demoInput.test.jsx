@@ -45,7 +45,7 @@ const renderKb = async ({ role = 'manager' } = {}) => {
   // No injected knowledge source: the point is the workspace SessionContext
   // builds, which is what carries a document to the other screens.
   const utils = render(<App sessionSource={createSeededSessionSource()} />);
-  await screen.findByText(/Dokumen terindeks/, {}, { timeout: 6000 });
+  await screen.findByText(/Dokumen yang terbaca/, {}, { timeout: 6000 });
   return utils;
 };
 
@@ -71,14 +71,14 @@ describe('Screen 11 · uploading a SOP actually indexes it (T067)', () => {
     await renderKb();
 
     await fillDocument(user, { title: 'SOP Poin Loyalitas v1', text: LOYALTY_SOP });
-    await user.click(screen.getByRole('button', { name: 'Indeks dokumen' }));
+    await user.click(screen.getByRole('button', { name: 'Proses dokumen' }));
 
     // Found by its own sentence rather than by role: the gap panel on this
     // screen announces a receipt too, and two live regions make role=status
     // ambiguous.
     const receipt = await screen.findByText(/Agen bisa mengutipnya sekarang/, {}, { timeout: 6000 });
     expect(receipt).toHaveAttribute('role', 'status');
-    expect(receipt).toHaveTextContent(/SOP Poin Loyalitas v1.*terindeks/);
+    expect(receipt).toHaveTextContent(/SOP Poin Loyalitas v1.*sudah terbaca/);
     // The count comes from the chunker, so the receipt cannot claim an index
     // that did not happen.
     expect(receipt).toHaveTextContent(/\d+ potongan/);
@@ -89,10 +89,10 @@ describe('Screen 11 · uploading a SOP actually indexes it (T067)', () => {
     await renderKb();
 
     await fillDocument(user, { title: 'SOP Poin Loyalitas v1', text: LOYALTY_SOP });
-    await user.click(screen.getByRole('button', { name: 'Indeks dokumen' }));
+    await user.click(screen.getByRole('button', { name: 'Proses dokumen' }));
 
     const row = await screen.findByRole('row', { name: /SOP Poin Loyalitas v1/ }, { timeout: 6000 });
-    expect(within(row).getByText('Terindeks')).toBeInTheDocument();
+    expect(within(row).getByText('Sudah terbaca')).toBeInTheDocument();
   });
 
   it('stores a restricted document without indexing it (AC-10.3)', { timeout: 20000 }, async () => {
@@ -100,18 +100,18 @@ describe('Screen 11 · uploading a SOP actually indexes it (T067)', () => {
     await renderKb();
 
     await fillDocument(user, { title: 'Kontrak Vendor Rahasia', text: LOYALTY_SOP });
-    await user.click(screen.getByLabelText(/Batasi akses ke peran Admin/));
-    await user.click(screen.getByRole('button', { name: 'Indeks dokumen' }));
+    await user.click(screen.getByLabelText(/Batasi akses khusus Admin/));
+    await user.click(screen.getByRole('button', { name: 'Proses dokumen' }));
 
     const receipt = await screen.findByText(
       /Agen tidak akan mengutipnya sampai ditinjau/,
       {},
       { timeout: 6000 },
     );
-    expect(receipt).toHaveTextContent(/tidak diindeks/);
+    expect(receipt).toHaveTextContent(/belum masuk pencarian/);
 
     const row = await screen.findByRole('row', { name: /Kontrak Vendor Rahasia/ });
-    expect(within(row).getByText('Menunggu tinjauan')).toBeInTheDocument();
+    expect(within(row).getByText('Menunggu ditinjau')).toBeInTheDocument();
   });
 
   it('refuses a file it cannot read rather than indexing mojibake', { timeout: 20000 }, async () => {
@@ -127,15 +127,15 @@ describe('Screen 11 · uploading a SOP actually indexes it (T067)', () => {
     });
 
     const alert = await screen.findByRole('alert', {}, { timeout: 6000 });
-    expect(alert).toHaveTextContent(/hanya bisa membaca berkas teks/i);
+    expect(alert).toHaveTextContent(/cuma bisa membaca berkas teks/i);
   });
 
   it('does not let a viewer add a document (AC-6.3)', async () => {
     await renderKb({ role: 'viewer' });
 
     expect(screen.getByLabelText('Judul dokumen')).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Indeks dokumen' })).toBeDisabled();
-    expect(screen.getByText(/Peran Anda hanya bisa membaca/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Proses dokumen' })).toBeDisabled();
+    expect(screen.getByText(/Peran Anda hanya bisa melihat/)).toBeInTheDocument();
   });
 });
 
@@ -241,7 +241,7 @@ describe('Screen 11 · reading a document back (T069)', () => {
   it('says nothing is open before a document is chosen', async () => {
     await renderKb();
 
-    const empty = screen.getByText('Belum ada dokumen dibuka');
+    const empty = screen.getByText('Belum ada dokumen yang dibuka');
     expect(empty.closest('.panel')).toHaveAttribute('data-status', 'empty');
   });
 
@@ -266,7 +266,7 @@ describe('Screen 11 · reading a document back (T069)', () => {
     await renderKb();
 
     await fillDocument(user, { title: 'SOP Poin Loyalitas v1', text: LOYALTY_SOP });
-    await user.click(screen.getByRole('button', { name: 'Indeks dokumen' }));
+    await user.click(screen.getByRole('button', { name: 'Proses dokumen' }));
     await screen.findByText(/Agen bisa mengutipnya sekarang/, {}, { timeout: 8000 });
 
     await openDocument(user, 'SOP Poin Loyalitas v1');
@@ -281,7 +281,7 @@ describe('Screen 11 · reading a document back (T069)', () => {
     await renderKb();
 
     await fillDocument(user, { title: 'SOP Poin Loyalitas v1', text: LOYALTY_SOP });
-    await user.click(screen.getByRole('button', { name: 'Indeks dokumen' }));
+    await user.click(screen.getByRole('button', { name: 'Proses dokumen' }));
 
     const added = await screen.findByRole('row', { name: /SOP Poin Loyalitas v1/ }, { timeout: 8000 });
     expect(within(added).getByText('demo')).toBeInTheDocument();
@@ -295,14 +295,14 @@ describe('Screen 11 · reading a document back (T069)', () => {
     await renderKb();
 
     await fillDocument(user, { title: 'Kontrak Vendor Rahasia', text: LOYALTY_SOP });
-    await user.click(screen.getByLabelText(/Batasi akses ke peran Admin/));
-    await user.click(screen.getByRole('button', { name: 'Indeks dokumen' }));
+    await user.click(screen.getByLabelText(/Batasi akses khusus Admin/));
+    await user.click(screen.getByRole('button', { name: 'Proses dokumen' }));
     await screen.findByText(/Agen tidak akan mengutipnya sampai ditinjau/, {}, { timeout: 8000 });
 
     await openDocument(user, 'Kontrak Vendor Rahasia');
 
     const refusal = await screen.findByText(
-      /"Kontrak Vendor Rahasia" ditandai hanya untuk peran Admin/,
+      /"Kontrak Vendor Rahasia" ditandai khusus untuk Admin/,
       {},
       { timeout: 6000 },
     );
@@ -316,8 +316,8 @@ describe('Screen 11 · reading a document back (T069)', () => {
     await renderKb({ role: 'admin' });
 
     await fillDocument(user, { title: 'Kontrak Vendor Rahasia', text: LOYALTY_SOP });
-    await user.click(screen.getByLabelText(/Batasi akses ke peran Admin/));
-    await user.click(screen.getByRole('button', { name: 'Indeks dokumen' }));
+    await user.click(screen.getByLabelText(/Batasi akses khusus Admin/));
+    await user.click(screen.getByRole('button', { name: 'Proses dokumen' }));
     await screen.findByText(/Agen tidak akan mengutipnya sampai ditinjau/, {}, { timeout: 8000 });
 
     await openDocument(user, 'Kontrak Vendor Rahasia');
@@ -327,7 +327,7 @@ describe('Screen 11 · reading a document back (T069)', () => {
     ).toBeInTheDocument();
     // Readable by an admin and still outside retrieval — two different things,
     // and the panel says so rather than letting the reader assume.
-    expect(screen.getByText(/tersimpan tapi tidak diindeks untuk pencarian/)).toBeInTheDocument();
+    expect(screen.getByText(/tersimpan tapi belum masuk pencarian/)).toBeInTheDocument();
   });
 });
 
@@ -365,7 +365,7 @@ describe('Screen 05 · the review composer (T068)', () => {
       text: 'Antre 20 menit di kasir, cuma satu yang buka padahal ramai sekali.',
     });
 
-    const receipt = await screen.findByText(/Draft balasannya sudah dibuat/, {}, { timeout: 8000 });
+    const receipt = await screen.findByText(/Draft balasannya sudah jadi/, {}, { timeout: 8000 });
     expect(receipt).toBeInTheDocument();
 
     // Twice: the list row, and the preview panel that followed it. The preview
@@ -388,7 +388,7 @@ describe('Screen 05 · the review composer (T068)', () => {
       text: 'Kasir cuma satu yang buka dan antreannya panjang sekali.',
     });
 
-    await screen.findByText(/Draft balasannya sudah dibuat/, {}, { timeout: 8000 });
+    await screen.findByText(/Draft balasannya sudah jadi/, {}, { timeout: 8000 });
     expect(await screen.findByText(/Ditambahkan di demo/)).toBeInTheDocument();
     expect(screen.getAllByText('demo').length).toBeGreaterThan(0);
   });
@@ -415,8 +415,8 @@ describe('Screen 05 · the review composer (T068)', () => {
     const filter = screen.getByRole('radio', { name: /Ditambahkan \(demo\) · 0/ });
     await userEvent.setup().click(filter);
 
-    expect(await screen.findByText('Belum ada review yang Anda tambahkan')).toBeInTheDocument();
-    expect(screen.getByText(/hanya berisi review yang ditulis lewat komposer/)).toBeInTheDocument();
+    expect(await screen.findByText('Anda belum menambahkan review')).toBeInTheDocument();
+    expect(screen.getByText(/cuma berisi review yang Anda tulis sendiri/)).toBeInTheDocument();
   });
 
   it('lists exactly the reviews added this session (AC-10.10)', { timeout: 25000 }, async () => {
@@ -428,7 +428,7 @@ describe('Screen 05 · the review composer (T068)', () => {
       rating: 2,
       text: 'Antre 20 menit di kasir, cuma satu yang buka padahal ramai sekali.',
     });
-    await screen.findByText(/Draft balasannya sudah dibuat/, {}, { timeout: 8000 });
+    await screen.findByText(/Draft balasannya sudah jadi/, {}, { timeout: 8000 });
 
     await user.click(await screen.findByRole('radio', { name: /Ditambahkan \(demo\) · 1/ }));
 

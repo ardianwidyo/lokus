@@ -153,7 +153,7 @@ describe('gbp.reply', () => {
 describe('the real Business Profile adapter', () => {
   it('refuses to be constructed without credentials rather than inventing reviews', () => {
     expect(() => createGoogleGbpAdapter({})).toThrow(GbpError);
-    expect(() => createGoogleGbpAdapter({})).toThrow(/belum dikonfigurasi/);
+    expect(() => createGoogleGbpAdapter({})).toThrow(/belum diatur/);
   });
 
   it('is explicit that it awaits pilot API access, so no caller mistakes it for working', () => {

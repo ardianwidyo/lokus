@@ -147,7 +147,7 @@ describe('T063 · the language switcher (AC-8.1, AC-8.2, AC-8.3)', () => {
     window.history.pushState({}, '', '/briefing');
     render(<App sessionSource={createSeededSessionSource()} />);
 
-    const group = screen.getAllByRole('radiogroup', { name: 'Bahasa konsol' })[0];
+    const group = screen.getAllByRole('radiogroup', { name: 'Bahasa tampilan' })[0];
     const options = within(group).getAllByRole('radio');
 
     expect(options).toHaveLength(2);

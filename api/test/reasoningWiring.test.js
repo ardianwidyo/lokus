@@ -86,7 +86,7 @@ describe('reasoning path wiring', () => {
       LOKUS_REASONING_SWITCHABLE: 'true',
     }).gemini;
 
-    expect(() => services.select('apikey')).toThrow(/belum dikonfigurasi/);
+    expect(() => services.select('apikey')).toThrow(/belum diatur/);
     expect(() => services.select('mars')).toThrow(/tidak dikenal/);
   });
 
@@ -102,7 +102,7 @@ describe('reasoning path wiring', () => {
 
     const after = await services.admin.overview('nusa-retail');
     expect(after.models[0].value).toContain('AI Studio');
-    expect(after.models.find((row) => row.label === 'Endpoint model').value).toBe(
+    expect(after.models.find((row) => row.label === 'Alamat model').value).toBe(
       'generativelanguage.googleapis.com',
     );
   });

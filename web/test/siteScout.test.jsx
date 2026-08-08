@@ -23,7 +23,7 @@ const renderScout = async ({ role = 'manager', locationSource = null, agentSourc
   );
   // The panel kicker renders in the loading state too, so waiting on it would
   // let assertions run before any candidate exists. Wait for real content.
-  await screen.findByText(/Peringkat 1|Tidak ada kandidat yang lolos|Site Scout tak bisa dimuat/, {}, { timeout: 4000 });
+  await screen.findByText(/Peringkat 1|Tidak ada calon lokasi yang lolos|Site Scout gagal ditampilkan/, {}, { timeout: 4000 });
   return utils;
 };
 
@@ -38,8 +38,8 @@ describe('Screen 08 · Site Scout (T035)', () => {
     await renderScout();
 
     expect(screen.getByText(/minimal 1,2 km dari cabang kami sendiri/)).toBeInTheDocument();
-    expect(screen.getByText('POI dianalisis')).toBeInTheDocument();
-    expect(screen.getByText('Lolos filter')).toBeInTheDocument();
+    expect(screen.getByText('Tempat sekitar dicek')).toBeInTheDocument();
+    expect(screen.getByText('Lolos saringan')).toBeInTheDocument();
   });
 
   it('ranks three candidates, best first, with the top one marked', async () => {
@@ -58,7 +58,7 @@ describe('Screen 08 · Site Scout (T035)', () => {
     await renderScout();
     const [best] = cards();
 
-    for (const label of ['Lalu lintas pejalan', 'Bauran kategori', 'Pesaing', 'Kanibalisasi']) {
+    for (const label of ['Lalu lintas pejalan', 'Jenis usaha sekitar', 'Pesaing', 'Rebutan pelanggan sendiri']) {
       expect(within(best).getByText(new RegExp(label))).toBeInTheDocument();
     }
   });
@@ -84,9 +84,9 @@ describe('Screen 08 · Site Scout (T035)', () => {
   it('shows what the filter rejected, and why, instead of hiding it', async () => {
     await renderScout();
 
-    const panel = screen.getByText('Ditolak filter').closest('.panel');
+    const panel = screen.getByText('Ditolak saringan').closest('.panel');
 
-    expect(within(panel).getByText(/di bawah ambang 1,2 km/)).toBeInTheDocument();
+    expect(within(panel).getByText(/di bawah batas 1,2 km/)).toBeInTheDocument();
     expect(within(panel).getByText(/skornya bagus/)).toBeInTheDocument();
   });
 
@@ -125,8 +125,8 @@ describe('Screen 08 · Site Scout (T035)', () => {
   it('states where each number came from', async () => {
     await renderScout();
 
-    expect(screen.getByText(/Kepadatan pesaing dihitung dari Places/)).toBeInTheDocument();
-    expect(screen.getByText(/masih berupa survei/)).toBeInTheDocument();
+    expect(screen.getByText(/Kepadatan pesaing dihitung dari data Places/)).toBeInTheDocument();
+    expect(screen.getByText(/masih dari survei/)).toBeInTheDocument();
   });
 
   it('shows the empty state when nothing clears the filter', async () => {
@@ -142,7 +142,7 @@ describe('Screen 08 · Site Scout (T035)', () => {
 
     await renderScout({ locationSource: source });
 
-    expect(screen.getByText('Tidak ada kandidat yang lolos')).toBeInTheDocument();
+    expect(screen.getByText('Tidak ada calon lokasi yang lolos')).toBeInTheDocument();
   });
 
   it('shows the error state with a retry', async () => {
@@ -160,7 +160,7 @@ describe('Screen 08 · Site Scout (T035)', () => {
       <App sessionSource={createSeededSessionSource()} locationSource={source} />,
     );
 
-    const title = await screen.findByText('Site Scout tak bisa dimuat');
+    const title = await screen.findByText('Site Scout gagal ditampilkan');
     expect(title.closest('.panel')).toHaveAttribute('data-status', 'error');
   });
 });

@@ -35,7 +35,7 @@ describe('Screen 14 · jalur penalaran', () => {
 
     // Configured: selectable. Not configured: shown, disabled, with the reason,
     // because hiding it would leave an operator wondering if it exists.
-    expect(screen.getByRole('button', { name: /Deterministik/ })).toBeEnabled();
+    expect(screen.getByRole('button', { name: /Aturan tetap \(deterministik\)/ })).toBeEnabled();
     expect(screen.getByRole('button', { name: /API key/ })).toBeDisabled();
     expect(screen.getByText('GEMINI_API_KEY belum diset')).toBeInTheDocument();
   });
@@ -44,7 +44,7 @@ describe('Screen 14 · jalur penalaran', () => {
     await renderPanel(sourceFor({ active: 'vertex' }));
 
     expect(screen.getByRole('button', { name: /Vertex AI/ })).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByRole('button', { name: /Deterministik/ })).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByRole('button', { name: /Aturan tetap \(deterministik\)/ })).toHaveAttribute('aria-pressed', 'false');
   });
 
   it('sends the chosen path and re-reads what the server actually did', async () => {
@@ -53,7 +53,7 @@ describe('Screen 14 · jalur penalaran', () => {
     const source = sourceFor();
     await renderPanel(source);
 
-    await userEvent.click(screen.getByRole('button', { name: /Deterministik/ }));
+    await userEvent.click(screen.getByRole('button', { name: /Aturan tetap \(deterministik\)/ }));
 
     expect(source.selectReasoning).toHaveBeenCalledWith('deterministic');
     await waitFor(() => expect(source.reasoning).toHaveBeenCalledTimes(2));
@@ -64,8 +64,8 @@ describe('Screen 14 · jalur penalaran', () => {
     // everyone by default.
     await renderPanel(sourceFor({ mutable: false }));
 
-    expect(screen.getByRole('button', { name: /Deterministik/ })).toBeDisabled();
-    expect(screen.getByText(/Terkunci pada proses ini/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Aturan tetap \(deterministik\)/ })).toBeDisabled();
+    expect(screen.getByText(/Terkunci di proses ini/)).toBeInTheDocument();
   });
 
   it('names a refusal rather than leaving the screen unchanged and silent', async () => {
@@ -78,7 +78,7 @@ describe('Screen 14 · jalur penalaran', () => {
     });
     await renderPanel(source);
 
-    await userEvent.click(screen.getByRole('button', { name: /Deterministik/ }));
+    await userEvent.click(screen.getByRole('button', { name: /Aturan tetap \(deterministik\)/ }));
 
     expect(await screen.findByText(/belum dikonfigurasi di proses ini/)).toBeInTheDocument();
   });

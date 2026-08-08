@@ -24,7 +24,7 @@ const branchDecision = {
 const networkDecision = {
   id: 'decision-systemic',
   rank: 1,
-  title: 'Antrean kasir adalah masalah sistemik, bukan lokal',
+  title: 'Antrean kasir adalah masalah semua cabang, bukan satu cabang',
   outletId: null,
   theme: 'antrean-kasir',
 };

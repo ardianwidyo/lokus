@@ -71,7 +71,7 @@ describe('budget guard (constitution V)', () => {
 
     budget.record(TENANT, 0.02 * DEFAULT_BUDGET_IDR);
 
-    expect(onAlert.mock.calls[0][0].message).toMatch(/mode Flash/);
+    expect(onAlert.mock.calls[0][0].message).toMatch(/model yang lebih murah \(Flash\)/);
   });
 
   it('refuses a call that would cross the hard ceiling', () => {

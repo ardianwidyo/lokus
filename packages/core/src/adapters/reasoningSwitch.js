@@ -120,7 +120,7 @@ export function createReasoningSwitch({
         // to distrust the screen.
         throw new ReasoningSwitchError(
           'REASONING_UNAVAILABLE',
-          `Jalur "${next}" belum dikonfigurasi di proses ini.`,
+          `Pilihan "${next}" belum diatur di proses ini.`,
         );
       }
 

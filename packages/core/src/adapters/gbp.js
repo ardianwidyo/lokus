@@ -237,7 +237,7 @@ export function createGoogleGbpAdapter({ accessToken, accountId }) {
   if (!accessToken || !accountId) {
     throw new GbpError(
       'GBP_NOT_CONFIGURED',
-      'Business Profile belum dikonfigurasi. Gunakan adapter seeded secara eksplisit.',
+      'Business Profile belum diatur. Pakai adapter data contoh secara eksplisit.',
     );
   }
 
