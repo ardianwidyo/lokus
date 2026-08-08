@@ -23,6 +23,9 @@ tfplan
 
 .DS_Store
 Thumbs.db
+# Word writes a lock file beside any .docx that is open. It appears the moment
+# someone reads an export in docs/exports/ and vanishes when they close it.
+~$*
 eval-report.json
 
 # Agent tooling installed into this checkout, not part of LOKUS. Its scripts
