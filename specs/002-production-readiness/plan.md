@@ -205,6 +205,15 @@ until Google approves, and a plan that puts it in the middle of the sequence
 stops the entire effort on somebody else's queue. The request goes in on day
 one; the adapter is written whenever the approval lands.
 
+**US-21 has no stage of its own, on purpose.** A runbook written as a phase at
+the end is a runbook written from memory, by someone who has stopped being
+surprised. Point 3 of the definition of done distributes it instead: a task that
+introduces something which can fail at 03:00 ships with its runbook section and
+its alert, written while the failure mode is still fresh. What remains at the end
+is only what cannot be written per task — the rollback criterion, the
+tenant-communication path, and the index that points each alert at its section.
+Those close in P6.6, beside the rollback drill that tests them.
+
 **P6.1 first, and quickly.** Two of its items — the nightly-cycle endpoint and
 the notification channels — are the difference between an applied environment
 that silently fails every night and one that says so.
