@@ -159,18 +159,63 @@ putih di kedua tema, karena field itu sendiri tidak berubah.
 empat: `Baru` (`.tag-outline`), `Dikerjakan` (`.tag-accent`), `Menunggu`
 (`.tag-neutral`), `Selesai` (`.tag-neutral` + `opacity:.55`).
 
+## Gaya bahasa
+
+Pembaca konsol ini adalah area manager, bukan engineer. Copy ditulis dengan
+bahasa sehari-hari: kalimat pendek, kalimat aktif, sapaan "Anda", dan kata yang
+memang dipakai orang di lapangan.
+
+**Lakukan**
+
+- Satu kalimat satu gagasan. Kalau ada dua, pecah jadi dua kalimat.
+- Kata kerja biasa: "gagal ditampilkan", bukan "tak bisa dimuat"; "diatur di",
+  bukan "ditegakkan di"; "batas maksimal", bukan "batas keras".
+- Sebut apa yang terjadi, bukan istilah prosesnya: "Review disortir otomatis",
+  bukan "Triase otomatis".
+
+**Istilah teknis** hanya bertahan kalau ia menamai fitur yang benar-benar ada.
+Kalau bertahan, ia ditulis dengan kata awam lebih dulu dan istilah aslinya
+sekali dalam kurung, di tempat pertama ia muncul di layar itu:
+
+| Ditulis | Bukan |
+|---|---|
+| Cek pengaman | Pemeriksaan guardrail |
+| Aturan tetap (deterministik) | Deterministik |
+| Model pembaca dokumen (embedding) | Model embedding |
+| Data tiap perusahaan (tenant) dipisah | Pemisahan tenant |
+| Rebutan pelanggan sendiri | Kanibalisasi |
+| Tempat di sekitar | POI |
+| Langkah kerja agen | Jejak eksekusi |
+| Batas kecocokan | Ambang keyakinan |
+| Masalah semua cabang | Masalah sistemik |
+
+Kalau sebuah istilah sudah punya tautan yang lebih kuat ke kodenya, tanda kurung
+tidak perlu. Layar 14 menyebut file penegaknya di tiap baris ("diatur di
+`guardrails.js`"), jadi "Cek pengaman" di layar 06 dibiarkan polos — nama file
+lebih bisa diverifikasi daripada glosarium, dan kicker yang panjang jadi dua
+baris di kolom sempit.
+
+Menyederhanakan bahasa tidak boleh mengubah klaimnya. Angka, ambang, sumber,
+dan syarat tetap disebut lengkap — "Kalau kecocokan sumbernya di bawah 0,70,
+agen memilih tidak menjawab" sama tepatnya dengan kalimat lamanya, hanya lebih
+mudah dibaca. Kalau penyederhanaan menghilangkan syarat, penyederhanaannya yang
+salah.
+
+Aturan ini berlaku untuk kedua bahasa. Inggris mengikuti Indonesia, dengan
+register yang sama — "safety checks (guardrails)", bukan "guardrail checks".
+
 ## Empat state wajib (copy final)
 
 ```
 Memuat            skeleton 3 bar (70% / 92% / 48%, tinggi 11px, --color-neutral-200)
                   + "Agen sedang membaca 18 review…"
 Kosong            "Tidak ada review baru" / "Semua review pekan ini sudah dibalas.
-                  Agen akan memeriksa lagi malam ini pukul 23.00." / [Periksa sekarang]
-Gagal             "Places API tak menjawab" / "Skor lokasi memakai data tersimpan
-                  per 26 Juli. Percobaan ulang otomatis dalam 5 menit."
-                  / [Coba lagi] [Lihat log]
-Perlu izin        "Hubungkan Business Profile" / "LOKUS butuh akses baca review dan
-                  tulis balasan untuk 42 lokasi milik Anda." / [Hubungkan akun]
+                  Agen mengecek lagi malam ini pukul 23.00." / [Periksa sekarang]
+Gagal             "Places API tidak menjawab" / "Skor lokasi memakai data tersimpan
+                  per 26 Juli. Agen mencoba lagi otomatis dalam 5 menit."
+                  / [Coba lagi] [Lihat catatan error]
+Perlu izin        "Hubungkan Business Profile" / "LOKUS perlu izin membaca review dan
+                  mengirim balasan untuk 42 lokasi milik Anda." / [Hubungkan akun]
 ```
 
 Keempat state ikut bahasa yang dipilih pembaca (US-8). Copy Indonesia di atas

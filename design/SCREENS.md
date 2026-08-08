@@ -10,6 +10,13 @@ Indonesia yang benar dan terjemahannya yang salah. Padanan Inggris tinggal di
 `web/src/i18n/messages.en.js`, bukan di dokumen ini — satu tempat, supaya tidak
 ada dua daftar yang bisa berselisih.
 
+Registernya bahasa sehari-hari, bukan bahasa laporan: kalimat pendek, kalimat
+aktif, dan istilah teknis hanya bertahan kalau ia menamai fitur yang memang ada
+— ditulis dengan kata awam lebih dulu dan istilah aslinya sekali dalam kurung.
+Aturan lengkapnya, beserta daftar padanan yang dipakai, ada di
+`design/UI-GUIDELINES.md` bagian "Gaya bahasa". Menyederhanakan kalimat tidak
+boleh mengubah klaimnya: angka, ambang, sumber, dan syarat tetap disebut utuh.
+
 ## Shell (semua layar)
 
 - **Rail kiri**, lebar 238px, `border-right: 1px solid var(--color-divider)`,
@@ -33,7 +40,7 @@ ada dua daftar yang bisa berselisih.
   pembaca memilih sendiri, lalu pilihan itu yang menang selamanya (sama
   seperti bahasa). Sama seperti pemilih bahasa, pindah ke header konten di
   bawah 900px.
-- **Kaki rail**: "Prototipe desain · data contoh / Siklus agen terakhir 06.00 WIB"
+- **Kaki rail**: "Prototipe desain · data contoh / Agen terakhir bekerja 06.00 WIB"
   11px `--color-neutral-600`.
 - **Header konten** (sticky, `padding: 18px 28px`, border bawah): kicker
   "LAYAR 02" + judul layar 26px Barlow Condensed · subjudul 12.5px rata kanan
@@ -44,42 +51,42 @@ Judul & subjudul per layar:
 
 | # | Judul | Subjudul |
 |---|---|---|
-| 01 | Masuk & pilih tenant | Pemisahan tenant dan peran terlihat sejak layar pertama. |
-| 02 | Briefing Pagi | Hasil siklus agen tadi malam, disaring jadi keputusan yang perlu Anda ambil. |
-| 03 | Peta jaringan cabang | Skor lokasi dan kesehatan reputasi 42 cabang di satu permukaan. |
-| 04 | Detail cabang | Satu cabang: tren rating, tema keluhan, dan konteks sekitarnya. |
-| 05 | Kotak masuk review | Triase otomatis: prioritas, tema, dan draft balasan yang menunggu persetujuan. |
-| 06 | Draft balasan AI | Balasan yang patuh SOP, dengan kutipan sumber dan pemeriksaan guardrail. |
-| 07 | Analisis tema & sentimen | Tema keluhan × cabang sepanjang waktu — memisahkan masalah lokal dari sistemik. |
-| 08 | Site Scout | Kandidat lokasi baru, diberi skor dan alasan oleh Agen Lokasi. |
-| 09 | Bandingkan lokasi | Dua kandidat berhadapan, faktor demi faktor. |
-| 10 | Chat agen | Satu pertanyaan bahasa manusia, dijawab lintas tiga agen — dengan jejak eksekusinya. |
-| 11 | Pusat pengetahuan | Dokumen, status indeks, dan celah pengetahuan yang perlu ditutup. |
-| 12 | Jawaban bersitasi | Pertanyaan staf cabang dijawab dengan kutipan halaman SOP. |
-| 13 | Papan tindakan | Insight ditutup menjadi pekerjaan yang benar-benar selesai. |
-| 14 | Admin: model, guardrail, biaya | Bukti kesiapan produksi yang bisa dilihat juri, bukan diklaim. |
+| 01 | Masuk & pilih perusahaan | Tiap perusahaan punya datanya sendiri, dan peran Anda menentukan apa yang terbuka. |
+| 02 | Briefing Pagi | Hasil kerja agen tadi malam, diringkas jadi keputusan yang perlu Anda ambil. |
+| 03 | Peta jaringan cabang | Skor lokasi dan kondisi reputasi 42 cabang dalam satu layar. |
+| 04 | Detail cabang | Satu cabang: naik-turun rating, keluhan yang sering muncul, dan apa yang ada di sekitarnya. |
+| 05 | Kotak masuk review | Review disortir otomatis: mana yang mendesak, apa keluhannya, dan draft balasan yang menunggu Anda. |
+| 06 | Draft balasan AI | Balasan yang mengikuti SOP, lengkap dengan sumbernya dan hasil cek pengaman. |
+| 07 | Analisis tema & sentimen | Keluhan per cabang dari pekan ke pekan — memisahkan masalah satu cabang dari masalah semua cabang. |
+| 08 | Site Scout | Calon lokasi cabang baru, diberi skor dan alasannya oleh Agen Lokasi. |
+| 09 | Bandingkan lokasi | Dua calon lokasi diadu, satu per satu faktornya. |
+| 10 | Chat agen | Tanya pakai bahasa sehari-hari, dijawab tiga agen sekaligus — lengkap dengan langkah kerjanya. |
+| 11 | Pusat pengetahuan | Dokumen, status pembacaannya, dan pertanyaan yang belum dijawab SOP. |
+| 12 | Jawaban bersumber | Pertanyaan staf cabang dijawab, lengkap dengan halaman SOP-nya. |
+| 13 | Papan tindakan | Temuan agen berubah jadi pekerjaan yang benar-benar dituntaskan. |
+| 14 | Admin: model, pengaman, biaya | Bukti kesiapan yang bisa dicek sendiri, bukan sekadar diklaim. |
 
 ---
 
-## 01 · Masuk & pilih tenant
+## 01 · Masuk & pilih perusahaan
 
 **Layout** dua kolom: kartu masuk 400px + panel tenant fleksibel (min 330px).
 
 Kartu masuk: lockup (LOGO 36px + "LOKUS" 21px + "oleh EBCO" 9.5px uppercase) ·
-paragraf "Masuk dengan akun kerja Anda. Akses ke cabang mengikuti peran Anda di
-organisasi." · tombol sekunder blok **Lanjutkan dengan Google Workspace** (ikon
+paragraf "Masuk pakai akun kerja Anda. Cabang mana yang bisa dibuka mengikuti
+peran Anda di kantor." · tombol sekunder blok **Lanjutkan dengan Google Workspace** (ikon
 16px, konten rata kiri, padding 11px 13px) · pemisah "atau" dengan garis di kedua
 sisi · field "Email kerja" placeholder `nama@perusahaan.co.id` · tombol primer
-blok **Kirim tautan masuk** · catatan 11.5px "Dilindungi SSO organisasi. LOKUS
-tidak menyimpan kata sandi."
+blok **Kirim tautan masuk** · catatan 11.5px "Masuk lewat akun kantor (SSO). LOKUS
+tidak menyimpan kata sandi Anda."
 
-Panel tenant: kicker "SETELAH MASUK · PILIH TENANT" lalu tiga baris hairline —
+Panel tenant: kicker "SETELAH MASUK · PILIH PERUSAHAAN" lalu tiga baris hairline —
 Nusa Retail (42 cabang · minimarket · peran: Admin, tag "Terakhir
 dibuka", border `--color-accent`) · Klinik Sehat Prima (11 cabang · klinik ·
 peran: Viewer, tag "Baca saja") · Dealer Arta Motor (7 cabang · otomotif ·
 peran: Area Manager, tag "Uji coba · 12 hari"). Catatan penutup 12.5px:
-"Pemisahan tenant dan peran ditampilkan sejak layar pertama — ini bukti nyata
-kesiapan multi-tenant, bukan klaim di slide."
+"Data tiap perusahaan (tenant) dipisah, dan peran menentukan apa yang boleh
+dibuka — terlihat sejak layar pertama, bukan cuma janji di slide."
 
 Ketiga peran tetap terwakili, jadi gerbang RBAC tetap bisa didemokan. Yang
 berubah 2026-08-07 adalah tenant mana yang memegang Admin: layar 14 hanya
@@ -112,11 +119,11 @@ Urutan simpul:
 1. `23.02` Agen Reputasi membaca 214 review baru — "42 cabang · 7 tema terdeteksi · 3 tema naik dibanding pekan lalu"
 2. `23.48` 187 review dibalas otomatis — "semua bintang 3–5 · 27 ditahan untuk persetujuan Anda"
 3. **Keputusan 1** (blok aksen)
-4. `02.30` Agen Lokasi memindai 42 area cabang — "1.284 POI · 1 pesaing baru ditemukan · 2 cabang berisiko kanibalisasi"
+4. `02.30` Agen Lokasi memindai 42 area cabang — "1.284 tempat sekitar · 1 pesaing baru ditemukan · 2 cabang berisiko rebutan pelanggan sendiri"
 5. **Keputusan 2** (blok aksen)
-6. `05.10` Agen Pengetahuan mengindeks 3 dokumen baru — "cakupan jawaban 79% → 82% · 1 celah pengetahuan dilaporkan"
+6. `05.10` Agen Pengetahuan mengindeks 3 dokumen baru — "pertanyaan terjawab 79% → 82% · 1 celah pengetahuan dilaporkan"
 7. **Keputusan 3** (blok aksen)
-8. `06.00` Briefing diserahkan — "3 panggilan tool gagal malam ini · semuanya berhasil diulang otomatis"
+8. `06.00` Briefing diserahkan — "3 langkah gagal malam ini · semuanya berhasil diulang otomatis"
 
 **Blok keputusan**: `padding: 18px 22px`, latar `--color-accent-100`, border
 `--color-accent-300`, penanda kotak padat aksen. Isi: tag outline
@@ -165,8 +172,8 @@ Jababeka 4,0 / 74 · Serpong Sektor 7 4,3 / 81 · Bogor Pajajaran 4,5 / 86. Tomb
 sekunder blok **Buka detail Bekasi Timur**.
 
 Kartu "Catatan agen lokasi": "Dua cabang berjarak kurang dari 900 m di Depok —
-indikasi kanibalisasi. Saya sudah menghitung ulang catchment keduanya; laporan
-lengkap ada di Site Scout." + ghost **Buka Site Scout →**.
+keduanya rebutan pelanggan yang sama. Area tangkapan keduanya sudah saya hitung
+ulang; laporan lengkapnya ada di Site Scout." + ghost **Buka Site Scout →**.
 
 ---
 
@@ -189,10 +196,10 @@ Keramahan staf 6% **2**.
 
 Kolom kanan: mini-peta 200px (radius 1 km, 4 pesaing, label "radius 1 km ·
 6 POI · 1 baru sejak 28 Jun") · kartu "Faktor skor lokasi" (Lalu lintas pejalan
-88 · Bauran kategori sekitar 76 · Kepadatan pesaing 61 · Ketersediaan parkir 44)
-dengan catatan "Parkir adalah penahan terbesar dan juga tema keluhan nomor dua —
-dua sinyal berbeda menunjuk hal yang sama." · tombol primer blok **Lihat 18
-review baru** dan sekunder blok **Tanya agen soal cabang ini**.
+88 · Jenis usaha di sekitar 76 · Kepadatan pesaing 61 · Ketersediaan parkir 44)
+dengan catatan "Parkir paling menahan skor dan sekaligus keluhan nomor dua —
+dua hal berbeda menunjuk masalah yang sama." · tombol primer blok **Lihat 18
+review yang belum dibalas** dan sekunder blok **Tanya agen soal cabang ini**.
 
 ---
 
@@ -226,7 +233,7 @@ buka satu. Pegawainya ramah sih, tapi ya capek." · tag antrean kasir / jumlah
 staf / **tema naik 3×** · blok draft (latar aksen-100, kicker "DRAFT BALASAN" +
 "nada: hangat, bertanggung jawab", teks 14.5px, chip "SOP Layanan v4 · hal. 12"
 dan "Nada Brand · hal. 3") · tombol [Setujui & kirim ⏎] [Ubah teks] [Jadikan
-tiket] [Abaikan] · kaki 12px: "Guardrail lolos 4/4 · Berikutnya: Depok
+tiket] [Abaikan] · kaki 12px: "Cek pengaman lolos 4/4 · Berikutnya: Depok
 Margonda" + kanan "23 tersisa di antrean ini".
 
 Di bawah daftar kiri, tombol teks [+ Tambah review (demo)] membuka komposer:
@@ -258,16 +265,16 @@ var(--color-accent-400)`:
 > periksa jadwal shift hari itu dan memperbaikinya.
 
 Tombol: [Setujui & kirim] [Ubah teks] [Minta versi lain] [Tolak] · catatan 12px:
-"Balasan tidak pernah terkirim otomatis. Persetujuan manusia wajib untuk semua
-review bintang 1–2 — aturan ini ditetapkan di halaman Admin."
+"Balasan tidak pernah dikirim otomatis. Review bintang 1–2 wajib disetujui orang
+dulu — aturannya diatur di halaman Admin."
 
-Kanan: kartu "BERSUMBER PADA" dengan dua kartu kutipan (ikon dokumen 12px, judul
+Kanan: kartu "DIAMBIL DARI" dengan dua kartu kutipan (ikon dokumen 12px, judul
 13.5px, skor 0,88 / 0,81, kutipan 12.5px `--color-neutral-700`):
 SOP Layanan v4 hal. 12 — "Antrean lebih dari 10 menit wajib ditangani dengan
 membuka kasir tambahan pada jam sibuk." · Nada Brand hal. 3 — "Akui masalahnya,
 sebut tindakan konkret, jangan berjanji tanpa tanggal."
-Kartu "PEMERIKSAAN GUARDRAIL": Tanpa klaim tak bersumber · Tanpa data pribadi ·
-Nada sesuai panduan · Tanpa janji kompensasi — semuanya "lolos"
+Kartu "CEK PENGAMAN": Tidak ada klaim tanpa sumber · Tidak ada data
+pribadi · Nada sesuai panduan · Tidak ada janji ganti rugi — semuanya "lolos"
 (`--color-accent-700`).
 
 ---
@@ -289,8 +296,8 @@ latar ramp aksen sesuai intensitas; teks putih bila ≥ 500.
 
 Tiga kartu di bawah:
 
-- **Temuan agen · prioritas jaringan** — "Antrean kasir adalah masalah sistemik,
-  bukan lokal": "Muncul di 5 dari 6 wilayah dan naik di semuanya. Perbaikan per
+- **Temuan agen · prioritas jaringan** — "Antrean kasir adalah masalah semua
+  cabang, bukan satu cabang": "Muncul di 5 dari 6 wilayah dan naik di semuanya. Perbaikan per
   cabang tidak akan cukup — usulan agen: ubah aturan pembukaan kasir di SOP
   pusat." + primer **Lihat draft perubahan SOP**.
 - **Sentimen jaringan · 8 pekan** — 8 bar naik dari ramp 300 → 700, keterangan
@@ -311,8 +318,8 @@ Lolos filter **17** · Direkomendasikan **3**.
 
 Tiga kartu kandidat (kartu peringkat 1 memakai `border-left: 2px solid
 var(--color-accent)`), masing-masing: kicker peringkat + nama 21px + skor besar
-38px `--color-accent-700`, empat bar faktor (Lalu lintas / Bauran kategori /
-Pesaing / Kanibalisasi), paragraf alasan, tombol.
+38px `--color-accent-700`, empat bar faktor (Lalu lintas / Jenis usaha sekitar /
+Pesaing / Rebutan pelanggan sendiri), paragraf alasan, tombol.
 
 1. **Cibubur Junction · sisi timur** — 84 · 91/86/74/88 — "Perkantoran dan dua
    sekolah dalam radius 600 m, tanpa minimarket sejenis. Cabang terdekat kami
@@ -324,10 +331,10 @@ Pesaing / Kanibalisasi), paragraf alasan, tombol.
    tetapi 1,3 km dari cabang Jatinegara — sebagian pelanggan akan berpindah,
    bukan bertambah." · [Bandingkan] [Simpan]
 
-Catatan kaki (ikon info): "Skor dihitung dari Places Insight (kepadatan &
-kategori POI dalam radius), jarak antar cabang sendiri lewat BigQuery GIS, dan
-bobot yang bisa Anda ubah di Admin. Setiap angka bisa diklik untuk melihat data
-mentahnya — tidak ada skor tanpa jejak."
+Catatan kaki (ikon info): "Skor dihitung dari data Places (seberapa padat dan
+jenis apa saja tempat di sekitarnya), jarak antar cabang sendiri lewat BigQuery
+GIS, dan bobot yang bisa Anda ubah di Admin. Tiap angka bisa diklik untuk
+melihat data mentahnya — tidak ada skor tanpa jejak."
 
 ---
 
@@ -337,15 +344,15 @@ Satu panel, grid `200px 1fr 1fr`, setiap sel dipisah border hairline. Kolom A
 memakai latar `--color-accent-100` dan label "Kandidat A · direkomendasikan".
 Baris: skor besar (84 / 79) · Lalu lintas pejalan (91 · perkantoran + 2 sekolah /
 **95** · pasar harian) · Pesaing dalam 800 m (**1** minimarket / 4 minimarket) ·
-Cabang sendiri terdekat (**2,1 km** · aman / 1,6 km · risiko sedang) · Estimasi
+Cabang sendiri terdekat (**2,1 km** · aman / 1,6 km · risiko sedang) · Perkiraan
 kunjungan/hari (**620–740** / 700–910 · rentang lebih lebar) · Sewa pasaran
-(Rp 18–22 jt/bln / **Rp 12–15 jt/bln**) · Kesimpulan agen ("Pendapatan lebih
-stabil dan mudah diprediksi. Pilih ini jika target margin, bukan volume." /
-"Volume lebih tinggi tapi perang harga hampir pasti. Pilih ini hanya jika siap
-bersaing harga."). Angka yang lebih baik dicetak tebal.
+(Rp 18–22 jt/bln / **Rp 12–15 jt/bln**) · Kesimpulan agen ("Pemasukannya lebih
+stabil dan gampang ditebak. Pilih ini kalau yang dikejar margin, bukan ramai." /
+"Ramainya lebih tinggi, tapi perang harga hampir pasti. Pilih ini cuma kalau
+siap bersaing harga."). Angka yang lebih baik dicetak tebal.
 
 Tombol di bawah: [Ajukan survei Kandidat A] [Tambah kandidat ketiga] [Ekspor ke
-PDF] ghost [Tanya agen: "bagaimana kalau target volume?"].
+PDF] ghost [Tanya agen: "bagaimana kalau kejar volume?"].
 
 ---
 
@@ -387,8 +394,8 @@ Trace →") dan kartu **Biaya percakapan ini** ("Rp 412 · 3 panggilan model",
 
 Empat kartu KPI: Dokumen terindeks **48** ("1.902 potongan · 3 diperbarui tadi
 malam") · Cakupan jawaban **82%** (bar) · Pertanyaan tak terjawab **37** ("bulan
-ini · 12 soal antrean") · Model embedding **text-embedding-004** ("768 dim ·
-chunk 800 token · overlap 120").
+ini · 12 soal antrean") · Model pembaca dokumen (embedding) **text-embedding-004**
+("768 dimensi · dipotong tiap 800 token · tumpang tindih 120").
 
 Grid `1fr 320px`. Tabel dokumen (Dokumen · Jenis · Halaman · Status indeks ·
 Diperbarui): SOP Layanan Pelanggan v4 / PDF / 34 / Terindeks / 28 Jul 2026 ·
@@ -408,7 +415,7 @@ pasal di tengah, panel ini memperlihatkannya terpotong. Di situlah gunanya.
 Dokumen yang ditambahkan sesi ini membawa tag outline **demo** di barisnya,
 sama seperti review tambahan di layar 05.
 
-Dokumen yang dibatasi ("Batasi akses ke peran Admin") tetap terdaftar dan tetap
+Dokumen yang dibatasi ("Batasi akses khusus Admin") tetap terdaftar dan tetap
 bisa ditekan, tapi isinya hanya muncul untuk peran Admin. Peran lain mendapat
 state **perlu izin** yang menyebut nama dokumennya — bukan state error, karena
 tidak ada yang rusak, dan bukan panel kosong, karena pembatasan itu keputusan
@@ -421,7 +428,7 @@ lebih dari 10 menit wajib dilaporkan ke area manager pada hari yang sama.'*" +
 [Kirim ke pemilik SOP] [Ubah draft]. Lalu kartu unggah, yang benar-benar
 mengindeks: field judul, dropzone dashed "Tarik berkas .txt atau .md ke sini,
 atau tempel isinya di bawah / dipotong 800 token dengan overlap 120", textarea
-isi dokumen, checkbox "Batasi akses ke peran Admin", tombol [Indeks dokumen].
+isi dokumen, checkbox "Batasi akses khusus Admin", tombol [Proses dokumen].
 Setelah berhasil, tanda terima menyebut jumlah potongan dan status indeks, dan
 baris dokumen muncul di tabel kiri tanpa muat ulang.
 
@@ -438,14 +445,14 @@ berikutnya.
 
 ---
 
-## 12 · Jawaban bersitasi
+## 12 · Jawaban bersumber
 
 Grid `1fr 360px`.
 
 Kiri: kartu pertanyaan ("Dwi Kurnia · Bekasi Timur · via WhatsApp", teks 16.5px
 "Pelanggan minta refund barang promo yang sudah dibuka. Boleh atau tidak, dan apa
 syaratnya?") · kartu jawaban (tag "Jawaban Agen Pengetahuan" + "2 sumber ·
-keyakinan tinggi"), dua paragraf 15px dengan penanda superskrip `[1]` `[2]`
+kecocokan tinggi"), dua paragraf 15px dengan penanda superskrip `[1]` `[2]`
 berwarna aksen-700:
 
 > Boleh, dengan tiga syarat: barang promo masih dalam masa 7 hari sejak pembelian
@@ -457,13 +464,13 @@ berwarna aksen-700:
 > sama; jangan menjanjikan pengembalian tunai di kasir [2].
 
 Tombol: [Kirim ke WhatsApp Dwi] [Simpan sebagai FAQ] ghost [Jawaban ini salah].
-Catatan kaki: "Agen menolak menjawab bila skor kemiripan sumber di bawah 0,7 —
-dalam kasus itu ia mengatakan 'tidak ada di dokumen' dan mencatat pertanyaannya
-sebagai celah pengetahuan. Tidak ada jawaban yang dikarang."
+Catatan kaki: "Kalau kecocokan sumbernya di bawah 0,7, agen memilih tidak
+menjawab: ia bilang 'tidak ada di dokumen' dan mencatat pertanyaannya sebagai
+celah pengetahuan. Tidak ada jawaban yang dikarang."
 
 Kanan: dua kartu sumber `[1]` SOP Layanan v4 hal. 21 (0,91) dan `[2]` hal. 22
 (0,86), masing-masing dengan kutipan dan ghost "Buka halaman N →". Kaki:
-"Potongan yang dipertimbangkan tapi tidak dipakai: 4 · semuanya di bawah ambang
+"Potongan yang sempat dilihat tapi tidak dipakai: 4 · semuanya di bawah batas
 0,7."
 
 ---
@@ -471,7 +478,7 @@ Kanan: dua kartu sumber `[1]` SOP Layanan v4 hal. 21 (0,91) dan `[2]` hal. 22
 ## 13 · Papan tindakan
 
 Baris atas: segmented **Semua · 24** / Dari agen · 19 / Milik saya · 6 · kanan
-"Rata-rata waktu tutup tiket: **3,1 hari** · SLA 5 hari".
+"Rata-rata tiket selesai: **3,1 hari** · target 5 hari".
 
 Empat kolom (`repeat(4,1fr)`), header kolom = nama + jumlah:
 
@@ -489,37 +496,38 @@ Empat kolom (`repeat(4,1fr)`), header kolom = nama + jumlah:
   (ditutup 1,2 hari · rating +0,2) — kartu opacity .72
 
 Kartu tiket: id Barlow Condensed 12px aksen-700 · judul 13.5px · tag · baris
-meta 11.5px. Catatan kaki (ikon centang): "Setiap tiket menyimpan tautan ke
-insight yang melahirkannya dan mencatat dampaknya setelah ditutup. Itu yang
-membuat LOKUS bisa membuktikan nilai gunanya dengan angka, bukan cerita."
+meta 11.5px. Catatan kaki (ikon centang): "Tiap tiket menyimpan tautan ke
+temuan yang memicunya, dan mencatat hasilnya setelah ditutup. Itu yang membuat
+manfaat LOKUS bisa dibuktikan dengan angka, bukan cerita."
 
 ---
 
-## 14 · Admin: model, guardrail, biaya
+## 14 · Admin: model, pengaman, biaya
 
 Tiga kartu atas:
 
 - **Model & infrastruktur** — Penalaran: Gemini · Vertex AI · Ringkasan massal:
   Gemini Flash · Embedding: text-embedding-004 · Runtime agen: Agent Engine ·
   Region: asia-southeast2 · Layanan: Cloud Run · 2 svc. Catatan: "Model dipilih
-  per tugas, bukan satu model untuk semua — Flash untuk 214 review, model
+  sesuai tugasnya, bukan satu model untuk semua — Flash untuk 214 review, model
   penalaran hanya untuk diagnosis."
-- **Guardrail & kendali manusia** — empat toggle aktif: "Balasan bintang 1–2
-  wajib disetujui manusia" · "Larang janji kompensasi finansial" · "Tolak
-  menjawab bila sumber < 0,7" · "Redaksi data pribadi sebelum ke model" + field
-  "Ambang keyakinan minimum" = 0,70.
-- **Biaya per tenant · Juli** — **Rp 1,84 juta**, bar 34%, "34% dari batas keras
-  Rp 5,4 juta. Di atas 90%, agen turun ke mode Flash dan mengirim peringatan." +
+- **Pengaman & kendali manusia** — empat toggle aktif: "Balasan bintang 1–2
+  wajib disetujui orang" · "Larang janji ganti rugi berupa uang" · "Tolak
+  menjawab kalau sumbernya di bawah 0,7" · "Hapus data pribadi sebelum dikirim
+  ke model" + field "Batas kecocokan minimum" = 0,70.
+- **Biaya per tenant · Juli** — **Rp 1,84 juta**, bar 34%, "34% dari batas maksimal
+  Rp 5,4 juta. Lewat 90%, agen pindah ke model yang lebih murah (Flash) dan
+  mengirim peringatan." +
   rincian Model Rp 1,12 jt · Places & Maps Rp 0,41 jt · BigQuery & Run Rp 0,31 jt.
 
 Dua kartu bawah:
 
 - **Evaluasi agen** ("golden set 60 kasus · dijalankan tiap deploy") — tabel
-  Metrik / Skor / Ambang / Status: Ketepatan tema keluhan 0,91 / 0,85 · Sitasi
+  Yang diukur / Skor / Batas minimal / Status: Ketepatan tema keluhan 0,91 / 0,85 · Sitasi
   benar & relevan 0,94 / 0,90 · Kepatuhan nada brand 0,88 / 0,80 · Halusinasi
   terdeteksi 0,02 / < 0,05 · Latensi p95 7,4 s / < 10 s — semuanya "lolos".
 - **Kesehatan operasional** — Uptime 30 hari **99,7%** · Siklus malam terakhir
-  **06.02** · Kegagalan tool 7 hari **3** ("semua berhasil retry") · Deploy
+  **06.02** · Langkah gagal 7 hari **3** ("semua berhasil diulang") · Deploy
   terakhir **v0.9.4** ("CI hijau · 28 Jul 05.11") + empat baris berbutir aksen:
   Terraform · GitHub Actions · Cloud Logging + Trace · Secret Manager.
 
