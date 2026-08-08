@@ -226,6 +226,16 @@ review yang Anda ketik di depan juri diklasterisasi, lalu draft balasannya
 ditulis model Gemini yang sungguhan. Unggah SOP juga tetap bekerja, lewat
 `POST /v1/knowledge/documents`.
 
+Unduh dokumen ikut bekerja di mode ini, lewat
+`GET /v1/knowledge/documents/:docId/file` — token dan peran diperiksa persis
+seperti rute lain, jadi Perjanjian Layanan Waralaba menolak diunduh manajer dan
+mau untuk admin. Kalau juri minta bukti yang paling cepat: unggah sebuah `.txt`
+di kartu kanan, lalu tekan **Unduh asli** di barisnya. Yang turun adalah berkas
+yang barusan mereka serahkan, byte demi byte. Dokumen bawaan menawarkan
+**Unduh teks** — bukan berkas asli, karena LOKUS memang tidak memegang berkas
+untuk data contoh, dan berkas `.txt` yang turun mengatakan itu di baris
+pertamanya.
+
 Untuk menjalankan penalaran Gemini yang sungguhan alih-alih jalur
 deterministik, jalankan sekali `gcloud auth application-default login`, lalu
 tambahkan `GOOGLE_CLOUD_PROJECT=ebco-aihack-ardian LOKUS_REASONING=vertex` di

@@ -66,6 +66,9 @@ export default [
         // adapter uses them to put a ceiling on a call that never returns.
         AbortController: 'readonly',
         fetch: 'readonly',
+        // A download's `content-length` is a byte count, and a document held
+        // as text can only be measured in bytes with an encoder.
+        TextEncoder: 'readonly',
       },
     },
   },

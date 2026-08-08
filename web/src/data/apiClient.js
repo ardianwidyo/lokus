@@ -20,7 +20,7 @@ export class ApiError extends Error {
 const PERMISSION_CODES = new Set(['TENANT_FORBIDDEN', 'ROLE_FORBIDDEN', 'AUTH_TENANT_CLAIM_MISSING']);
 
 export function createApiClient({ baseUrl, getToken, getTenantId, getLocale = null, fetchImpl = fetch }) {
-  async function request(path, { method = 'GET', body = null, tenantId = null } = {}) {
+  async function send(path, { method = 'GET', body = null, tenantId = null } = {}) {
     const tenant = tenantId ?? getTenantId?.() ?? null;
     const token = await getToken?.();
     // The reader's language, on every request rather than baked into a client
@@ -28,7 +28,7 @@ export function createApiClient({ baseUrl, getToken, getTenantId, getLocale = nu
     // request, so switching languages needs no new connection.
     const locale = getLocale?.() ?? null;
 
-    const response = await fetchImpl(`${baseUrl}${path}`, {
+    return fetchImpl(`${baseUrl}${path}`, {
       method,
       headers: {
         ...(token ? { authorization: `Bearer ${token}` } : {}),
@@ -38,9 +38,10 @@ export function createApiClient({ baseUrl, getToken, getTenantId, getLocale = nu
       },
       ...(body ? { body: JSON.stringify(body) } : {}),
     });
+  }
 
-    if (response.ok) return response.status === 204 ? null : response.json();
-
+  /** Every failure path, shared: a download refused must raise what a read does. */
+  async function raise(response) {
     // The API always answers with {error:{code,message}}; a body that is not
     // that shape means something in front of the API failed, and saying so is
     // more useful than reporting an empty message.
@@ -52,11 +53,64 @@ export function createApiClient({ baseUrl, getToken, getTenantId, getLocale = nu
     throw new ApiError(code, message, response.status);
   }
 
+  async function request(path, options) {
+    const response = await send(path, options);
+    if (response.ok) return response.status === 204 ? null : response.json();
+    return raise(response);
+  }
+
+  /**
+   * A file rather than a document (AC-10.11).
+   *
+   * The name and the origin come off the response headers, not off a guess made
+   * from the URL: the server is the only party that knows whether it just sent
+   * the original file or a rendition of the indexed text, and `documentFile`
+   * on the seeded source returns the same three fields so the screens above
+   * cannot tell the two sources apart.
+   */
+  async function requestFile(path, options) {
+    const response = await send(path, options);
+    if (!response.ok) return raise(response);
+
+    return {
+      blob: await response.blob(),
+      filename: filenameFromDisposition(response.headers?.get('content-disposition')),
+      mimeType: response.headers?.get('content-type') ?? 'application/octet-stream',
+      origin: response.headers?.get('x-lokus-file-origin') ?? null,
+    };
+  }
+
   return {
     isSeeded: false,
     get: (path, options) => request(path, options),
     post: (path, body, options) => request(path, { ...options, method: 'POST', body }),
+    getFile: (path, options) => requestFile(path, options),
   };
+}
+
+/**
+ * The filename the server chose, out of `Content-Disposition`.
+ *
+ * `filename*` first: it is the exact name, percent-encoded UTF-8, and the plain
+ * `filename` beside it is the flattened ASCII fallback the API sends for old
+ * clients. Preferring the fallback would turn "SOP Layanan · v4.txt" into
+ * "SOP Layanan _ v4.txt" on a browser that had no such limitation.
+ */
+export function filenameFromDisposition(header) {
+  if (!header) return 'dokumen';
+
+  const extended = /filename\*=UTF-8''([^;]+)/i.exec(header);
+  if (extended) {
+    try {
+      return decodeURIComponent(extended[1].trim());
+    } catch {
+      // A malformed encoding is the server's problem, not a reason to fail the
+      // download: fall through to the ASCII name it also sent.
+    }
+  }
+
+  const plain = /filename="([^"]*)"/i.exec(header) ?? /filename=([^;]+)/i.exec(header);
+  return plain ? plain[1].trim() : 'dokumen';
 }
 
 export function isPermissionError(error) {

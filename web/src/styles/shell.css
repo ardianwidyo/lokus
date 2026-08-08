@@ -2281,6 +2281,32 @@
   color: var(--color-neutral-700);
 }
 
+/* Pushed to the end of the meta line: the download is an action among facts,
+   and reading "PDF · 34 halaman · diperbarui …" should not step over a
+   button on the way. */
+.doc-meta-action {
+  margin-left: auto;
+}
+
+/* The file control sits inside a table cell, where a full-height .btn would
+   set the row height for every other row. Ghost, so the table stays a table:
+   six accent-filled buttons down a column would read as the point of the
+   screen, and the point of the screen is the corpus. */
+.btn-file {
+  padding: 2px var(--space-2);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* "There is no file" is a fact about the row, not a control and not a status
+   worth a tag. It recedes, and the two rows that can be downloaded are what
+   the column draws the eye to. */
+.file-none {
+  font-size: 12px;
+  color: var(--color-neutral-600);
+  white-space: nowrap;
+}
+
 /* Chunks are listed in store order and kept apart by their own hairline, so a
    clause the chunker split across two of them is visibly two things rather
    than one paragraph with a seam. The cap keeps a 48-chunk SOP from burying

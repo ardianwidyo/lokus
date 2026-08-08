@@ -32,6 +32,10 @@ export function DocumentUpload({ stats, onIngested }) {
 
   const [title, setTitle] = useState('');
   const [text, setText] = useState('');
+  // The dropped file's own name and type, kept so the document can be handed
+  // back as the file it arrived as rather than as a generated `.txt`
+  // (AC-10.11). Null for pasted text, which has no file to be named after.
+  const [sourceFile, setSourceFile] = useState(null);
   const [restricted, setRestricted] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -53,6 +57,13 @@ export function DocumentUpload({ stats, onIngested }) {
 
     const contents = await file.text();
     setText(contents);
+    setSourceFile({
+      filename: file.name,
+      // Browsers leave `type` empty for `.md` often enough that a fallback is
+      // not an edge case. The store defaults it too; sending an empty string
+      // would defeat that default.
+      mimeType: file.type || 'text/plain; charset=utf-8',
+    });
     // Only as a default: a file named `sop-antrean-v4.txt` is a worse document
     // title than whatever the reader would have typed, so it never overwrites.
     if (!title.trim()) setTitle(file.name.replace(READABLE, '').replace(/[-_]+/g, ' '));
@@ -72,6 +83,7 @@ export function DocumentUpload({ stats, onIngested }) {
         text,
         type: 'TXT',
         restricted,
+        sourceFile,
       });
 
       setReceipt(
@@ -86,6 +98,7 @@ export function DocumentUpload({ stats, onIngested }) {
       setTitle('');
       setText('');
       setRestricted(false);
+      setSourceFile(null);
       if (fileRef.current) fileRef.current.value = '';
 
       // The table on this screen, and every screen that retrieves from the
@@ -159,7 +172,13 @@ export function DocumentUpload({ stats, onIngested }) {
             value={text}
             disabled={!mayAct}
             placeholder={t('kb.uploadTextPlaceholder')}
-            onChange={(event) => setText(event.target.value)}
+            onChange={(event) => {
+              setText(event.target.value);
+              // Edited after a drop, the text is no longer that file's
+              // contents. Keeping the name would make the download claim a
+              // provenance it lost the moment this box was typed in.
+              setSourceFile(null);
+            }}
           />
         </div>
 

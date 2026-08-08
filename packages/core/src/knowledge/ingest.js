@@ -1,6 +1,14 @@
 import { assertTenant, scopeToTenant } from '../lib/tenantScope.js';
 import { toolResult } from '../lib/toolResult.js';
 import { DOCUMENTS, PASSAGES } from '../seed/documents.js';
+import {
+  FILE_ORIGIN,
+  TEXT_MIME,
+  byteLength,
+  describeFile,
+  fileSlug,
+  renderIndexedText,
+} from './documentFile.js';
 
 /**
  * `kb.ingest` — documents in, retrievable passages out.
@@ -98,13 +106,35 @@ export function createSeededKnowledgeStore({ documents = DOCUMENTS, passages = P
   const chunksFor = (tenantId, docId) =>
     chunks.filter((chunk) => chunk.tenantId === tenantId && chunk.docId === docId);
 
+  /**
+   * The files handed over at ingest, keyed by tenant *and* document id for the
+   * same reason chunks carry a tenant: two tenants may ingest documents that
+   * slug to the same id, and a map keyed by id alone would hand one tenant the
+   * other's file (constitution IV).
+   *
+   * The seeded corpus has no entry here. Its documents were never uploaded —
+   * they are passages, and saying otherwise is what AC-10.11 forbids.
+   */
+  const originals = new Map();
+  const fileKey = (tenantId, docId) => `${tenantId}::${docId}`;
+  const originalFor = (tenantId, docId) => originals.get(fileKey(tenantId, docId)) ?? null;
+
+  const withFile = (tenantId, doc, chunkCount) => ({
+    ...doc,
+    chunkCount,
+    retrievable: RETRIEVABLE_STATES.includes(doc.indexState),
+    file: describeFile({
+      original: originalFor(tenantId, doc.docId),
+      chunkCount,
+      title: doc.title,
+    }),
+  });
+
   function documentsFor(tenantId) {
     assertTenant(tenantId);
-    return scopeToTenant(tenantId, docs).map((doc) => ({
-      ...doc,
-      chunkCount: chunksFor(tenantId, doc.docId).length,
-      retrievable: RETRIEVABLE_STATES.includes(doc.indexState),
-    }));
+    return scopeToTenant(tenantId, docs).map((doc) =>
+      withFile(tenantId, doc, chunksFor(tenantId, doc.docId).length),
+    );
   }
 
   /**
@@ -127,11 +157,55 @@ export function createSeededKnowledgeStore({ documents = DOCUMENTS, passages = P
     const own = chunksFor(tenantId, docId);
 
     return {
-      ...doc,
-      chunkCount: own.length,
-      retrievable: RETRIEVABLE_STATES.includes(doc.indexState),
+      ...withFile(tenantId, doc, own.length),
       chunks: own.map((chunk) => ({ ...chunk })),
     };
+  }
+
+  /**
+   * The file itself (AC-10.11).
+   *
+   * Three outcomes, and the caller can tell them apart: `null` for a document
+   * this tenant does not have — the same single refusal `documentDetail` gives,
+   * so a download cannot be used to enumerate another tenant's document ids;
+   * `{available: false}` for a document LOKUS holds nothing for; and otherwise
+   * the bytes, with `origin` saying whether they are the original or a
+   * rendition of the indexed chunks.
+   *
+   * The access rule is deliberately *not* here. It lives in the knowledge
+   * service beside the one AC-10.9 already defines, so a restricted document
+   * refuses its file and its chunks by the same decision rather than by two
+   * copies of it.
+   *
+   * A production store returns `{url}` here instead — a short-lived signed URL
+   * to the Cloud Storage object — and the route redirects to it rather than
+   * proxying the bytes through the API process. Nothing above this line changes.
+   */
+  function documentFile(tenantId, docId) {
+    assertTenant(tenantId);
+    const doc = scopeToTenant(tenantId, docs).find((entry) => entry.docId === docId);
+    if (!doc) return null;
+
+    const original = originalFor(tenantId, docId);
+    if (original) {
+      return {
+        docId,
+        title: doc.title,
+        available: true,
+        origin: FILE_ORIGIN.ORIGINAL,
+        filename: original.filename,
+        mimeType: original.mimeType,
+        sizeBytes: original.sizeBytes,
+        text: original.text,
+      };
+    }
+
+    const own = chunksFor(tenantId, docId);
+    const descriptor = describeFile({ chunkCount: own.length, title: doc.title });
+    if (!descriptor.available) return { docId, title: doc.title, ...descriptor };
+
+    const text = renderIndexedText({ document: doc, chunks: own });
+    return { docId, title: doc.title, ...descriptor, sizeBytes: byteLength(text), text };
   }
 
   /** Only indexed documents contribute. A draft awaiting review is invisible. */
@@ -152,7 +226,43 @@ export function createSeededKnowledgeStore({ documents = DOCUMENTS, passages = P
       }));
   }
 
-  async function ingest({ tenantId, docId, title, type = 'PDF', text, pages = null, restricted = false } = {}) {
+  /**
+   * What was handed over, kept so it can be handed back (AC-10.11).
+   *
+   * `text` is the original: the console reads a dropped `.txt`/`.md` whole and
+   * passes it unchanged, and a pasted document is original in the only sense
+   * that matters — nobody else has a copy of it. The chunker's normalisation
+   * happens downstream of this, so what is stored here is not what was indexed
+   * but what arrived, which is the point.
+   *
+   * `sourceFile` carries the dropped file's own name and type when there was a
+   * file. Pasted text gets a name derived from the title, because a download
+   * called `dokumen.txt` is a worse artefact than one called
+   * `sop-layanan-kasir-v5.txt` and neither is a claim about provenance.
+   */
+  function keepOriginal({ tenantId, docId, title, text, sourceFile }) {
+    const filename = sourceFile?.filename?.trim() || `${fileSlug(title)}.txt`;
+    originals.set(fileKey(tenantId, docId), {
+      filename,
+      mimeType: sourceFile?.mimeType?.trim() || TEXT_MIME,
+      sizeBytes: byteLength(text),
+      text,
+    });
+  }
+
+  async function ingest({
+    tenantId,
+    docId,
+    title,
+    type = 'PDF',
+    text,
+    pages = null,
+    restricted = false,
+    // The file the text came out of, when there was one. Metadata only: the
+    // bytes are `text`, and a second copy of them would be a second thing to
+    // keep in step.
+    sourceFile = null,
+  } = {}) {
     const startedAt = Date.now();
     assertTenant(tenantId);
 
@@ -185,6 +295,7 @@ export function createSeededKnowledgeStore({ documents = DOCUMENTS, passages = P
       addedInSession: true,
     };
     docs.push(document);
+    keepOriginal({ tenantId, docId: id, title, text, sourceFile });
 
     pieces.forEach((piece, index) => {
       chunks.push({
@@ -232,7 +343,15 @@ export function createSeededKnowledgeStore({ documents = DOCUMENTS, passages = P
     };
   }
 
-  return { isSeeded: true, ingest, documentsFor, documentDetail, retrievablePassages, stats };
+  return {
+    isSeeded: true,
+    ingest,
+    documentsFor,
+    documentDetail,
+    documentFile,
+    retrievablePassages,
+    stats,
+  };
 }
 
 /**

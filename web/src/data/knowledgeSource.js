@@ -31,5 +31,25 @@ export function createSeededKnowledgeSource({
     // API, where it is read off the verified token on every request. The rule
     // it feeds lives in the service, so both paths refuse identically (AC-10.9).
     document: (forTenantId, docId, options) => service.document(forTenantId, docId, options),
+
+    /**
+     * The file, as a blob the browser can save (AC-10.11).
+     *
+     * The HTTP source returns this same shape from a response body, so the
+     * screen never learns which one it is holding — the seeded console
+     * downloads a real file with no API, which is what AC-10.7 asks of every
+     * capability on this screen.
+     */
+    documentFile: async (forTenantId, docId, options) => {
+      const file = await service.documentFile(forTenantId, docId, options);
+      if (!file) return null;
+
+      return {
+        filename: file.filename,
+        mimeType: file.mimeType,
+        origin: file.origin,
+        blob: new Blob([file.text], { type: file.mimeType }),
+      };
+    },
   };
 }

@@ -70,6 +70,10 @@ export function buildServer({
     // rather than relying on the browser's own; without it the preflight fails
     // and every request falls back to Indonesian.
     allowedHeaders: ['accept-language', 'authorization', 'content-type', 'x-lokus-tenant'],
+    // A cross-origin console cannot read a response header unless it is exposed.
+    // Without these two a downloaded document arrives with a generated name and
+    // no way to say whether it is the original or the indexed text (AC-10.11).
+    exposedHeaders: ['content-disposition', 'x-lokus-file-origin'],
     maxAge: 600,
   });
 

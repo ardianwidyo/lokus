@@ -1,6 +1,6 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { App } from '../src/App.jsx';
 import { createSeededKnowledgeSource } from '../src/data/knowledgeSource.js';
@@ -118,6 +118,109 @@ describe('Screen 11 · Pusat pengetahuan (T024)', () => {
     expect(
       screen.getByText(/tetap disimpan, tapi tidak dipakai untuk menjawab pertanyaan umum/),
     ).toBeInTheDocument();
+  });
+
+  /**
+   * jsdom has no object URLs and no download machinery, so what is asserted
+   * here is what the console asked the browser to save — the filename and the
+   * bytes — plus the sentence it showed the reader afterwards. Those are the
+   * two things AC-10.11 is about; whether Chrome writes the file is Chrome's.
+   */
+  describe('handing a document back as a file (T070)', () => {
+    let saved;
+
+    beforeEach(() => {
+      saved = [];
+      window.URL.createObjectURL = vi.fn((blob) => {
+        saved.push(blob);
+        return 'blob:lokus/test';
+      });
+      window.URL.revokeObjectURL = vi.fn();
+      // jsdom navigates on a real anchor click and warns about it; the click is
+      // the download, and there is nothing to navigate to.
+      HTMLAnchorElement.prototype.click = vi.fn();
+    });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    const readBlob = (blob) =>
+      new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.readAsText(blob);
+      });
+
+    it('offers each document the file it actually holds, and no button for the rest', async () => {
+      await renderKb();
+      const table = screen.getByRole('table');
+
+      // Seeded documents are passages, never uploads: what LOKUS holds is text.
+      expect(
+        within(table).getByRole('button', { name: 'Unduh berkas SOP Layanan Pelanggan v4' }),
+      ).toHaveTextContent('Unduh teks');
+      // Excluded from the index and never uploaded — nothing to give, and a
+      // disabled button would invite a hunt for the setting that enables it.
+      expect(within(table).getAllByText('tidak disimpan').length).toBeGreaterThan(0);
+    });
+
+    it('downloads the indexed text under a name that says what it is', async () => {
+      await renderKb();
+
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Unduh berkas SOP Layanan Pelanggan v4' }),
+      );
+
+      expect(await screen.findByText(/ini teks yang terbaca agen, bukan berkas asli/)).toBeInTheDocument();
+      expect(screen.getByText(/sop-layanan-pelanggan-v4-teks-terindeks\.txt/)).toBeInTheDocument();
+      expect(await readBlob(saved[0])).toMatch(/Antrean lebih dari 10 menit/);
+    });
+
+    it('hands an uploaded document back as the file it arrived as', async () => {
+      const source = createSeededKnowledgeSource();
+      const text = 'Pasal satu mengatur jam operasional kasir. '.repeat(20);
+      await source.ingest('nusa-retail', {
+        title: 'SOP Kasir 2026',
+        text,
+        sourceFile: { filename: 'sop-kasir-2026.md', mimeType: 'text/markdown' },
+      });
+      await renderKb({ knowledgeSource: source });
+
+      await userEvent.click(screen.getByRole('button', { name: 'Unduh berkas SOP Kasir 2026' }));
+
+      expect(await screen.findByText(/sama persis seperti saat diserahkan/)).toBeInTheDocument();
+      expect(await readBlob(saved[0])).toBe(text);
+    });
+
+    it('refuses a restricted document to a manager, naming it (AC-10.9)', async () => {
+      const source = createSeededKnowledgeSource();
+      await source.ingest('nusa-retail', {
+        title: 'Perjanjian Waralaba 2026',
+        text: 'Pasal satu mengatur bagi hasil waralaba. '.repeat(20),
+        restricted: true,
+      });
+      await renderKb({ knowledgeSource: source, role: 'manager' });
+
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Unduh berkas Perjanjian Waralaba 2026' }),
+      );
+
+      const refusal = await screen.findByRole('alert');
+      expect(refusal).toHaveTextContent(/Perjanjian Waralaba 2026/);
+      expect(refusal).toHaveTextContent(/khusus untuk Admin/);
+      expect(saved).toHaveLength(0);
+    });
+
+    it('lets a viewer download, because reading a document is not writing to it', async () => {
+      await renderKb({ role: 'viewer' });
+
+      await userEvent.click(
+        screen.getByRole('button', { name: 'Unduh berkas Panduan Nada Brand 2026' }),
+      );
+
+      expect(await screen.findByText(/panduan-nada-brand-2026-teks-terindeks\.txt/)).toBeInTheDocument();
+    });
   });
 
   it('shows the error state with a retry', async () => {

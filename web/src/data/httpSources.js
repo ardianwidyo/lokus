@@ -104,6 +104,11 @@ export function createHttpSources({ baseUrl, getTenant, getLocale = null, user =
     // No role is sent: the server reads it off the token, and a role in the
     // query string would be a claim the client made about itself.
     document: (tenantId, docId) => api.get(`/v1/knowledge/documents/${encodeURIComponent(docId)}`),
+    // Same route with `/file`, and the same absence of a role for the same
+    // reason. What comes back — blob, filename, origin — is the shape the
+    // seeded source returns, so the screen is written once (AC-10.11).
+    documentFile: (tenantId, docId) =>
+      api.getFile(`/v1/knowledge/documents/${encodeURIComponent(docId)}/file`),
   };
 
   const admin = {

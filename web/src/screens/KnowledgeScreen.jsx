@@ -8,9 +8,11 @@ import { useAsyncData } from '../app/useAsyncData.js';
 import { Blueprint } from '../components/Blueprint.jsx';
 import { DataPanel, PANEL_STATUS } from '../components/states/index.js';
 import { Rich, useLocale } from '../i18n/index.js';
+import { DocumentFileButton } from './knowledge/DocumentFileButton.jsx';
 import { DocumentInspector } from './knowledge/DocumentInspector.jsx';
 import { DocumentUpload } from './knowledge/DocumentUpload.jsx';
 import { IndexStateTag } from './knowledge/IndexStateTag.jsx';
+import { useDocumentDownload } from './knowledge/useDocumentDownload.js';
 
 /**
  * Screen 11 · Pusat pengetahuan.
@@ -33,6 +35,10 @@ export function KnowledgeScreen({ onNavigate }) {
     [knowledgeSource, tenant?.tenantId],
   );
   const { status, data, error, reload } = useAsyncData(load);
+  // Downloading is a read, so it is not gated on `mayAct`: a viewer who can see
+  // a document's chunks can have its file, and a restricted document refuses
+  // both by the one rule in the knowledge service (AC-10.9, AC-10.11).
+  const { download, busyDocId, status: downloadStatus } = useDocumentDownload();
 
   const mayAct = canWrite(role);
 
@@ -118,6 +124,7 @@ export function KnowledgeScreen({ onNavigate }) {
                       <th scope="col">{t('kb.colChunks')}</th>
                       <th scope="col">{t('kb.colIndexState')}</th>
                       <th scope="col">{t('kb.colUpdated')}</th>
+                      <th scope="col">{t('kb.colFile')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -152,6 +159,13 @@ export function KnowledgeScreen({ onNavigate }) {
                           <IndexStateTag state={doc.indexState} retrievable={doc.retrievable} />
                         </td>
                         <td>{doc.updatedAt}</td>
+                        <td>
+                          <DocumentFileButton
+                            doc={doc}
+                            busy={busyDocId === doc.docId}
+                            onDownload={download}
+                          />
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -161,6 +175,20 @@ export function KnowledgeScreen({ onNavigate }) {
             <p className="state-note">
               <Rich k="kb.docsNote" values={{ indexed: <strong>{t('kb.indexIndexed')}</strong> }} />
             </p>
+            <p className="state-note">{t('kb.fileNote')}</p>
+
+            {/* Named for what came down, because the filename alone cannot say
+                whether it is the SOP or a transcription of the part of it that
+                was indexed (AC-10.11). `role="status"` so the reader who
+                triggered it hears the answer without going to look. */}
+            {downloadStatus ? (
+              <p
+                className={`state-note${downloadStatus.tone === 'error' ? ' is-error' : ''}`}
+                role={downloadStatus.tone === 'error' ? 'alert' : 'status'}
+              >
+                {downloadStatus.message}
+              </p>
+            ) : null}
           </DataPanel>
 
           {/* Below the table rather than beside it: the chunks are prose, and

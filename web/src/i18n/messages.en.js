@@ -636,9 +636,33 @@ export const en = {
     colChunks: 'Chunks',
     colIndexState: 'Status',
     colUpdated: 'Updated',
+    colFile: 'File',
     docsNote:
       'Only documents marked {indexed} may be quoted by an agent. Drafts waiting to be reviewed and documents not in use never appear in an answer.',
     demoTag: 'demo',
+
+    // The label names what is actually handed over. One word "Download" for
+    // three different things is the thing AC-10.11 exists to prevent.
+    downloadOriginal: 'Download original',
+    downloadIndexed: 'Download text',
+    downloadGeneric: 'Download',
+    downloadWorking: 'Preparing…',
+    downloadDocument: 'Download the file for {title}',
+    fileNotHeld: 'not held',
+    downloadNotHeldHint:
+      'LOKUS holds no file for this document and has not indexed a single chunk of it, so there is nothing to download.',
+    fileNote:
+      'Only what LOKUS actually holds can be downloaded. “Download original” hands back the file that was handed over, unchanged. “Download text” hands back the text the agents read, as a .txt — not the original file, which is not held here.',
+    downloadDoneOriginal: '“{filename}” downloaded — the original file, exactly as handed over.',
+    downloadDoneIndexed:
+      '“{filename}” downloaded — this is the text the agents read, not the original file. LOKUS does not hold the original.',
+    downloadDoneUnknown: '“{filename}” downloaded.',
+    downloadRestricted:
+      'The file for “{title}” is marked for Admins only, so your role cannot download it. Ask an admin if you need it.',
+    downloadNotHeld:
+      'LOKUS holds no file for “{title}”, and there are no chunks to hand over instead.',
+    downloadMissing: 'The document “{title}” is no longer there. Try reloading the list.',
+    downloadFailed: 'The file could not be downloaded.',
 
     docContentKicker: 'Document contents · {title}',
     docContentKickerPlain: 'Document contents',

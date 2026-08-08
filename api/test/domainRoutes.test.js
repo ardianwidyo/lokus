@@ -412,6 +412,82 @@ describe('domain routes over HTTP (T058)', () => {
       expect(foreign.json()).toEqual(missing.json());
     });
 
+    it('sends the file as an attachment naming what it is (AC-10.11)', async () => {
+      const response = await call('GET', '/v1/knowledge/documents/sop-layanan-v4/file', await asViewer());
+
+      expect(response.statusCode).toBe(200);
+      expect(response.headers['x-lokus-file-origin']).toBe('indexed-text');
+      expect(response.headers['content-disposition']).toContain(
+        'attachment; filename="sop-layanan-pelanggan-v4-teks-terindeks.txt"',
+      );
+      // The tenant's own SOP: no shared cache may keep a copy.
+      expect(response.headers['cache-control']).toBe('private, no-store');
+      expect(response.body).toMatch(/bukan berkas asli/);
+    });
+
+    it('sends an uploaded document back as the original bytes', async () => {
+      const manager = await asManager();
+      const text = 'Pasal satu mengatur jam operasional kasir. '.repeat(30);
+      await call('POST', '/v1/knowledge/documents', manager, {
+        payload: {
+          title: 'SOP Kasir 2026',
+          text,
+          sourceFile: { filename: 'sop-kasir-2026.md', mimeType: 'text/markdown' },
+        },
+      });
+
+      const response = await call('GET', '/v1/knowledge/documents/sop-kasir-2026/file', manager);
+
+      expect(response.headers['x-lokus-file-origin']).toBe('original');
+      expect(response.headers['content-disposition']).toContain('filename="sop-kasir-2026.md"');
+      expect(response.body).toBe(text);
+      // Bytes, not characters — a wrong content-length truncates the download.
+      expect(response.headers['content-length']).toBe(String(Buffer.byteLength(text, 'utf8')));
+    });
+
+    it('refuses the file of a restricted document by the rule that hides its chunks', async () => {
+      const manager = await asManager();
+      await ingestRestricted(manager);
+
+      const refused = await call(
+        'GET',
+        '/v1/knowledge/documents/perjanjian-waralaba-2026/file',
+        manager,
+      );
+      const allowed = await call(
+        'GET',
+        '/v1/knowledge/documents/perjanjian-waralaba-2026/file',
+        await asAdmin(),
+      );
+
+      expect(refused.statusCode).toBe(422);
+      expect(refused.json().error.code).toBe('ROLE_FORBIDDEN');
+      expect(allowed.statusCode).toBe(200);
+    });
+
+    it('says a document holds no file rather than sending an empty one', async () => {
+      // Excluded from the index and never uploaded. A 200 with zero bytes would
+      // read as a broken server.
+      const response = await call('GET', '/v1/knowledge/documents/notulen-ops-juni/file', await asViewer());
+
+      expect(response.statusCode).toBe(422);
+      expect(response.json().error.code).toBe('FILE_NOT_HELD');
+    });
+
+    it('404s another tenant asking for a file, without confirming the id exists', async () => {
+      const jwt = await token({ [OTHER]: ROLES.ADMIN });
+
+      const foreign = await call('GET', '/v1/knowledge/documents/sop-layanan-v4/file', jwt, {
+        tenantId: OTHER,
+      });
+      const missing = await call('GET', '/v1/knowledge/documents/tidak-ada/file', jwt, {
+        tenantId: OTHER,
+      });
+
+      expect(foreign.statusCode).toBe(404);
+      expect(foreign.json()).toEqual(missing.json());
+    });
+
     it('accepts the added-reviews bucket and reports its count (AC-10.10)', async () => {
       const response = await call('GET', '/v1/reviews?bucket=ditambahkan', await asViewer());
       const body = response.json();
@@ -438,6 +514,7 @@ describe('domain routes over HTTP (T058)', () => {
       ['GET', '/v1/outlets'],
       ['GET', '/v1/outlets/BKS-02'],
       ['GET', '/v1/knowledge/documents/sop-layanan-v4'],
+      ['GET', '/v1/knowledge/documents/sop-layanan-v4/file'],
     ])('%s %s rejects an anonymous caller', async (method, url) => {
       expect((await call(method, url, null)).statusCode).toBe(401);
     });

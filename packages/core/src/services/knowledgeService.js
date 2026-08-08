@@ -22,6 +22,20 @@ export class KnowledgeAccessError extends Error {
   }
 }
 
+/**
+ * "There is no file to give you" — a different statement from "you may not have
+ * it" (KnowledgeAccessError) and from "no such document" (`null`), and a reader
+ * deciding whether to go and find the SOP elsewhere needs to know which of the
+ * three they hit (AC-10.11).
+ */
+export class KnowledgeFileError extends Error {
+  constructor(code, message) {
+    super(message);
+    this.name = 'KnowledgeFileError';
+    this.code = code;
+  }
+}
+
 export function createKnowledgeService({ store = null, gapLog = null, gemini = null } = {}) {
   const kb = store ?? createSeededKnowledgeStore();
   const gaps = gapLog ?? new KnowledgeGapLog();
@@ -109,15 +123,44 @@ export function createKnowledgeService({ store = null, gapLog = null, gemini = n
     const detail = kb.documentDetail(tenantId, docId);
     if (!detail) return null;
 
+    assertMayRead(detail, role);
+    return detail;
+  }
+
+  /**
+   * The file behind a document (AC-10.11), refused by the rule above.
+   *
+   * Sharing `assertMayRead` with `document` is the whole reason this lives in
+   * the service: a restricted contract whose chunks are hidden but whose file
+   * downloads is not a restricted contract. One decision, both doors.
+   */
+  async function documentFile(tenantId, docId, { role = null } = {}) {
+    assertTenant(tenantId);
+    const detail = kb.documentDetail(tenantId, docId);
+    if (!detail) return null;
+
+    assertMayRead(detail, role);
+
+    const file = kb.documentFile(tenantId, docId);
+    if (!file?.available) {
+      throw new KnowledgeFileError(
+        'FILE_NOT_HELD',
+        `LOKUS tidak menyimpan berkas untuk dokumen ${detail.title}`,
+      );
+    }
+
+    return file;
+  }
+
+  /** Restricted means Admin-only, for the chunks and for the file alike. */
+  function assertMayRead(detail, role) {
     if (detail.restricted && !RESTRICTED_READER_ROLES.has(role)) {
       throw new KnowledgeAccessError(
         'ROLE_FORBIDDEN',
         `Dokumen ${detail.title} dibatasi ke peran Admin`,
       );
     }
-
-    return detail;
   }
 
-  return { overview, ask, ingest, document, gapLog: gaps, store: kb };
+  return { overview, ask, ingest, document, documentFile, gapLog: gaps, store: kb };
 }

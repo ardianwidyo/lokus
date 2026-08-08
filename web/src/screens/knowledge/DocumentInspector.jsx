@@ -4,7 +4,9 @@ import { useSession } from '../../app/SessionContext.jsx';
 import { useAsyncData } from '../../app/useAsyncData.js';
 import { DataPanel, PANEL_STATUS } from '../../components/states/index.js';
 import { useLocale } from '../../i18n/index.js';
+import { DocumentFileButton } from './DocumentFileButton.jsx';
 import { IndexStateTag } from './IndexStateTag.jsx';
+import { useDocumentDownload } from './useDocumentDownload.js';
 
 /**
  * Screen 11 · Isi dokumen.
@@ -37,6 +39,10 @@ export function DocumentInspector({ docId, title = null }) {
     [knowledgeSource, tenantId, docId, role],
   );
   const { status, data, error, reload } = useAsyncData(load);
+  // Its own instance, so the receipt for a download started here appears here.
+  // Sharing one with the table would announce it two panels away from the
+  // button that was pressed.
+  const { download, busyDocId, status: downloadStatus } = useDocumentDownload();
 
   // No selection and "no such document" are the same to a reader: there is
   // nothing to read. The store already refuses another tenant's id by returning
@@ -78,7 +84,26 @@ export function DocumentInspector({ docId, title = null }) {
               updated: data.updatedAt,
             })}{' '}
             <IndexStateTag state={data.indexState} retrievable={data.retrievable} />
+            {/* The document being read is the one most likely to be wanted as a
+                file, and sending the reader back to the table to find its row
+                again is the kind of small tax that makes a console tiring. */}
+            <span className="doc-meta-action">
+              <DocumentFileButton
+                doc={data}
+                busy={busyDocId === data.docId}
+                onDownload={download}
+              />
+            </span>
           </p>
+
+          {downloadStatus ? (
+            <p
+              className={`state-note${downloadStatus.tone === 'error' ? ' is-error' : ''}`}
+              role={downloadStatus.tone === 'error' ? 'alert' : 'status'}
+            >
+              {downloadStatus.message}
+            </p>
+          ) : null}
 
           {/* Stored is not the same as quotable, and the difference is the
               reason this console can be trusted about its own corpus. */}

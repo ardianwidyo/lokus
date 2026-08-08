@@ -642,9 +642,33 @@ export const id = {
     colChunks: 'Potongan',
     colIndexState: 'Status',
     colUpdated: 'Diperbarui',
+    colFile: 'Berkas',
     docsNote:
       'Hanya dokumen bertanda {indexed} yang boleh dikutip agen. Draft yang menunggu ditinjau dan dokumen yang tidak dipakai tidak pernah muncul di jawaban.',
     demoTag: 'demo',
+
+    // Unduhan. Labelnya menyebut apa yang benar-benar diberikan, bukan satu
+    // kata "Unduh" untuk tiga hal yang berbeda (AC-10.11).
+    downloadOriginal: 'Unduh asli',
+    downloadIndexed: 'Unduh teks',
+    downloadGeneric: 'Unduh',
+    downloadWorking: 'Menyiapkan…',
+    downloadDocument: 'Unduh berkas {title}',
+    fileNotHeld: 'tidak disimpan',
+    downloadNotHeldHint:
+      'LOKUS tidak menyimpan berkas dokumen ini dan belum punya satu potongan pun darinya, jadi tidak ada yang bisa diunduh.',
+    fileNote:
+      'Yang bisa diunduh hanya yang benar-benar disimpan LOKUS. "Unduh asli" memberi berkas yang dulu diserahkan, apa adanya. "Unduh teks" memberi teks yang terbaca agen dalam bentuk .txt — bukan berkas aslinya, dan berkasnya memang tidak ada di sini.',
+    downloadDoneOriginal: '"{filename}" diunduh — berkas asli, sama persis seperti saat diserahkan.',
+    downloadDoneIndexed:
+      '"{filename}" diunduh — ini teks yang terbaca agen, bukan berkas asli dokumennya. LOKUS tidak menyimpan berkas aslinya.',
+    downloadDoneUnknown: '"{filename}" diunduh.',
+    downloadRestricted:
+      'Berkas "{title}" ditandai khusus untuk Admin, jadi tidak bisa diunduh dari peran Anda. Mintakan ke admin kalau memang perlu.',
+    downloadNotHeld:
+      'LOKUS tidak menyimpan berkas untuk "{title}", dan belum ada potongan yang bisa diberikan sebagai gantinya.',
+    downloadMissing: 'Dokumen "{title}" tidak ada lagi. Coba muat ulang daftarnya.',
+    downloadFailed: 'Berkas gagal diunduh.',
 
     docContentKicker: 'Isi dokumen · {title}',
     docContentKickerPlain: 'Isi dokumen',
