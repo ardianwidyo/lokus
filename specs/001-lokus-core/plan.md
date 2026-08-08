@@ -304,6 +304,33 @@ folded in continuously rather than left to the end.
   has no `reasoningEngine` resource. `scripts/agent-engine.mjs` creates, lists
   and deletes it instead, and says so where a reader will look.
 
+- **2026-08-08 · the demo composer works against the API too.** It was seeded-
+  only, and until the console could actually reach an API nobody noticed: the
+  button was rendered in both modes and `addReview` existed in one, so in API
+  mode it failed with `reputation.addReview is not a function`.
+
+  Hiding it in API mode fixed the error and cost more than it saved. Typing a
+  complaint in the room is the demo's centrepiece — a seeded dataset can show
+  that the clusterer works but not that it *reads*, because every seeded row was
+  written to be grouped the way it groups — and API mode is the only mode where
+  the model is real. Hiding it meant choosing between the two halves of the
+  demo.
+
+  So `POST /v1/reviews/demo` exists. `/demo` is in the path rather than a flag
+  in the body, because what it creates is not a Google review and the route
+  should not be mistakable for one. The row carries the same demo tag it carries
+  in seeded mode, so AC-10.6 holds either way: typed text is never presented as
+  something Google returned.
+
+  The composer is gated on the capability now, not the mode — if a source cannot
+  add a review the button is not offered. A gate on `isSeeded` was what hid it
+  from the mode that needed it most, and a gate on the capability cannot drift
+  that way again.
+
+  Verified over HTTP: a typed complaint about a single open till comes back
+  clustered as `antrean-kasir` with confidence 1, and its reply draft is written
+  by `gemini-3.5-flash-lite` in 1971 ms for Rp 0,88.
+
 - **2026-08-07 · the reasoning path is a choice, and screen 14 makes it —
   without ever touching a credential.** Vertex AI replaced the AI Studio key
   earlier today, and replacing it outright was one option too few. The two fail

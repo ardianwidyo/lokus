@@ -215,9 +215,15 @@ VITE_LOKUS_API_URL=http://localhost:8080 npm run dev --workspace web
 ```
 
 Sekarang setiap permintaan browser melewati `authenticate → withTenant →
-requireRole` yang sungguhan. Perlu diketahui: komposer review dan kontrol
-pulihkan-data **tidak muncul** dalam mode ini, karena datanya dipegang API dan
-konsol tidak berhak membuangnya. Unggah SOP tetap bekerja lewat
+requireRole` yang sungguhan. Perlu diketahui: kontrol **pulihkan-data tidak
+muncul** dalam mode ini, karena datanya dipegang API dan konsol tidak berhak
+membuangnya.
+
+Komposer review **tetap ada** — sejak 2026-08-08 ia bekerja lewat
+`POST /v1/reviews/demo`, dan barisnya tetap ditandai **demo** persis seperti di
+mode contoh. Ini yang membuat alur enam menit bisa dijalankan dalam satu tab:
+review yang Anda ketik di depan juri diklasterisasi, lalu draft balasannya
+ditulis model Gemini yang sungguhan. Unggah SOP juga tetap bekerja, lewat
 `POST /v1/knowledge/documents`.
 
 Untuk menjalankan penalaran Gemini yang sungguhan alih-alih jalur
