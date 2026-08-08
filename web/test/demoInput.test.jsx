@@ -448,4 +448,22 @@ describe('Screen 05 · the review composer (T068)', () => {
       ).toBe(true),
     );
   });
+
+  it('is absent against a real API, where the reviews are not ours to invent', async () => {
+    // The runbook has always said the composer does not appear in API mode:
+    // those rows belong to the tenant's Google listing, and a console that
+    // could insert into them would be writing history the tenant never had.
+    // Nothing enforced it until the console could actually reach an API, and
+    // the button then failed with 'reputation.addReview is not a function'.
+    signIn();
+    window.history.pushState({}, '', '/review');
+
+    const seeded = createSeededReputationSource();
+    const overHttp = { ...seeded, isSeeded: false, addReview: undefined };
+
+    render(<App sessionSource={createSeededSessionSource()} reputationSource={overHttp} />);
+    await screen.findByRole('listbox', {}, { timeout: 6000 });
+
+    expect(screen.queryByRole('button', { name: /Tambah review/ })).toBeNull();
+  });
 });
